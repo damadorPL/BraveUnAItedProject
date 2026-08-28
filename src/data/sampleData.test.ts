@@ -49,7 +49,7 @@ describe("Sample Data Integrity (71 Records Base)", () => {
     expect(admin).toBeDefined();
     expect(admin?.id).toBe("spec-admin");
     expect(admin?.name).toContain("Michał Adamczyk");
-    expect(admin?.email).toBe("admin@fundacja-spektrum.pl");
+    expect(admin?.email).toBe("admin@synapsis.org.pl");
   });
 
   it("should have valid dates and positive durations on all records", () => {

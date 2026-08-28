@@ -3,6 +3,7 @@ import { useApp } from "../context/AppContext";
 import { GuidanceType } from "../types";
 import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
 import { computeReportStats } from "../utils/reportStats";
+import { pluralizePorady } from "../utils/pluralization";
 import { DateRangePicker } from "./DateRangePicker";
 import {
   BarChart3,
@@ -47,14 +48,6 @@ const GUIDANCE_TYPE_META: Record<GuidanceType, GuidanceTypeMeta> = {
     barClass: "bg-slate-500",
   },
 };
-
-function poradyLabel(count: number): string {
-  if (count === 1) return "porada";
-  const dziesiatki = count % 10;
-  const setki = count % 100;
-  if (dziesiatki >= 2 && dziesiatki <= 4 && !(setki >= 12 && setki <= 14)) return "porady";
-  return "porad";
-}
 
 function toIsoDate(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -278,7 +271,7 @@ export const StatsBar: React.FC = () => {
                     count > 0 ? "font-bold text-indigo-600 dark:text-[#FFB200]" : "text-slate-300 dark:text-slate-700 font-medium"
                   }
                 >
-                  {count} {poradyLabel(count)}
+                  {pluralizePorady(count)}
                 </span>
               </div>
             ))}

@@ -20,6 +20,7 @@ import {
   ArrowRight,
   Info,
 } from "lucide-react";
+import { pluralizePorady, pluralizeZalaczniki } from "../utils/pluralization";
 
 interface AdminPanelModalProps {
   isOpen: boolean;
@@ -140,7 +141,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
 
     if (
       !window.confirm(
-        `Czy na pewno chcesz scalić kontakt "${sourceCaller.firstName} ${sourceCaller.lastName}" z kontaktem głównym "${targetCaller.firstName} ${targetCaller.lastName}"?\n\nPrzeniesionych zostanie ${sourceRecords.length} porad. Kontakt zdublowany zostanie trwale usunięty.`
+        `Czy na pewno chcesz scalić kontakt "${sourceCaller.firstName} ${sourceCaller.lastName}" z kontaktem głównym "${targetCaller.firstName} ${targetCaller.lastName}"?\n\nPrzeniesionych zostanie ${pluralizePorady(sourceRecords.length)}. Kontakt zdublowany zostanie trwale usunięty.`
       )
     ) {
       return;
@@ -148,7 +149,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
 
     mergeCallers(sourceCallerId, targetCallerId);
     setMergeSuccessMessage(
-      `Pomyślnie scalono kartotekę. Przeniesiono ${sourceRecords.length} porad do kontaktu głównego: ${targetCaller.firstName} ${targetCaller.lastName}.`
+      `Pomyślnie scalono kartotekę. Przeniesiono ${pluralizePorady(sourceRecords.length)} do kontaktu głównego: ${targetCaller.firstName} ${targetCaller.lastName}.`
     );
     setSourceCallerId("");
     setTimeout(() => {
@@ -393,7 +394,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                             </div>
                           </div>
                           <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/10 font-bold">
-                            {records.filter((r) => r.callerId === c.id).length} porad
+                            {pluralizePorady(records.filter((r) => r.callerId === c.id).length)}
                           </span>
                         </div>
                       ))}
@@ -404,7 +405,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                       <div>
                         <strong>Wybrany:</strong> {targetCaller.firstName} {targetCaller.lastName} ({targetCaller.phoneNumber})
                         <div className="text-[11px] text-emerald-900 dark:text-emerald-300 mt-0.5 font-medium">
-                          Posiada {targetRecords.length} porad i {(targetCaller.attachments || []).length} załączników.
+                          Posiada {pluralizePorady(targetRecords.length)} i {pluralizeZalaczniki((targetCaller.attachments || []).length)}.
                         </div>
                       </div>
                       <button
@@ -461,7 +462,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                             </div>
                           </div>
                           <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/10">
-                            {records.filter((r) => r.callerId === c.id).length} porad
+                            {pluralizePorady(records.filter((r) => r.callerId === c.id).length)}
                           </span>
                         </div>
                       ))}
@@ -472,7 +473,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                       <div>
                         <strong>Do wchłonięcia:</strong> {sourceCaller.firstName} {sourceCaller.lastName} ({sourceCaller.phoneNumber})
                         <div className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
-                          Zawiera {sourceRecords.length} porad i {(sourceCaller.attachments || []).length} załączników.
+                          Zawiera {pluralizePorady(sourceRecords.length)} i {pluralizeZalaczniki((sourceCaller.attachments || []).length)}.
                         </div>
                       </div>
                       <button
@@ -498,7 +499,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                   </div>
                   <ul className="space-y-1 text-slate-700 dark:text-slate-300 list-disc pl-5">
                     <li>
-                      <strong>{sourceRecords.length} porad</strong> z kartoteki &quot;{sourceCaller.firstName} {sourceCaller.lastName}&quot; zostanie przepisanych do &quot;{targetCaller.firstName} {targetCaller.lastName}&quot;.
+                      <strong>{pluralizePorady(sourceRecords.length)}</strong> z kartoteki &quot;{sourceCaller.firstName} {sourceCaller.lastName}&quot; zostanie przepisanych do &quot;{targetCaller.firstName} {targetCaller.lastName}&quot;.
                     </li>
                     <li>
                       Łączna liczba porad kontaktu głównego po scaleniu: <strong>{targetRecords.length + sourceRecords.length}</strong>.

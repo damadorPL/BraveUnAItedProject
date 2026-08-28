@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { GuidanceType, CallRecord } from "../types";
 import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
+import { pluralizePorady } from "../utils/pluralization";
 import {
   ExternalLink,
   Download,
@@ -260,7 +261,7 @@ export const CallRecordsTable: React.FC = () => {
           <div className="bg-slate-50 dark:bg-[#161514] border-t border-slate-200 dark:border-[#2C2927] p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <div className="flex items-center space-x-3 text-slate-500 dark:text-slate-400 font-medium">
               <span>
-                Pokazano <strong className="text-slate-800 dark:text-slate-200">{(page - 1) * pageSize + 1} - {Math.min(page * pageSize, filteredRecords.length)}</strong> z <strong className="text-slate-800 dark:text-slate-200">{filteredRecords.length}</strong> porad
+                Pokazano <strong className="text-slate-800 dark:text-slate-200">{(page - 1) * pageSize + 1} - {Math.min(page * pageSize, filteredRecords.length)}</strong> z <strong className="text-slate-800 dark:text-slate-200">{filteredRecords.length}</strong> {pluralizePorady(filteredRecords.length, false)}
               </span>
 
               <div className="flex items-center space-x-1.5 border-l border-slate-200 dark:border-[#383431] pl-3">

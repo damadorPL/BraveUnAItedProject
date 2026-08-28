@@ -70,7 +70,7 @@ src/
 │   ├── AdminPanelModal.tsx       # Panel administratora (scalanie, konsultanci)
 │   ├── AttachmentsManager.tsx    # Menedżer i podgląd załączników (PDF/obrazy/arkusze)
 │   ├── CallerDisambiguation.tsx  # Rozstrzyganie osób o tym samym nazwisku
-│   ├── CallerHistoryView.tsx     # Widok kartoteki i osi czasu porad
+│   ├── ContactHistoryView.tsx    # Widok kartoteki i osi czasu porad
 │   ├── CallRecordsFilter.tsx     # Filtrowanie rejestru (województwa, daty, typy)
 │   ├── CallRecordsTable.tsx      # Tabela centralnego rejestru porad
 │   ├── DateRangePicker.tsx       # Wybór zakresu dat z kalendarzem

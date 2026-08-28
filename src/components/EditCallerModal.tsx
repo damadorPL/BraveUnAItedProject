@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import {
+  Attachment,
   Caller,
   Voivodeship,
   VOIVODESHIPS,
@@ -10,6 +11,7 @@ import {
   DisabilityDegree,
   DISABILITY_DEGREES,
 } from "../types";
+import { AttachmentsManager } from "./AttachmentsManager";
 import {
   X,
   UserCheck,
@@ -48,6 +50,7 @@ export const EditCallerModal: React.FC = () => {
     "orzeczenie o niepełnosprawności"
   );
   const [tagInput, setTagInput] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -67,6 +70,7 @@ export const EditCallerModal: React.FC = () => {
         editingCaller.disabilityDegree || "orzeczenie o niepełnosprawności"
       );
       setTagInput((editingCaller.tags || []).join(", "));
+      setAttachments(editingCaller.attachments || []);
     }
   }, [editingCaller]);
 
@@ -108,6 +112,7 @@ export const EditCallerModal: React.FC = () => {
       disabilityDegree:
         hasDisabilityCertificate === "tak" ? disabilityDegree : "brak / nie dotyczy",
       tags,
+      attachments,
       updatedAt: new Date().toISOString(),
     };
 
@@ -341,6 +346,22 @@ export const EditCallerModal: React.FC = () => {
               placeholder="np. Diagnoza WZON, Uczeń LO, Przedszkole integracyjne"
               className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-400 dark:placeholder-slate-500"
             />
+          </div>
+
+          {/* Attachments */}
+          <div className="bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-2xl p-4">
+            <AttachmentsManager
+              attachments={attachments}
+              onChange={setAttachments}
+              specialistName={currentSpecialist.name}
+              title="Załączniki kartoteki (PDF, obrazy, Excel, DOCX)"
+              canRemove={currentSpecialist.isAdmin}
+            />
+            {!currentSpecialist.isAdmin && attachments.length > 0 && (
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-2">
+                Usuwanie załączników kartoteki jest dostępne wyłącznie dla Administratora.
+              </p>
+            )}
           </div>
 
           {/* Footer Buttons & Admin Delete */}

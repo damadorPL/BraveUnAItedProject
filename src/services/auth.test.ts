@@ -18,7 +18,7 @@ const SPECIALISTS: Specialist[] = [
     title: "Administrator",
     guidanceType: "prawno-obywatelskie",
     avatarBg: "bg-rose-600",
-    email: "admin@fundacja-spektrum.pl",
+    email: "admin@synapsis.org.pl",
     isAdmin: true,
   },
   {
@@ -28,19 +28,19 @@ const SPECIALISTS: Specialist[] = [
     title: "Prawnik",
     guidanceType: "prawno-obywatelskie",
     avatarBg: "bg-blue-600",
-    email: "a.nowak@fundacja-spektrum.pl",
+    email: "a.nowak@synapsis.org.pl",
     isAdmin: false,
   },
 ];
 
 describe("findSpecialistByEmail", () => {
   it("znajduje konto po dokładnym adresie e-mail", () => {
-    const found = findSpecialistByEmail(SPECIALISTS, "a.nowak@fundacja-spektrum.pl");
+    const found = findSpecialistByEmail(SPECIALISTS, "a.nowak@synapsis.org.pl");
     expect(found?.id).toBe("spec-2");
   });
 
   it("ignoruje wielkość liter i spacje wokół adresu", () => {
-    const found = findSpecialistByEmail(SPECIALISTS, "  Admin@Fundacja-Spektrum.PL ");
+    const found = findSpecialistByEmail(SPECIALISTS, "  Admin@Synapsis.org.PL ");
     expect(found?.id).toBe("spec-admin");
     expect(found?.isAdmin).toBe(true);
   });
