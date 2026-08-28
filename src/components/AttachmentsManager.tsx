@@ -27,6 +27,8 @@ interface Props {
   specialistName: string;
   title?: string;
   readOnly?: boolean;
+  /** Czy pokazywać przycisk usuwania załącznika (domyślnie: !readOnly) */
+  canRemove?: boolean;
   compact?: boolean;
 }
 
@@ -36,8 +38,10 @@ export const AttachmentsManager: React.FC<Props> = ({
   specialistName,
   title = "Załączniki i dokumentacja",
   readOnly = false,
+  canRemove,
   compact = false,
 }) => {
+  const allowRemove = canRemove ?? !readOnly;
   const [previewAttachment, setPreviewAttachment] = useState<Attachment | null>(null);
   const [excelPreviewData, setExcelPreviewData] = useState<{ headers: string[]; rows: any[][] } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -282,7 +286,7 @@ export const AttachmentsManager: React.FC<Props> = ({
                   <Download className="w-4 h-4" />
                 </button>
 
-                {!readOnly && (
+                {allowRemove && (
                   <button
                     type="button"
                     onClick={(e) => handleRemove(att.id, e)}
