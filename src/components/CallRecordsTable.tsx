@@ -1,6 +1,7 @@
 import React from "react";
 import { useApp } from "../context/AppContext";
 import { GuidanceType, CallRecord } from "../types";
+import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
 import {
   ExternalLink,
   Download,
@@ -13,43 +14,9 @@ import {
 export const CallRecordsTable: React.FC = () => {
   const { records, callers, filterState, setSelectedCaller, setIsExportModalOpen } = useApp();
 
-  const callersMap = new Map();
-  callers.forEach((c) => callersMap.set(c.id, c));
+  const callersMap = buildCallersMap(callers);
 
-  const filteredRecords = records.filter((rec) => {
-    const caller = callersMap.get(rec.callerId);
-
-    if (filterState.voivodeship && caller && caller.voivodeship !== filterState.voivodeship) {
-      return false;
-    }
-
-    if (filterState.guidanceType && rec.guidanceType !== filterState.guidanceType) {
-      return false;
-    }
-
-    if (filterState.beneficiaryType && caller && !caller.beneficiaryTypes?.includes(filterState.beneficiaryType as any)) {
-      return false;
-    }
-
-    if (filterState.specialistId && rec.specialistId !== filterState.specialistId) {
-      return false;
-    }
-
-    if (filterState.searchQuery) {
-      const q = filterState.searchQuery.toLowerCase();
-      const matchDesc = (rec.adviceDescription || "").toLowerCase().includes(q);
-      const matchNotes = (rec.notes || "").toLowerCase().includes(q);
-      const matchRef = (rec.referredTo || "").toLowerCase().includes(q);
-      const matchCaller = caller
-        ? (caller.firstName + " " + caller.lastName).toLowerCase().includes(q)
-        : false;
-      if (!matchDesc && !matchNotes && !matchRef && !matchCaller) {
-        return false;
-      }
-    }
-
-    return true;
-  });
+  const filteredRecords = filterCallRecords(records, callersMap, filterState);
 
   const getGuidanceBadge = (type?: GuidanceType) => {
     switch (type) {

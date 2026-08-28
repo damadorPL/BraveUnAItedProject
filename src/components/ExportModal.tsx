@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { exportRecordsData } from "../services/exportService";
+import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
 import {
   X,
   Download,
@@ -19,29 +20,16 @@ export const ExportModal: React.FC = () => {
 
   if (!isExportModalOpen) return null;
 
-  const callersMap = new Map();
-  callers.forEach((c) => callersMap.set(c.id, c));
-
-  const filteredRecords = records.filter((rec) => {
-    const caller = callersMap.get(rec.callerId);
-    if (filterState.voivodeship && caller && caller.voivodeship !== filterState.voivodeship) {
-      return false;
-    }
-    if (filterState.guidanceType && rec.guidanceType !== filterState.guidanceType) {
-      return false;
-    }
-    if (filterState.specialistId && rec.specialistId !== filterState.specialistId) {
-      return false;
-    }
-    return true;
-  });
+  const filteredRecords = filterCallRecords(records, buildCallersMap(callers), filterState);
 
   const handleExport = () => {
-    exportRecordsData(filteredRecords, callers, {
+    const exported = exportRecordsData(filteredRecords, callers, {
       anonymized,
       format,
-      filenamePrefix: "Baza_Porad_ASD",
+      filenamePrefix: "Baza_Porad_PFRON",
     });
+
+    if (!exported) return;
 
     try {
       confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
@@ -113,7 +101,7 @@ export const ExportModal: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">
-                    Automatycznie usuwa imiona, nazwiska i telefony. Zastępuje je anonimowymi kodami spraw (DZWON-XXXXXX). Zachowuje województwo, kategorię i czas trwania.
+                    Usuwa imiona, nazwiska, telefony i miejscowość; z opisu porady wycina numery, adresy e-mail i nazwiska z bazy. Zastępuje dane anonimowymi kodami spraw (DZWON-XXXXXX). Zachowuje województwo, kategorię i czas trwania.
                   </p>
                 </div>
               </div>
