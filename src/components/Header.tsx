@@ -96,18 +96,20 @@ export const Header: React.FC = () => {
               <span>Wszystkie wpisy</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => handleTabChange("STATS")}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                activeTab === "STATS" && !selectedCaller
-                  ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
-                  : "text-slate-300 hover:text-white hover:bg-[#34302E]"
-              }`}
-            >
-              <BarChart3 className="w-3.5 h-3.5 shrink-0" />
-              <span>Raporty PFRON</span>
-            </button>
+            {currentSpecialist.isAdmin && (
+              <button
+                type="button"
+                onClick={() => handleTabChange("STATS")}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  activeTab === "STATS" && !selectedCaller
+                    ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
+                    : "text-slate-300 hover:text-white hover:bg-[#34302E]"
+                }`}
+              >
+                <BarChart3 className="w-3.5 h-3.5 shrink-0" />
+                <span>Raporty PFRON</span>
+              </button>
+            )}
           </nav>
 
           {/* 3. Right: Actions & Specialist Switcher */}
@@ -124,26 +126,30 @@ export const Header: React.FC = () => {
             </button>
 
             {/* Excel Importer */}
-            <button
-              type="button"
-              onClick={() => setIsExcelModalOpen(true)}
-              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-[#242220] hover:bg-[#34302E] text-slate-200 border border-[#3E3A37] transition-colors cursor-pointer whitespace-nowrap"
-              title="Migracja z pliku Excel"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span className="hidden lg:inline">Import</span>
-            </button>
+            {currentSpecialist.isAdmin && (
+              <button
+                type="button"
+                onClick={() => setIsExcelModalOpen(true)}
+                className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-[#242220] hover:bg-[#34302E] text-slate-200 border border-[#3E3A37] transition-colors cursor-pointer whitespace-nowrap"
+                title="Migracja z pliku Excel"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="hidden lg:inline">Import</span>
+              </button>
+            )}
 
             {/* CSV Exporter */}
-            <button
-              type="button"
-              onClick={() => setIsExportModalOpen(true)}
-              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-[#242220] hover:bg-[#34302E] text-slate-200 border border-[#3E3A37] transition-colors cursor-pointer whitespace-nowrap"
-              title="Eksportuj do CSV / Excel"
-            >
-              <Download className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-              <span className="hidden lg:inline">Eksport</span>
-            </button>
+            {currentSpecialist.isAdmin && (
+              <button
+                type="button"
+                onClick={() => setIsExportModalOpen(true)}
+                className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-[#242220] hover:bg-[#34302E] text-slate-200 border border-[#3E3A37] transition-colors cursor-pointer whitespace-nowrap"
+                title="Eksportuj do CSV / Excel"
+              >
+                <Download className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                <span className="hidden lg:inline">Eksport</span>
+              </button>
+            )}
 
             {/* Reset Demo Button */}
             <button
@@ -181,7 +187,12 @@ export const Header: React.FC = () => {
                     value={currentSpecialist.id}
                     onChange={(e) => {
                       const found = specialists.find((s) => s.id === e.target.value);
-                      if (found) setCurrentSpecialist(found);
+                      if (found) {
+                        setCurrentSpecialist(found);
+                        if (!found.isAdmin && activeTab === "STATS") {
+                          setActiveTab("SEARCH");
+                        }
+                      }
                     }}
                     className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer pr-1 max-w-[170px] sm:max-w-[220px] truncate"
                   >

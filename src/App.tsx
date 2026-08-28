@@ -37,6 +37,7 @@ const MainContent: React.FC = () => {
     callers,
     getCallerRecords,
     setIsNewCallerModalOpen,
+    currentSpecialist,
   } = useApp();
 
   const [callerPage, setCallerPage] = useState(1);
@@ -77,7 +78,7 @@ const MainContent: React.FC = () => {
         </div>
       )}
 
-      {activeTab === "STATS" && (
+      {activeTab === "STATS" && currentSpecialist.isAdmin && (
         <div className="animate-in fade-in">
           <div className="mb-4">
             <h1 className="text-xl font-black text-slate-900 tracking-tight">
