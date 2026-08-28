@@ -9,7 +9,6 @@ import {
 import { loadPasswordOverrides } from "../services/storage";
 import { PasswordResetModal } from "./PasswordResetModal";
 import {
-  PhoneCall,
   Eye,
   EyeOff,
   ShieldCheck,
@@ -72,9 +71,11 @@ export const LoginScreen: React.FC = () => {
     <div className="min-h-screen bg-[#2D2A28] flex flex-col items-center justify-center px-4 py-10 selection:bg-amber-100 selection:text-amber-900">
       {/* Branding */}
       <div className="flex items-center space-x-3 mb-8 select-none">
-        <div className="w-12 h-12 bg-gradient-to-br from-[#FFB200] via-[#FFB200] to-[#E5A000] rounded-2xl text-[#2D2A28] shadow-lg flex items-center justify-center font-bold">
-          <PhoneCall className="w-6 h-6" />
-        </div>
+        <img
+          src="/synapsis-mark.png"
+          alt="Fundacja SYNAPSIS"
+          className="w-12 h-12 shadow-lg"
+        />
         <div>
           <span className="font-black text-2xl tracking-tight text-white">Baza Porad</span>
           <p className="text-xs text-slate-300 leading-tight mt-0.5">

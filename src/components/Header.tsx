@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { getSpecialistInitials } from "../services/auth";
 import {
-  PhoneCall,
   FileSpreadsheet,
   Download,
   UserPlus,
@@ -79,9 +78,11 @@ export const Header: React.FC = () => {
             onClick={() => handleTabChange("SEARCH")}
             className="flex items-center space-x-2 cursor-pointer shrink-0 select-none group"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-[#FFB200] via-[#FFB200] to-[#E5A000] rounded-xl text-[#2D2A28] shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform font-bold shrink-0">
-              <PhoneCall className="w-4 h-4" />
-            </div>
+            <img
+              src="/synapsis-mark.png"
+              alt="Fundacja SYNAPSIS"
+              className="w-8 h-8 shadow-sm group-hover:scale-105 transition-transform shrink-0"
+            />
             <div>
               <span className="font-black text-sm sm:text-base tracking-tight text-white whitespace-nowrap">
                 Baza Porad
