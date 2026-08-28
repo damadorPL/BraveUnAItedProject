@@ -26,6 +26,8 @@ interface AdminPanelModalProps {
   onClose: () => void;
 }
 
+export const ALLOWED_EMAIL_DOMAIN = "synapsis.org.pl";
+
 export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClose }) => {
   const {
     specialists,
@@ -59,6 +61,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
   const [specIsAdmin, setSpecIsAdmin] = useState(false);
   const [specAvatarBg, setSpecAvatarBg] = useState("bg-blue-600");
   const [specSuccessMessage, setSpecSuccessMessage] = useState<string | null>(null);
+  const [specEmailError, setSpecEmailError] = useState<string | null>(null);
 
   // Potential duplicates detection
   const potentialDuplicates = useMemo(() => {
@@ -157,11 +160,20 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
     e.preventDefault();
     if (!specName.trim() || !specEmail.trim()) return;
 
+    const email = specEmail.trim().toLowerCase();
+    if (!editingSpecialist && !email.endsWith(`@${ALLOWED_EMAIL_DOMAIN}`)) {
+      setSpecEmailError(
+        `Nowe konto musi mieć adres e-mail w domenie ${ALLOWED_EMAIL_DOMAIN} (np. j.kowalska@${ALLOWED_EMAIL_DOMAIN}).`
+      );
+      return;
+    }
+    setSpecEmailError(null);
+
     if (editingSpecialist) {
       updateSpecialist({
         ...editingSpecialist,
         name: specName.trim(),
-        email: specEmail.trim().toLowerCase(),
+        email,
         title: specTitle.trim() || "Specjalista",
         role: specRole.trim() || "Konsultant",
         guidanceType: specGuidance,
@@ -173,7 +185,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
     } else {
       addSpecialist({
         name: specName.trim(),
-        email: specEmail.trim().toLowerCase(),
+        email,
         title: specTitle.trim() || "Specjalista",
         role: specRole.trim() || "Konsultant",
         guidanceType: specGuidance,
@@ -199,6 +211,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
   const startEditSpecialist = (spec: Specialist) => {
     setEditingSpecialist(spec);
     setIsAddingSpecialist(true);
+    setSpecEmailError(null);
     setSpecName(spec.name);
     setSpecEmail(spec.email);
     setSpecTitle(spec.title);
@@ -547,6 +560,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                 onClick={() => {
                   setIsAddingSpecialist(true);
                   setEditingSpecialist(null);
+                  setSpecEmailError(null);
                   setSpecName("");
                   setSpecEmail("");
                   setSpecTitle("Psycholog");
@@ -608,10 +622,29 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                       type="email"
                       required
                       value={specEmail}
-                      onChange={(e) => setSpecEmail(e.target.value)}
-                      placeholder="np. t.lewandowski@synapsis.org.pl"
-                      className="w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFB200]"
+                      onChange={(e) => {
+                        setSpecEmail(e.target.value);
+                        setSpecEmailError(null);
+                      }}
+                      placeholder={`np. t.lewandowski@${ALLOWED_EMAIL_DOMAIN}`}
+                      className={`w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 ${
+                        specEmailError
+                          ? "border-red-400 dark:border-red-700 focus:ring-red-400"
+                          : "border-slate-200 dark:border-[#383431] focus:ring-[#FFB200]"
+                      }`}
                     />
+                    {specEmailError ? (
+                      <p className="mt-1 text-[11px] font-bold text-red-600 dark:text-red-400 flex items-center gap-1">
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                        {specEmailError}
+                      </p>
+                    ) : (
+                      !editingSpecialist && (
+                        <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                          Akceptowane są wyłącznie adresy w domenie {ALLOWED_EMAIL_DOMAIN}.
+                        </p>
+                      )
+                    )}
                   </div>
                 </div>
 
