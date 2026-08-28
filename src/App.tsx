@@ -17,6 +17,7 @@ import { ExcelMigratorModal } from "./components/ExcelMigratorModal";
 import { ExportModal } from "./components/ExportModal";
 import { StatsBar } from "./components/StatsBar";
 import { LiveSyncBanner } from "./components/LiveSyncBanner";
+import { ReferredCasesModal } from "./components/ReferredCasesModal";
 import {
   Users,
   MapPin,
@@ -28,6 +29,11 @@ import {
   ShieldCheck,
   AlertCircle,
   Edit3,
+  Inbox,
+  ArrowRight,
+  MessageSquare,
+  PlusCircle,
+  Sparkles,
 } from "lucide-react";
 
 const MainContent: React.FC = () => {
@@ -40,12 +46,15 @@ const MainContent: React.FC = () => {
     callers,
     getCallerRecords,
     setIsNewCallerModalOpen,
+    setIsNewRecordModalOpen,
     setEditingCaller,
+    getReferredRecordsForSpecialist,
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
 
   const [callerPage, setCallerPage] = useState(1);
   const [callerPageSize, setCallerPageSize] = useState(12);
+  const [isReferredModalOpen, setIsReferredModalOpen] = useState(false);
 
   useEffect(() => {
     setCallerPage(1);
@@ -55,6 +64,11 @@ const MainContent: React.FC = () => {
   const paginatedCallers = filteredCallers.slice(
     (callerPage - 1) * callerPageSize,
     callerPage * callerPageSize
+  );
+
+  const myReferredCases = getReferredRecordsForSpecialist(currentSpecialist.id);
+  const pendingCases = myReferredCases.filter(
+    (r) => (r.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
   );
 
   if (selectedCaller) {
@@ -98,6 +112,104 @@ const MainContent: React.FC = () => {
 
       {activeTab === "SEARCH" && (
         <div className="space-y-6 animate-in fade-in">
+          {/* Handoff Banner: Pending cases referred to current specialist */}
+          {pendingCases.length > 0 && !searchQuery && (
+            <div className="bg-gradient-to-r from-amber-500/15 via-[#FFB200]/20 to-amber-500/10 dark:from-amber-950/60 dark:via-[#252018] dark:to-amber-950/40 border-2 border-[#FFB200] rounded-3xl p-5 shadow-sm space-y-3 animate-in fade-in">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-[#FFB200]/30">
+                <div className="flex items-center space-x-2.5">
+                  <div className="p-2 bg-[#FFB200] text-[#2D2A28] rounded-xl shadow-xs">
+                    <Inbox className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
+                      <span>Sprawy przekazane do Twojej konsultacji (Handoff)</span>
+                      <span className="text-[11px] bg-[#2D2A28] text-[#FFB200] dark:bg-[#FFB200] dark:text-[#2D2A28] font-black px-2.5 py-0.5 rounded-full shadow-2xs">
+                        {pendingCases.length} {pendingCases.length === 1 ? "oczekująca" : "oczekujące"}
+                      </span>
+                    </h2>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                      Inni dyżurujący specjaliści przekazali do Ciebie poniższe osoby wymagające konsultacji:
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsReferredModalOpen(true)}
+                  className="text-xs font-bold text-[#2D2A28] dark:text-[#FFDF06] hover:underline flex items-center gap-1 cursor-pointer shrink-0"
+                >
+                  <span>Wszystkie przekazane ({myReferredCases.length})</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Grid of Pending Handoff Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                {pendingCases.slice(0, 4).map((rec) => {
+                  const caller = callers.find((c) => c.id === rec.callerId);
+                  return (
+                    <div
+                      key={rec.id}
+                      className="bg-white dark:bg-[#1E1C1A] border border-amber-200 dark:border-[#383431] hover:border-[#FFB200] rounded-2xl p-3.5 shadow-2xs hover:shadow-sm transition-all space-y-2 flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="font-black text-slate-900 dark:text-white text-xs">
+                            {caller ? `${caller.firstName} ${caller.lastName}` : "Kontakt z bazy"}
+                          </span>
+                          <span className="text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800 shrink-0">
+                            Od: {rec.specialistName}
+                          </span>
+                        </div>
+
+                        {caller && (
+                          <div className="flex items-center space-x-2 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            <span className="font-mono">{caller.phoneNumber || "Brak nr"}</span>
+                            <span>•</span>
+                            <span>{caller.city} ({caller.voivodeship})</span>
+                          </div>
+                        )}
+
+                        {rec.referredNote && (
+                          <div className="mt-2 text-[11px] bg-amber-50 dark:bg-[#252018] text-amber-950 dark:text-[#FFB200] p-2.5 rounded-xl border border-amber-200/60 dark:border-amber-900/40 flex items-start gap-1.5 font-medium">
+                            <MessageSquare className="w-3.5 h-3.5 text-amber-600 dark:text-[#FFB200] shrink-0 mt-0.5" />
+                            <span className="line-clamp-2">{rec.referredNote}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-2 pt-2 border-t border-slate-100 dark:border-[#2C2927] flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (caller) setSelectedCaller(caller);
+                          }}
+                          className="text-[11px] font-bold text-[#296B6E] dark:text-teal-400 hover:underline cursor-pointer"
+                        >
+                          Otwórz kartotekę
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (caller) {
+                              setSelectedCaller(caller);
+                              setIsNewRecordModalOpen(true);
+                            }
+                          }}
+                          className="px-3 py-1 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-2xs transition-colors flex items-center gap-1 cursor-pointer"
+                        >
+                          <PlusCircle className="w-3.5 h-3.5" />
+                          <span>Konsultuj</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="text-center max-w-2xl mx-auto pt-2 pb-1">
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               Szybka baza historii rozmów
@@ -108,6 +220,11 @@ const MainContent: React.FC = () => {
           </div>
 
           <SearchBar />
+
+          <ReferredCasesModal
+            isOpen={isReferredModalOpen}
+            onClose={() => setIsReferredModalOpen(false)}
+          />
 
           {searchQuery && filteredCallers.length > 1 ? (
             <CallerDisambiguation callers={filteredCallers} />
