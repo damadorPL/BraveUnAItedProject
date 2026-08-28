@@ -15,6 +15,7 @@ import {
   Settings,
   Sun,
   Moon,
+  Inbox,
 } from "lucide-react";
 import { ReferredCasesModal } from "./ReferredCasesModal";
 import { UserProfileModal } from "./UserProfileModal";
@@ -103,6 +104,37 @@ export const Header: React.FC = () => {
             >
               <ListFilter className="w-3.5 h-3.5 shrink-0" />
               <span>Wszystkie wpisy</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsReferredModalOpen(true)}
+              className={`relative flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                pendingReferredCount > 0
+                  ? "bg-[#FFB200]/20 text-[#FFDF06] border border-[#FFB200]/50 shadow-xs"
+                  : "text-slate-300 hover:text-white hover:bg-[#34302E]"
+              }`}
+              title="Sprawy przekazane do Twojej konsultacji (Handoff)"
+            >
+              <Inbox className="w-3.5 h-3.5 shrink-0 text-[#FFB200]" />
+              <span>Przekazane</span>
+              {myReferredCases.length > 0 && (
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ml-0.5 ${
+                    pendingReferredCount > 0
+                      ? "bg-[#FFB200] text-[#2D2A28]"
+                      : "bg-slate-700 text-slate-300"
+                  }`}
+                >
+                  {pendingReferredCount > 0 ? pendingReferredCount : myReferredCases.length}
+                </span>
+              )}
+              {pendingReferredCount > 0 && (
+                <span className="flex h-2 w-2 relative ml-0.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FFB200] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FFB200]"></span>
+                </span>
+              )}
             </button>
 
             {currentSpecialist.isAdmin && (
