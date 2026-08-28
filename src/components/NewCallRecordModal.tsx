@@ -10,7 +10,7 @@ import {
   SUBJECT_TARGETS,
   Attachment,
 } from "../types";
-import { AttachmentUpload } from "./AttachmentUpload";
+import { AttachmentsManager } from "./AttachmentsManager";
 import { todayDateInputValue, callDateToIso } from "../services/callDate";
 import {
   X,
@@ -345,7 +345,7 @@ export const NewCallRecordModal: React.FC = () => {
               />
             </div>
 
-            <AttachmentUpload attachments={attachments} onChange={setAttachments} />
+            <div className="sm:col-span-2 mt-2 pt-2 border-t border-slate-100"><AttachmentsManager attachments={attachments} onChange={setAttachments} specialistName={currentSpecialist.name} title="Załączniki do tej porady (PDF, obrazy, Excel, dokumenty tekstowe)" /></div>
           </div>
 
           {/* Footer Buttons */}

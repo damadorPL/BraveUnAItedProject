@@ -7,7 +7,7 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { Caller, CallRecord, Specialist, FilterState, SyncMessage } from "../types";
+import { Caller, CallRecord, Specialist, FilterState, SyncMessage, Attachment } from "../types";
 import {
   loadCallers,
   saveCallers,
@@ -43,6 +43,10 @@ interface AppContextType {
   isExportModalOpen: boolean;
   setIsExportModalOpen: (open: boolean) => void;
 
+  addCallerAttachment: (callerId: string, attachment: Attachment) => void;
+  removeCallerAttachment: (callerId: string, attachmentId: string) => void;
+  addRecordAttachment: (recordId: string, attachment: Attachment) => void;
+  removeRecordAttachment: (recordId: string, attachmentId: string) => void;
   addNewCaller: (data: Omit<Caller, "id" | "createdAt" | "updatedAt">) => Caller;
   addNewRecord: (data: Omit<CallRecord, "id" | "createdAt">) => CallRecord;
   updateCaller: (caller: Caller) => void;
@@ -189,6 +193,88 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [records]
   );
 
+  const addCallerAttachment = useCallback(
+    (callerId: string, attachment: Attachment) => {
+      const now = new Date().toISOString();
+      setCallers((prev) => {
+        const next = prev.map((c) => {
+          if (c.id === callerId) {
+            const atts = c.attachments ? [...c.attachments, attachment] : [attachment];
+            return { ...c, attachments: atts, updatedAt: now };
+          }
+          return c;
+        });
+        saveCallers(next);
+        return next;
+      });
+
+      if (selectedCallerRef.current?.id === callerId) {
+        setSelectedCaller((prev) =>
+          prev ? { ...prev, attachments: prev.attachments ? [...prev.attachments, attachment] : [attachment], updatedAt: now } : prev
+        );
+      }
+    },
+    []
+  );
+
+  const removeCallerAttachment = useCallback(
+    (callerId: string, attachmentId: string) => {
+      const now = new Date().toISOString();
+      setCallers((prev) => {
+        const next = prev.map((c) => {
+          if (c.id === callerId && c.attachments) {
+            return { ...c, attachments: c.attachments.filter((a) => a.id !== attachmentId), updatedAt: now };
+          }
+          return c;
+        });
+        saveCallers(next);
+        return next;
+      });
+
+      if (selectedCallerRef.current?.id === callerId) {
+        setSelectedCaller((prev) =>
+          prev && prev.attachments
+            ? { ...prev, attachments: prev.attachments.filter((a) => a.id !== attachmentId), updatedAt: now }
+            : prev
+        );
+      }
+    },
+    []
+  );
+
+  const addRecordAttachment = useCallback(
+    (recordId: string, attachment: Attachment) => {
+      setRecords((prev) => {
+        const next = prev.map((r) => {
+          if (r.id === recordId) {
+            const atts = r.attachments ? [...r.attachments, attachment] : [attachment];
+            return { ...r, attachments: atts };
+          }
+          return r;
+        });
+        saveRecords(next);
+        return next;
+      });
+    },
+    []
+  );
+
+  const removeRecordAttachment = useCallback(
+    (recordId: string, attachmentId: string) => {
+      setRecords((prev) => {
+        const next = prev.map((r) => {
+          if (r.id === recordId && r.attachments) {
+            return { ...r, attachments: r.attachments.filter((a) => a.id !== attachmentId) };
+          }
+          return r;
+        });
+        saveRecords(next);
+        return next;
+      });
+    },
+    []
+  );
+
   const addNewCaller = useCallback(
     (data: Omit<Caller, "id" | "createdAt" | "updatedAt">): Caller => {
       const now = new Date().toISOString();
@@ -302,6 +388,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsExcelModalOpen,
         isExportModalOpen,
         setIsExportModalOpen,
+        addCallerAttachment,
+        removeCallerAttachment,
+        addRecordAttachment,
+        removeRecordAttachment,
         addNewCaller,
         addNewRecord,
         updateCaller,

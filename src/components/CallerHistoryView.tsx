@@ -1,5 +1,5 @@
-import React from "react";
-import { Caller, GuidanceType } from "../types";
+import React, { useState } from "react";
+import { Caller, GuidanceType, Attachment } from "../types";
 import { useApp } from "../context/AppContext";
 import {
   Phone,
@@ -17,8 +17,9 @@ import {
   Share2,
   Paperclip,
   Users,
-  ShieldAlert,
+  FolderOpen,
 } from "lucide-react";
+import { AttachmentsManager } from "./AttachmentsManager";
 
 interface Props {
   caller: Caller;
@@ -30,7 +31,13 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
     setSelectedCaller,
     setIsNewRecordModalOpen,
     livePresenceSpecialist,
+    currentSpecialist,
+    updateCaller,
+    addRecordAttachment,
+    removeRecordAttachment,
   } = useApp();
+
+  const [activeViewMode, setActiveViewMode] = useState<"TIMELINE" | "DOCS">("TIMELINE");
 
   const records = getCallerRecords(caller?.id || "");
 
@@ -98,6 +105,33 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
     caller.beneficiaryTypes && caller.beneficiaryTypes.length > 0
       ? caller.beneficiaryTypes.join(", ")
       : "Rodzic / Opiekun";
+
+  const handleCallerAttachmentsChange = (newAtts: Attachment[]) => {
+    updateCaller({
+      ...caller,
+      attachments: newAtts,
+    });
+  };
+
+  const handleRecordAttachmentsChange = (recordId: string, newAtts: Attachment[]) => {
+    const rec = records.find((r) => r.id === recordId);
+    if (!rec) return;
+    const currentAtts = rec.attachments || [];
+
+    // Find added
+    const added = newAtts.filter((a) => !currentAtts.some((c) => c.id === a.id));
+    added.forEach((a) => addRecordAttachment(recordId, a));
+
+    // Find removed
+    const removed = currentAtts.filter((c) => !newAtts.some((a) => a.id === c.id));
+    removed.forEach((a) => removeRecordAttachment(recordId, a.id));
+  };
+
+  const callerAttachmentsCount = caller.attachments?.length || 0;
+  const totalRecordAttachmentsCount = records.reduce(
+    (acc, r) => acc + (r.attachments?.length || 0),
+    0
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -218,144 +252,206 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
         </div>
       </div>
 
-      {/* Timeline Section Header */}
-      <div className="flex items-center justify-between pt-2">
-        <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-          <Clock className="w-4 h-4 text-indigo-600" />
-          <span>Historia udzielonych porad ({records.length})</span>
-        </h2>
+      {/* Main Content Tabs: Timeline vs Caller Documents */}
+      <div className="flex items-center justify-between pt-2 border-b border-slate-200 pb-3">
+        <div className="flex items-center space-x-2">
+          <button
+            type="button"
+            onClick={() => setActiveViewMode("TIMELINE")}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeViewMode === "TIMELINE"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+            }`}
+          >
+            <Clock className="w-4 h-4" />
+            <span>Oś czasu porad ({records.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveViewMode("DOCS")}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeViewMode === "DOCS"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+            }`}
+          >
+            <FolderOpen className="w-4 h-4" />
+            <span>Dokumentacja pacjenta / dzwoniącego ({callerAttachmentsCount})</span>
+          </button>
+        </div>
+
+        <div className="text-xs text-slate-500">
+          Łącznie załączników w kartotece: <strong>{callerAttachmentsCount + totalRecordAttachmentsCount}</strong>
+        </div>
       </div>
 
-      {/* Timeline Cards */}
-      {records.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-          <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-          <h3 className="text-sm font-semibold text-slate-700">Brak zarejestrowanych porad w tej kartotece</h3>
-          <p className="text-xs text-slate-400 mt-1">
-            Kliknij przycisk powyżej, aby zarejestrować pierwszą poradę z dzisiejszej rozmowy.
-          </p>
+      {/* View Mode 1: Caller Documents Tab */}
+      {activeViewMode === "DOCS" && (
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm animate-in fade-in space-y-4">
+          <div>
+            <h3 className="font-bold text-slate-900 text-sm">Główna dokumentacja dzwoniącego</h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Załącz orzeczenia o niepełnosprawności, opinie poradni psychologiczno-pedagogicznych, IPET, wnioski WZON, tabele obserwacji oraz skany zaświadczeń lekarskich (PDF, JPG, PNG, Excel, DOCX, TXT).
+            </p>
+          </div>
+
+          <AttachmentsManager
+            attachments={caller.attachments || []}
+            onChange={handleCallerAttachmentsChange}
+            specialistName={currentSpecialist.name}
+            title="Pliki przypisane bezpośrednio do profilu dzwoniącego"
+          />
         </div>
-      ) : (
-        <div className="space-y-4">
-          {records.map((rec, index) => {
-            const dateFormatted = rec.callDate
-              ? new Date(rec.callDate).toLocaleString("pl-PL", {
-                  weekday: "short",
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "Brak daty";
+      )}
 
-            return (
-              <div
-                key={rec.id}
-                className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs hover:shadow-md transition-shadow relative overflow-hidden"
-              >
-                {/* Top Row: Date, Duration, Specialist */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-                  <div className="flex items-center space-x-2.5">
-                    <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200">
-                      {records.length - index}
-                    </span>
-                    <span className="text-xs font-bold text-slate-900">
-                      {dateFormatted}
-                    </span>
-                    <span className="text-xs text-slate-400">•</span>
-                    <span className="text-xs text-slate-500 flex items-center">
-                      <Clock className="w-3 h-3 mr-1 text-slate-400" />
-                      {rec.durationMinutes || 30} min
-                    </span>
+      {/* View Mode 2: Timeline */}
+      {activeViewMode === "TIMELINE" && (
+        <>
+          {records.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+              <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+              <h3 className="text-sm font-semibold text-slate-700">Brak zarejestrowanych porad w tej kartotece</h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Kliknij przycisk powyżej, aby zarejestrować pierwszą poradę z dzisiejszej rozmowy.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {records.map((rec, index) => {
+                const dateFormatted = rec.callDate
+                  ? new Date(rec.callDate).toLocaleString("pl-PL", {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "Brak daty";
 
-                    {rec.contactTypes && rec.contactTypes.map((ct) => (
-                      <span key={ct} className="text-[10px] bg-slate-100 text-slate-600 font-medium px-2 py-0.5 rounded">
-                        {ct === "telefon" ? "📞 tel" : ct === "e-mail" ? "✉️ mail" : ct}
-                      </span>
-                    ))}
+                const recAtts = rec.attachments || [];
 
-                    {rec.subjectTargets && rec.subjectTargets.map((st) => (
-                      <span key={st} className="text-[10px] bg-purple-50 text-purple-700 font-semibold px-2 py-0.5 rounded border border-purple-100">
-                        {st}
-                      </span>
-                    ))}
-                  </div>
+                return (
+                  <div
+                    key={rec.id}
+                    className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs hover:shadow-md transition-shadow relative overflow-hidden space-y-3.5"
+                  >
+                    {/* Top Row: Date, Duration, Specialist */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                      <div className="flex items-center space-x-2.5 flex-wrap gap-y-1">
+                        <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200">
+                          {records.length - index}
+                        </span>
+                        <span className="text-xs font-bold text-slate-900">
+                          {dateFormatted}
+                        </span>
+                        <span className="text-xs text-slate-400">•</span>
+                        <span className="text-xs text-slate-500 flex items-center">
+                          <Clock className="w-3 h-3 mr-1 text-slate-400" />
+                          {rec.durationMinutes || 30} min
+                        </span>
 
-                  <div className="flex items-center space-x-2">
-                    <span
-                      className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${getGuidanceBadgeColor(
-                        rec.guidanceType
-                      )}`}
-                    >
-                      {rec.guidanceType || "Porada"}
-                    </span>
-                    <span className="text-xs bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-200">
-                      {rec.specialistName || "Specjalista"} ({rec.specialistRole || "Konsultant"})
-                    </span>
-                  </div>
-                </div>
+                        {rec.contactTypes && rec.contactTypes.map((ct) => (
+                          <span key={ct} className="text-[10px] bg-slate-100 text-slate-600 font-medium px-2 py-0.5 rounded">
+                            {ct === "telefon" ? "📞 tel" : ct === "e-mail" ? "✉️ mail" : ct}
+                          </span>
+                        ))}
 
-                {/* Guidance Areas Badges */}
-                {rec.guidanceAreas && rec.guidanceAreas.length > 0 && (
-                  <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                    <span className="text-[10px] font-bold text-slate-400 mr-1">
-                      Obszar:
-                    </span>
-                    {rec.guidanceAreas.map((area) => (
-                      <span
-                        key={area}
-                        className="text-xs bg-indigo-50/70 text-indigo-900 font-semibold px-2.5 py-0.5 rounded-lg border border-indigo-100"
-                      >
-                        {area}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                        {rec.subjectTargets && rec.subjectTargets.map((st) => (
+                          <span key={st} className="text-[10px] bg-purple-50 text-purple-700 font-semibold px-2 py-0.5 rounded border border-purple-100">
+                            {st}
+                          </span>
+                        ))}
+                      </div>
 
-                {/* Problem / Description and Notes */}
-                <div className="mt-3.5 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                  {/* Rodzaj porady (opis, czego dotyczyła) */}
-                  <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/80">
-                    <div className="font-bold text-slate-700 text-[10px] flex items-center mb-1.5">
-                      <FileText className="w-3.5 h-3.5 mr-1 text-slate-500" />
-                      Rodzaj porady (opis zgłoszenia)
+                      <div className="flex items-center space-x-2">
+                        <span
+                          className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${getGuidanceBadgeColor(
+                            rec.guidanceType
+                          )}`}
+                        >
+                          {rec.guidanceType || "Porada"}
+                        </span>
+                        <span className="text-xs bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-200">
+                          {rec.specialistName || "Specjalista"} ({rec.specialistRole || "Konsultant"})
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-slate-900 leading-relaxed whitespace-pre-wrap font-medium">
-                      {rec.adviceDescription || "Brak opisu."}
-                    </p>
-                  </div>
 
-                  {/* Uwagi */}
-                  <div className="bg-indigo-50/40 p-3.5 rounded-2xl border border-indigo-100/80">
-                    <div className="font-bold text-indigo-900 text-[10px] flex items-center mb-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-indigo-600" />
-                      Uwagi, udzielona pomoc i wskazówki
-                    </div>
-                    <p className="text-slate-800 leading-relaxed whitespace-pre-wrap">
-                      {rec.notes || "Brak dodatkowych uwag."}
-                    </p>
-                  </div>
-                </div>
+                    {/* Guidance Areas Badges */}
+                    {rec.guidanceAreas && rec.guidanceAreas.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-slate-400 mr-1">
+                          Obszar:
+                        </span>
+                        {rec.guidanceAreas.map((area) => (
+                          <span
+                            key={area}
+                            className="text-xs bg-indigo-50/70 text-indigo-900 font-semibold px-2.5 py-0.5 rounded-lg border border-indigo-100"
+                          >
+                            {area}
+                          </span>
+                        ))}
+                      </div>
+                    )}
 
-                {/* Przekazane do innego specjalisty */}
-                {rec.referredTo && (
-                  <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-xs text-amber-950 flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Share2 className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                      <span>
-                        <strong>Przekazane do:</strong> {rec.referredTo}
-                      </span>
+                    {/* Problem / Description and Notes */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      {/* Rodzaj porady (opis, czego dotyczyła) */}
+                      <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/80">
+                        <div className="font-bold text-slate-700 text-[10px] flex items-center mb-1.5">
+                          <FileText className="w-3.5 h-3.5 mr-1 text-slate-500" />
+                          Rodzaj porady (opis zgłoszenia)
+                        </div>
+                        <p className="text-slate-900 leading-relaxed whitespace-pre-wrap font-medium">
+                          {rec.adviceDescription || "Brak opisu."}
+                        </p>
+                      </div>
+
+                      {/* Uwagi */}
+                      <div className="bg-indigo-50/40 p-3.5 rounded-2xl border border-indigo-100/80">
+                        <div className="font-bold text-indigo-900 text-[10px] flex items-center mb-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-indigo-600" />
+                          Uwagi, udzielona pomoc i wskazówki
+                        </div>
+                        <p className="text-slate-800 leading-relaxed whitespace-pre-wrap">
+                          {rec.notes || "Brak dodatkowych uwag."}
+                        </p>
+                      </div>
                     </div>
-                    <span className="text-[10px] bg-amber-200/60 font-bold px-2 py-0.5 rounded text-amber-900">
-                      Kontynuacja
-                    </span>
+
+                    {/* Przekazane do innego specjalisty */}
+                    {rec.referredTo && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-xs text-amber-950 flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Share2 className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                          <span>
+                            <strong>Przekazane do:</strong> {rec.referredTo}
+                          </span>
+                        </div>
+                        <span className="text-[10px] bg-amber-200/60 font-bold px-2 py-0.5 rounded text-amber-900">
+                          Kontynuacja
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Record Attachments Manager */}
+                    <div className="pt-2 border-t border-slate-100">
+                      <AttachmentsManager
+                        attachments={recAtts}
+                        onChange={(newAtts) => handleRecordAttachmentsChange(rec.id, newAtts)}
+                        specialistName={currentSpecialist.name}
+                        title="Załączniki do tej porady"
+                      />
+                    </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

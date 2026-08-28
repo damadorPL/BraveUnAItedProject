@@ -130,12 +130,18 @@ export const DISABILITY_DEGREES: DisabilityDegree[] = [
   "brak / nie dotyczy",
 ];
 
+export type AttachmentType = "pdf" | "image" | "excel" | "text" | "other";
+
 export interface Attachment {
   id: string;
   name: string;
   size: number;
-  type: string;
-  url?: string;
+  type: AttachmentType;
+  mimeType: string;
+  dataUrl?: string;
+  uploadedAt: string;
+  uploadedBySpecialistName?: string;
+  description?: string;
 }
 
 export interface Caller {
@@ -149,6 +155,7 @@ export interface Caller {
   hasDisabilityCertificate: DisabilityCertificateStatus; // Posiadanie orzeczenia
   disabilityDegree?: DisabilityDegree; // Stopień niepełnosprawności
   tags: string[];
+  attachments?: Attachment[];
   createdAt: string;
   updatedAt: string;
 }
