@@ -68,7 +68,7 @@ export const PhoneNotification: React.FC<{ isOpen: boolean; onClose: () => void 
               onClick={() => handleSmsClick(latestSms)}
               className={`p-3.5 rounded-2xl backdrop-blur-xl border cursor-pointer transition-all transform hover:scale-102 ${
                 latestSms.type === 'waitlist_offer'
-                  ? 'bg-purple-950/80 border-purple-500/50 text-white shadow-lg ring-1 ring-purple-400/30'
+                  ? 'bg-gray-900/90 border-brand-green/60 text-white shadow-lg ring-1 ring-brand-green/40'
                   : 'bg-gray-900/85 border-gray-700/60 text-gray-100'
               }`}
             >
@@ -76,7 +76,7 @@ export const PhoneNotification: React.FC<{ isOpen: boolean; onClose: () => void 
               <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider text-gray-400 mb-1.5">
                 <div className="flex items-center gap-1.5">
                   <div className={`w-4 h-4 rounded-md flex items-center justify-center ${
-                    latestSms.type === 'waitlist_offer' ? 'bg-purple-500 text-white' : 'bg-green-500 text-white'
+                    latestSms.type === 'waitlist_offer' ? 'bg-brand-green text-white' : 'bg-brand-cobalt text-white'
                   }`}>
                     <MessageSquare className="w-2.5 h-2.5" />
                   </div>
@@ -91,7 +91,7 @@ export const PhoneNotification: React.FC<{ isOpen: boolean; onClose: () => void 
               </p>
 
               {/* Click Callout */}
-              <div className="mt-2 pt-1.5 border-t border-white/10 flex justify-between items-center text-[10px] text-brand-blue-light font-semibold">
+              <div className="mt-2 pt-1.5 border-t border-white/10 flex justify-between items-center text-[10px] text-brand-green font-semibold">
                 <span>Kliknij, aby otworzyć link</span>
                 <ArrowUpRight className="w-3 h-3" />
               </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, CheckCircle2, User, Phone, Zap, ArrowRight, X } from 'lucide-react';
+import { Calendar, Clock, CheckCircle2, User, Phone, Mail, Zap, ArrowRight, X, Filter } from 'lucide-react';
 import { useBookingStore } from '../store/bookingStore';
 import { CONSULTATION_TYPES } from '../data/mockData';
 import { ConsultationType } from '../types';
@@ -10,13 +10,14 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
 
   const [selectedType, setSelectedType] = useState<ConsultationType | 'all'>('low_cost');
   const [selectedSpecialistId, setSelectedSpecialistId] = useState<string>('all');
+  const [selectedDateFilter, setSelectedDateFilter] = useState<string>('all');
   const [bookingModalSlotId, setBookingModalSlotId] = useState<string | null>(null);
 
   const [patientName, setPatientName] = useState('Anna Kowalska');
   const [patientPhone, setPatientPhone] = useState('+48 501 234 567');
+  const [patientEmail, setPatientEmail] = useState('anna.kowalska@gmail.com');
   const [bookingSuccessToken, setBookingSuccessToken] = useState<string | null>(null);
 
-  // Timer interval for 10-minute hold
   useEffect(() => {
     if (!activeHoldSlotId) return;
     const interval = setInterval(() => {
@@ -25,9 +26,12 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
     return () => clearInterval(interval);
   }, [activeHoldSlotId, tickHoldTimer]);
 
+  const uniqueDates = [...new Set(slots.map(s => s.date))].sort();
+
   const filteredSlots = slots.filter(slot => {
     if (selectedType !== 'all' && slot.type !== selectedType) return false;
     if (selectedSpecialistId !== 'all' && slot.specialistId !== selectedSpecialistId) return false;
+    if (selectedDateFilter !== 'all' && slot.date !== selectedDateFilter) return false;
     return true;
   });
 
@@ -40,13 +44,13 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
 
   const handlePayBlik = () => {
     if (!bookingModalSlotId) return;
-    const token = confirmBooking(bookingModalSlotId, patientName, patientPhone, 'BLIK');
+    const token = confirmBooking(bookingModalSlotId, patientName, patientPhone, patientEmail, 'BLIK');
     if (token) {
       setBookingSuccessToken(token);
       setBookingModalSlotId(null);
       confetti({
-        particleCount: 80,
-        spread: 60,
+        particleCount: 90,
+        spread: 70,
         origin: { y: 0.6 }
       });
     }
@@ -64,7 +68,7 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
     <div className="space-y-8">
       
       {/* Hero Intro */}
-      <div className="bg-gradient-to-r from-brand-blue to-brand-blue-dark text-white rounded-2xl p-6 sm:p-8 shadow-brand">
+      <div className="bg-gradient-to-r from-[#1500bb] to-[#0f008c] text-white rounded-3xl p-6 sm:p-8 shadow-brand">
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-xs font-mono font-medium mb-3 backdrop-blur-sm">
             <span>EKRAN 1 / 3 · SZYBKA REZERWACJA</span>
@@ -74,13 +78,13 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
           </h1>
           <p className="text-white/90 text-sm sm:text-base leading-relaxed">
             Rezerwacja w 60 sekund. Wybierz termin, a my natychmiast zablokujemy go dla Ciebie na 10 minut. 
-            Bez rejestracji konta, bez dzwonienia, dyskretne potwierdzenie SMS.
+            Bez konieczności logowania, powiadomienia SMS i E-mail, dyskretne linki do zarządzania.
           </p>
         </div>
       </div>
 
       {/* Filter Tabs */}
-      <div className="bg-white rounded-2xl p-5 border border-brand-border shadow-sm space-y-4">
+      <div className="bg-white rounded-3xl p-5 border border-brand-border shadow-sm space-y-4">
         <div>
           <label className="text-xs font-mono font-bold uppercase tracking-wider text-brand-muted block mb-2">
             Wybierz rodzaj konsultacji:
@@ -92,20 +96,20 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
                 <button
                   key={ct.id}
                   onClick={() => setSelectedType(ct.id)}
-                  className={`flex flex-col p-3 rounded-xl border text-left transition-all ${
+                  className={`flex flex-col p-3 rounded-2xl border text-left transition-all ${
                     isSelected
-                      ? 'border-brand-blue bg-brand-blue-light/50 ring-2 ring-brand-blue shadow-sm'
-                      : 'border-brand-border bg-brand-card hover:border-gray-300'
+                      ? 'border-brand-cobalt bg-brand-cobalt-light ring-2 ring-brand-cobalt shadow-sm'
+                      : 'border-brand-border bg-white hover:border-gray-300'
                   }`}
                 >
                   <div className="flex justify-between items-start gap-1">
                     <span className="font-semibold text-xs sm:text-sm text-brand-text line-clamp-1">{ct.label}</span>
-                    <span className="font-mono font-bold text-brand-blue text-sm whitespace-nowrap">
+                    <span className="font-mono font-bold text-brand-cobalt text-sm whitespace-nowrap">
                       {ct.price === 0 ? 'Bezpłatnie' : `${ct.price} zł`}
                     </span>
                   </div>
                   {ct.limitRule && (
-                    <span className="text-[11px] text-amber-700 font-medium mt-1 line-clamp-1">
+                    <span className="text-[11px] text-emerald-800 font-medium mt-1 line-clamp-1">
                       {ct.limitRule}
                     </span>
                   )}
@@ -115,14 +119,42 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
           </div>
         </div>
 
+        {/* Date Filter Pills */}
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-brand-border/60">
+          <span className="text-xs font-mono text-brand-muted uppercase font-semibold">Dzień:</span>
+          <button
+            onClick={() => setSelectedDateFilter('all')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
+              selectedDateFilter === 'all'
+                ? 'bg-brand-text text-white font-semibold'
+                : 'bg-gray-100 hover:bg-gray-200 text-brand-muted'
+            }`}
+          >
+            Wszystkie dni
+          </button>
+          {uniqueDates.map(date => (
+            <button
+              key={date}
+              onClick={() => setSelectedDateFilter(date)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-semibold transition-colors ${
+                selectedDateFilter === date
+                  ? 'bg-brand-cobalt text-white shadow-sm'
+                  : 'bg-gray-100 hover:bg-gray-200 text-brand-muted'
+              }`}
+            >
+              {date}
+            </button>
+          ))}
+        </div>
+
         {/* Specialist Selector */}
-        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-brand-border/60">
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-brand-border/60">
           <span className="text-xs font-mono text-brand-muted uppercase font-semibold">Specjalista:</span>
           <button
             onClick={() => setSelectedSpecialistId('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
               selectedSpecialistId === 'all'
-                ? 'bg-brand-text text-white'
+                ? 'bg-brand-text text-white font-semibold'
                 : 'bg-gray-100 hover:bg-gray-200 text-brand-muted'
             }`}
           >
@@ -132,9 +164,9 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
             <button
               key={sp.id}
               onClick={() => setSelectedSpecialistId(sp.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
                 selectedSpecialistId === sp.id
-                  ? 'bg-brand-blue text-white'
+                  ? 'bg-brand-cobalt text-white font-semibold shadow-sm'
                   : 'bg-gray-100 hover:bg-gray-200 text-brand-muted'
               }`}
             >
@@ -148,7 +180,7 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-display font-bold text-xl text-brand-text flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-brand-blue" />
+            <Calendar className="w-5 h-5 text-brand-cobalt" />
             Dostępne terminy ({filteredSlots.filter(s => s.status === 'free').length})
           </h2>
           <span className="text-xs text-brand-muted">
@@ -169,14 +201,14 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
             return (
               <div
                 key={slot.id}
-                className={`bg-white rounded-2xl border p-5 transition-all flex flex-col justify-between ${
+                className={`bg-white rounded-3xl border p-5 transition-all flex flex-col justify-between ${
                   isHeld
-                    ? 'border-amber-300 bg-amber-50/40 shadow-sm'
+                    ? 'border-amber-300 bg-amber-50/50 shadow-sm'
                     : isBooked
-                    ? 'border-gray-200 bg-gray-50 opacity-70'
+                    ? 'border-gray-200 bg-gray-50/70 opacity-70'
                     : isOffered
                     ? 'border-purple-300 bg-purple-50/40'
-                    : 'border-brand-border hover:border-brand-blue/60 hover:shadow-md'
+                    : 'border-brand-border hover:border-brand-cobalt/50 hover:shadow-md'
                 }`}
               >
                 <div>
@@ -195,7 +227,7 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
 
                   {/* Consultation Type Badge & Price */}
                   <div className="flex justify-between items-center mb-3">
-                    <span className={`text-xs px-2.5 py-0.5 rounded-md font-medium border ${typeConfig.badgeColor}`}>
+                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium border ${typeConfig.badgeColor}`}>
                       {typeConfig.label}
                     </span>
                     <span className="font-mono font-bold text-base text-brand-text">
@@ -204,11 +236,11 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
                   </div>
 
                   {/* Date & Time */}
-                  <div className="flex items-center gap-2 bg-brand-card p-2.5 rounded-xl border border-brand-border/60 text-sm font-medium mb-4">
-                    <Calendar className="w-4 h-4 text-brand-blue" />
+                  <div className="flex items-center gap-2 bg-brand-bg p-2.5 rounded-2xl border border-brand-border text-sm font-medium mb-4">
+                    <Calendar className="w-4 h-4 text-brand-cobalt" />
                     <span>{slot.date}</span>
                     <span className="text-brand-muted">·</span>
-                    <Clock className="w-4 h-4 text-brand-blue" />
+                    <Clock className="w-4 h-4 text-brand-cobalt" />
                     <span className="font-mono font-bold">{slot.time}</span>
                   </div>
                 </div>
@@ -218,7 +250,7 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
                   {isFree && (
                     <button
                       onClick={() => handleSelectSlot(slot.id)}
-                      className="w-full py-2.5 px-4 rounded-xl bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                      className="w-full py-2.5 px-4 rounded-xl bg-brand-cobalt hover:bg-brand-cobalt-dark text-white text-sm font-semibold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-98"
                     >
                       <span>Wybierz termin</span>
                       <ArrowRight className="w-4 h-4" />
@@ -226,7 +258,7 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
                   )}
 
                   {isHeld && (
-                    <div className="bg-amber-100 text-amber-900 border border-amber-300 p-2.5 rounded-xl text-center text-xs font-semibold flex items-center justify-center gap-1.5">
+                    <div className="bg-brand-cream text-amber-950 border border-amber-300 p-2.5 rounded-xl text-center text-xs font-semibold flex items-center justify-center gap-1.5">
                       <Clock className="w-4 h-4 text-amber-700 animate-spin" />
                       <span>Tymczasowa blokada (10 min)</span>
                     </div>
@@ -252,7 +284,7 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
         </div>
       </div>
 
-      {/* Booking Modal (with 10-min hold timer & 1-click BLIK) */}
+      {/* Booking Modal (with 10-min hold timer, email input & 1-click BLIK) */}
       {bookingModalSlotId && activeSlot && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 border border-brand-border shadow-2xl space-y-6 relative">
@@ -268,20 +300,20 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
             </button>
 
             {/* Hold Timer Alert Header */}
-            <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-200 text-amber-900 flex items-center justify-center font-mono font-bold text-sm">
+            <div className="bg-brand-cream border border-amber-300 rounded-2xl p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-200 text-amber-900 flex items-center justify-center font-mono font-bold text-sm shrink-0">
                 <Clock className="w-5 h-5 text-amber-800" />
               </div>
               <div className="flex-1">
                 <div className="flex justify-between items-baseline">
-                  <span className="text-xs font-mono font-bold uppercase text-amber-900">
+                  <span className="text-xs font-mono font-bold uppercase text-amber-950">
                     Termin zablokowany dla Ciebie
                   </span>
-                  <span className="font-mono font-extrabold text-brand-red text-base">
+                  <span className="font-mono font-extrabold text-brand-error text-base">
                     {formatCountdown(holdSecondsLeft)}
                   </span>
                 </div>
-                <p className="text-xs text-amber-800 mt-0.5">
+                <p className="text-xs text-amber-900 mt-0.5">
                   Nikt inny nie zarezerwuje tego terminu przez najbliższe 10 minut.
                 </p>
               </div>
@@ -297,7 +329,7 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
               </p>
             </div>
 
-            {/* Simple Form (No password/account needed) */}
+            {/* Simple Form (With Email & Phone, No password needed) */}
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-brand-text mb-1">
@@ -309,7 +341,7 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
                     type="text"
                     value={patientName}
                     onChange={e => setPatientName(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-brand-border rounded-xl focus:ring-2 focus:ring-brand-blue outline-none"
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-brand-border rounded-xl focus:ring-2 focus:ring-brand-cobalt outline-none"
                     placeholder="np. Anna Kowalska"
                   />
                 </div>
@@ -317,7 +349,7 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
 
               <div>
                 <label className="block text-xs font-semibold text-brand-text mb-1">
-                  Numer telefonu do dyskretnego SMS z linkiem
+                  Numer telefonu do dyskretnego SMS
                 </label>
                 <div className="relative">
                   <Phone className="w-4 h-4 text-brand-muted absolute left-3 top-3" />
@@ -325,8 +357,24 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
                     type="tel"
                     value={patientPhone}
                     onChange={e => setPatientPhone(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-brand-border rounded-xl focus:ring-2 focus:ring-brand-blue outline-none font-mono"
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-brand-border rounded-xl focus:ring-2 focus:ring-brand-cobalt outline-none font-mono"
                     placeholder="+48 501 234 567"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-brand-text mb-1">
+                  Adres e-mail do potwierdzenia i linku
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-brand-muted absolute left-3 top-3" />
+                  <input
+                    type="email"
+                    value={patientEmail}
+                    onChange={e => setPatientEmail(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-brand-border rounded-xl focus:ring-2 focus:ring-brand-cobalt outline-none"
+                    placeholder="anna.kowalska@gmail.com"
                   />
                 </div>
               </div>
@@ -336,21 +384,21 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
             <div className="border-t border-brand-border pt-4 space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-brand-muted">Do zapłaty:</span>
-                <span className="font-mono font-bold text-2xl text-brand-blue">
+                <span className="font-mono font-bold text-2xl text-brand-cobalt">
                   {activeSlot.price === 0 ? '0 zł' : `${activeSlot.price} zł`}
                 </span>
               </div>
 
               <button
                 onClick={handlePayBlik}
-                className="w-full py-3.5 px-4 rounded-xl bg-brand-red hover:bg-brand-red-dark text-white font-bold text-base transition-all flex items-center justify-center gap-2 shadow-md active:scale-98"
+                className="w-full py-3.5 px-4 rounded-xl bg-brand-green hover:bg-brand-green-dark text-white font-bold text-base transition-all flex items-center justify-center gap-2 shadow-md active:scale-98"
               >
                 <Zap className="w-5 h-5 fill-current" />
                 <span>Zapłać BLIK-iem (1 kliknięcie)</span>
               </button>
 
               <p className="text-[11px] text-center text-brand-muted">
-                Dyskretne potwierdzenie SMS zostanie natychmiast wysłane na podany telefon.
+                Dyskretne potwierdzenie SMS i E-mail zostanie natychmiast wysłane.
               </p>
             </div>
 
@@ -360,15 +408,15 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
 
       {/* Booking Success View */}
       {bookingSuccessToken && (
-        <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-sm animate-fade-in">
-          <div className="w-14 h-14 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto shadow-md">
+        <div className="bg-brand-green-light border-2 border-brand-green rounded-3xl p-6 sm:p-8 text-center space-y-4 shadow-sm animate-fade-in">
+          <div className="w-14 h-14 bg-brand-green text-white rounded-full flex items-center justify-center mx-auto shadow-md">
             <CheckCircle2 className="w-8 h-8" />
           </div>
-          <h2 className="font-display font-extrabold text-2xl text-emerald-900">
+          <h2 className="font-display font-extrabold text-2xl text-emerald-950">
             Rezerwacja potwierdzona!
           </h2>
-          <p className="text-sm text-emerald-800 max-w-md mx-auto">
-            Wysłaliśmy dyskretny SMS z linkiem do zarządzania wizytą na numer <span className="font-mono font-semibold">{patientPhone}</span>.
+          <p className="text-sm text-emerald-900 max-w-md mx-auto">
+            Wysłaliśmy dyskretne powiadomienie SMS na numer <span className="font-mono font-semibold">{patientPhone}</span> oraz e-mail na <span className="font-semibold">{patientEmail}</span>.
           </p>
           <div className="pt-2 flex flex-wrap justify-center gap-3">
             <button
@@ -376,14 +424,14 @@ export const SearchAndBooking: React.FC<{ onSelectVisitToken: (token: string) =>
                 setActiveBookingToken(bookingSuccessToken);
                 onSelectVisitToken(bookingSuccessToken);
               }}
-              className="px-5 py-2.5 rounded-xl bg-brand-blue text-white font-semibold text-sm hover:bg-brand-blue-dark transition-colors flex items-center gap-2"
+              className="px-5 py-2.5 rounded-xl bg-brand-cobalt text-white font-semibold text-sm hover:bg-brand-cobalt-dark transition-colors flex items-center gap-2 shadow-sm"
             >
               <span>Przejdź do Ekranu 2 (Zarządzanie wizytą)</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             <button
               onClick={() => setBookingSuccessToken(null)}
-              className="px-5 py-2.5 rounded-xl bg-white border border-emerald-300 text-emerald-900 font-semibold text-sm hover:bg-emerald-100 transition-colors"
+              className="px-5 py-2.5 rounded-xl bg-white border border-brand-green-border text-emerald-900 font-semibold text-sm hover:bg-emerald-50 transition-colors"
             >
               Nowa rezerwacja
             </button>

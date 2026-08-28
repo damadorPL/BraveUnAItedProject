@@ -42,9 +42,9 @@ export const WaitlistOffer: React.FC<{ token: string; onAccepted: () => void }> 
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
       
       {/* Alert Banner */}
-      <div className="bg-purple-600 text-white rounded-2xl p-6 sm:p-8 shadow-brand space-y-2">
+      <div className="bg-gradient-to-r from-[#1500bb] to-[#0f008c] text-white rounded-3xl p-6 sm:p-8 shadow-brand space-y-2">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-mono font-bold">
-          <Zap className="w-3.5 h-3.5 fill-current" />
+          <Zap className="w-3.5 h-3.5 fill-current text-brand-green" />
           <span>PROPOZYCJA Z LISTY REZERWOWEJ</span>
         </div>
         <h1 className="font-display text-2xl sm:text-3xl font-black tracking-tight">
@@ -56,25 +56,25 @@ export const WaitlistOffer: React.FC<{ token: string; onAccepted: () => void }> 
       </div>
 
       {acceptedSuccess ? (
-        <div className="bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-8 text-center space-y-4">
-          <div className="w-14 h-14 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto">
+        <div className="bg-brand-green-light border-2 border-brand-green rounded-3xl p-8 text-center space-y-4">
+          <div className="w-14 h-14 bg-brand-green text-white rounded-full flex items-center justify-center mx-auto shadow-md">
             <CheckCircle2 className="w-8 h-8" />
           </div>
-          <h2 className="font-display font-extrabold text-2xl text-emerald-900">
+          <h2 className="font-display font-extrabold text-2xl text-emerald-950">
             Termin pomyślnie zarezerwowany!
           </h2>
-          <p className="text-sm text-emerald-800">
+          <p className="text-sm text-emerald-900">
             Żaden termin się nie zmarnował. Potwierdzenie wysłano SMS-em na Twój numer telefonu.
           </p>
           <button
             onClick={() => setView('manage_visit')}
-            className="px-6 py-3 bg-brand-blue text-white font-bold rounded-xl text-sm hover:bg-brand-blue-dark transition-colors"
+            className="px-6 py-3 bg-brand-cobalt text-white font-bold rounded-xl text-sm hover:bg-brand-cobalt-dark transition-colors shadow-sm"
           >
             Przejdź do szczegółów wizyty
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-brand-border space-y-6 shadow-sm">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-brand-border space-y-6 shadow-sm">
           
           <div className="flex items-start gap-4 pb-6 border-b border-brand-border">
             <img
@@ -87,27 +87,27 @@ export const WaitlistOffer: React.FC<{ token: string; onAccepted: () => void }> 
                 {slot.specialistName}
               </h3>
               <p className="text-xs text-brand-muted">{slot.specialistRole}</p>
-              <span className="inline-block mt-2 text-xs font-mono px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-semibold">
+              <span className="inline-block mt-2 text-xs font-mono px-2.5 py-0.5 rounded-full bg-brand-cobalt-light text-brand-cobalt border border-brand-cobalt-border font-semibold">
                 Dla: {slot.offer.offeredToName} ({slot.offer.offeredToPhone})
               </span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-brand-card p-4 rounded-xl border border-brand-border">
+            <div className="bg-brand-bg p-4 rounded-2xl border border-brand-border">
               <span className="text-xs font-mono text-brand-muted uppercase block mb-1">Zwolniony Termin</span>
               <div className="flex items-center gap-2 text-brand-text font-bold text-sm sm:text-base">
-                <Calendar className="w-4 h-4 text-purple-600" />
+                <Calendar className="w-4 h-4 text-brand-cobalt" />
                 <span>{slot.date}</span>
                 <span>·</span>
-                <Clock className="w-4 h-4 text-purple-600" />
+                <Clock className="w-4 h-4 text-brand-cobalt" />
                 <span>{slot.time}</span>
               </div>
             </div>
 
-            <div className="bg-brand-card p-4 rounded-xl border border-brand-border">
+            <div className="bg-brand-bg p-4 rounded-2xl border border-brand-border">
               <span className="text-xs font-mono text-brand-muted uppercase block mb-1">Cena wizyty</span>
-              <span className="font-mono font-bold text-xl text-brand-text">
+              <span className="font-mono font-bold text-xl text-brand-cobalt">
                 {slot.price} zł
               </span>
             </div>
@@ -115,7 +115,7 @@ export const WaitlistOffer: React.FC<{ token: string; onAccepted: () => void }> 
 
           <button
             onClick={handleAccept}
-            className="w-full py-4 px-6 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-base transition-all flex items-center justify-center gap-2 shadow-md active:scale-98"
+            className="w-full py-4 px-6 rounded-xl bg-brand-green hover:bg-brand-green-dark text-white font-bold text-base transition-all flex items-center justify-center gap-2 shadow-md active:scale-98"
           >
             <CheckCircle2 className="w-5 h-5" />
             <span>Potwierdzam i płacę BLIK-iem ({slot.price} zł)</span>

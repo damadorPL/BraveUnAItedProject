@@ -7,11 +7,11 @@ export const CoordinatorDrawer: React.FC = () => {
 
   const getBadgeColor = (action: string) => {
     switch (action) {
-      case 'HOLD_CREATED': return 'bg-amber-100 text-amber-900 border-amber-300';
-      case 'BOOKING_CONFIRMED': return 'bg-emerald-100 text-emerald-900 border-emerald-300';
-      case 'VISIT_CANCELLED': return 'bg-rose-100 text-rose-900 border-rose-300';
-      case 'WAITLIST_OFFER_SENT': return 'bg-purple-100 text-purple-900 border-purple-300';
-      case 'WAITLIST_ACCEPTED': return 'bg-indigo-100 text-indigo-900 border-indigo-300';
+      case 'HOLD_CREATED': return 'bg-brand-cream text-amber-950 border-amber-300';
+      case 'BOOKING_CONFIRMED': return 'bg-brand-green-light text-emerald-950 border-brand-green-border';
+      case 'VISIT_CANCELLED': return 'bg-brand-error-light text-brand-error border-brand-error-border';
+      case 'WAITLIST_OFFER_SENT': return 'bg-brand-cobalt-light text-brand-cobalt border-brand-cobalt-border';
+      case 'WAITLIST_ACCEPTED': return 'bg-brand-green-light text-emerald-950 border-brand-green-border';
       default: return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
@@ -20,9 +20,9 @@ export const CoordinatorDrawer: React.FC = () => {
     <div className="space-y-6">
       
       {/* Header */}
-      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-brand-border shadow-sm flex justify-between items-center">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-brand-border shadow-sm flex justify-between items-center">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-blue-light text-brand-blue text-xs font-mono font-semibold mb-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-cobalt-light text-brand-cobalt text-xs font-mono font-semibold mb-2 border border-brand-cobalt-border">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>REJESTR AUDYTOWY KOORDYNATORA</span>
           </div>

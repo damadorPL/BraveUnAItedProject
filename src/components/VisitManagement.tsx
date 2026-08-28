@@ -51,31 +51,31 @@ export const VisitManagement: React.FC<{ onVisitCancelled: () => void }> = ({ on
     <div className="space-y-6">
       
       {/* Hero Header */}
-      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-brand-border shadow-sm">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-brand-border shadow-sm">
         <div className="flex flex-wrap justify-between items-start gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-blue-light text-brand-blue text-xs font-mono font-semibold mb-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-cobalt-light text-brand-cobalt text-xs font-mono font-semibold mb-2 border border-brand-cobalt-border">
               <span>EKRAN 2 / 3 · ZARZĄDZANIE Z LINKU SMS</span>
             </div>
             <h1 className="font-display text-2xl sm:text-3xl font-black text-brand-text">
               Twoja wizyta psychologiczna
             </h1>
             <p className="text-xs sm:text-sm text-brand-muted mt-1 font-mono">
-              Token bezpiecznego dostępu: <span className="font-semibold text-brand-blue">{bookedSlot.bookedBy?.bookingToken || 'token_nowak_2908'}</span>
+              Token bezpiecznego dostępu: <span className="font-semibold text-brand-cobalt">{bookedSlot.bookedBy?.bookingToken || 'token_nowak_2908'}</span>
             </p>
           </div>
 
           {/* DEMO MODE TOGGLE (>24h vs <24h) */}
-          <div className="bg-brand-card p-3 rounded-xl border border-brand-border text-xs space-y-2">
+          <div className="bg-brand-bg p-3 rounded-2xl border border-brand-border text-xs space-y-2">
             <span className="font-mono font-bold text-brand-muted uppercase block">
               Przełącznik demonstracyjny (Reguła 24h):
             </span>
             <div className="flex gap-2">
               <button
                 onClick={() => setDemoModeHours(72)}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
                   isMoreThan24h
-                    ? 'bg-emerald-600 text-white shadow-sm'
+                    ? 'bg-brand-green text-white shadow-sm'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
@@ -83,9 +83,9 @@ export const VisitManagement: React.FC<{ onVisitCancelled: () => void }> = ({ on
               </button>
               <button
                 onClick={() => setDemoModeHours(4)}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
                   !isMoreThan24h
-                    ? 'bg-brand-red text-white shadow-sm'
+                    ? 'bg-brand-error text-white shadow-sm'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
@@ -100,8 +100,8 @@ export const VisitManagement: React.FC<{ onVisitCancelled: () => void }> = ({ on
       {notification && (
         <div className={`p-4 rounded-2xl border text-sm font-medium flex items-start gap-3 ${
           notification.type === 'success'
-            ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
-            : 'bg-brand-red-light border-brand-red text-brand-red-dark'
+            ? 'bg-brand-green-light border-brand-green text-emerald-950'
+            : 'bg-brand-error-light border-brand-error text-brand-error'
         }`}>
           <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5" />
           <div>{notification.message}</div>
@@ -112,7 +112,7 @@ export const VisitManagement: React.FC<{ onVisitCancelled: () => void }> = ({ on
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Left 2 Cols: Details */}
-        <div className="md:col-span-2 bg-white rounded-2xl p-6 border border-brand-border space-y-6">
+        <div className="md:col-span-2 bg-white rounded-3xl p-6 border border-brand-border space-y-6 shadow-sm">
           <div className="flex items-start gap-4 pb-6 border-b border-brand-border">
             <img
               src={specialist?.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150'}
@@ -129,21 +129,21 @@ export const VisitManagement: React.FC<{ onVisitCancelled: () => void }> = ({ on
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-brand-card p-4 rounded-xl border border-brand-border">
+            <div className="bg-brand-bg p-4 rounded-2xl border border-brand-border">
               <span className="text-xs font-mono text-brand-muted uppercase block mb-1">Data i godzina</span>
               <div className="flex items-center gap-2 text-brand-text font-bold text-base">
-                <Calendar className="w-4 h-4 text-brand-blue" />
+                <Calendar className="w-4 h-4 text-brand-cobalt" />
                 <span>{bookedSlot.date}</span>
                 <span>·</span>
-                <Clock className="w-4 h-4 text-brand-blue" />
+                <Clock className="w-4 h-4 text-brand-cobalt" />
                 <span>{bookedSlot.time}</span>
               </div>
             </div>
 
-            <div className="bg-brand-card p-4 rounded-xl border border-brand-border">
+            <div className="bg-brand-bg p-4 rounded-2xl border border-brand-border">
               <span className="text-xs font-mono text-brand-muted uppercase block mb-1">Status rezerwacji</span>
-              <div className="flex items-center gap-1.5 text-emerald-700 font-bold text-sm">
-                <UserCheck className="w-4 h-4 text-emerald-600" />
+              <div className="flex items-center gap-1.5 text-brand-green-dark font-bold text-sm">
+                <UserCheck className="w-4 h-4 text-brand-green" />
                 <span>Potwierdzona ({bookedSlot.price} zł)</span>
               </div>
             </div>
@@ -157,7 +157,7 @@ export const VisitManagement: React.FC<{ onVisitCancelled: () => void }> = ({ on
         </div>
 
         {/* Right Col: Cancellation or Contact Actions (Reguła 24h) */}
-        <div className="bg-white rounded-2xl p-6 border border-brand-border flex flex-col justify-between space-y-4">
+        <div className="bg-white rounded-3xl p-6 border border-brand-border flex flex-col justify-between space-y-4 shadow-sm">
           
           <div>
             <h3 className="font-display font-bold text-base text-brand-text mb-2">
@@ -166,14 +166,14 @@ export const VisitManagement: React.FC<{ onVisitCancelled: () => void }> = ({ on
 
             {isMoreThan24h ? (
               <div className="space-y-3">
-                <div className="bg-emerald-50 border border-emerald-200 p-3.5 rounded-xl text-xs text-emerald-900 leading-relaxed">
+                <div className="bg-brand-green-light border border-brand-green-border p-3.5 rounded-2xl text-xs text-emerald-950 leading-relaxed">
                   <p className="font-semibold mb-1">Bezpłatne odwołanie aktywne</p>
                   Do wizyty zostało <strong>{demoModeHoursBeforeVisit} godzin</strong> (&gt;24h). Możesz odwołać wizytę jednym kliknięciem i otrzymać pełny zwrot kwoty <strong>{bookedSlot.price} zł</strong>.
                 </div>
 
                 <button
                   onClick={handleCancelClick}
-                  className="w-full py-3 px-4 rounded-xl bg-brand-red hover:bg-brand-red-dark text-white font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full py-3 px-4 rounded-xl bg-brand-error hover:bg-brand-error/90 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-sm active:scale-98"
                 >
                   <XCircle className="w-4 h-4" />
                   <span>Odwołaj wizytę ({bookedSlot.price} zł zwrotu)</span>
@@ -184,18 +184,18 @@ export const VisitManagement: React.FC<{ onVisitCancelled: () => void }> = ({ on
               </div>
             ) : (
               <div className="space-y-3 animate-fade-in">
-                <div className="bg-amber-50 border border-amber-300 p-3.5 rounded-xl text-xs text-amber-950 leading-relaxed">
-                  <div className="flex items-center gap-1.5 font-bold text-amber-900 mb-1">
-                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                <div className="bg-brand-cream border border-amber-300 p-3.5 rounded-2xl text-xs text-amber-950 leading-relaxed">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-950 mb-1">
+                    <AlertTriangle className="w-4 h-4 text-amber-700" />
                     <span>Mniej niż 24h do wizyty ({demoModeHoursBeforeVisit}h)</span>
                   </div>
                   Zgodnie z regulaminem fundacji przycisk odwołania online został ukryty, aby chronić czas dyżurującego specjalisty.
                 </div>
 
-                <div className="p-4 bg-brand-card rounded-xl border border-brand-border space-y-2">
+                <div className="p-4 bg-brand-bg rounded-2xl border border-brand-border space-y-2">
                   <span className="text-xs text-brand-muted font-semibold block">Bezpośredni kontakt do specjalisty:</span>
-                  <div className="flex items-center gap-2 font-mono font-bold text-sm text-brand-blue">
-                    <PhoneCall className="w-4 h-4 text-brand-blue" />
+                  <div className="flex items-center gap-2 font-mono font-bold text-sm text-brand-cobalt">
+                    <PhoneCall className="w-4 h-4 text-brand-cobalt" />
                     <span>{specialist?.phone || '+48 22 123 45 67'}</span>
                   </div>
                   <p className="text-[11px] text-brand-muted">

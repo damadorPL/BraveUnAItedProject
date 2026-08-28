@@ -8,20 +8,36 @@ export default {
     extend: {
       colors: {
         brand: {
-          blue: '#0E7C9E',
-          'blue-dark': '#09576F',
-          'blue-light': '#E6F4F8',
-          red: '#D8452E',
-          'red-dark': '#B33420',
-          'red-light': '#FDF1EF',
-          yellow: '#EAB824',
-          'yellow-light': '#FEF9E7',
-          dark: '#16181D',
-          surface: '#FFFFFF',
-          card: '#FBFBFA',
-          border: '#E2E3DE',
-          muted: '#5B6172',
-          text: '#21252F',
+          // Oficjalny kobalt Niepodzielnych (niepodzielni.com)
+          cobalt: '#1500bb',
+          'cobalt-dark': '#0f008c',
+          'cobalt-light': '#1500bb0f',
+          'cobalt-border': '#1500bb26',
+          
+          // Oficjalna zieleń CTA i sukcesu
+          green: '#01be4a',
+          'green-dark': '#019e3d',
+          'green-light': '#e6f9ef',
+          'green-border': '#01be4a33',
+          
+          // Akcenty DOBRO(:STAN:)
+          pink: '#ffccd3',
+          'pink-light': '#ffe2e6',
+          cream: '#faf4e6',
+          
+          // Tła i struktura
+          bg: '#f9f8f6',
+          surface: '#ffffff',
+          border: '#eaeaea',
+          
+          // Typografia
+          text: '#323232',
+          muted: '#767676',
+          
+          // Błędy / odwołania
+          error: '#c0392b',
+          'error-light': '#fdf3f3',
+          'error-border': '#f5c6cb'
         }
       },
       fontFamily: {
