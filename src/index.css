@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-synapsis-charcoal: #2D2A28;
   --color-synapsis-dark: #22201E;
@@ -11,10 +13,28 @@
   --color-synapsis-teal-light: #E6F3F3;
 }
 
-@layer base {
-  body {
-    @apply bg-slate-100 text-[#2D2A28] antialiased min-h-screen font-sans selection:bg-[#FFB200]/30 selection:text-[#2D2A28];
-  }
+html {
+  background-color: #f8fafc;
+  color: #2D2A28;
+}
+
+html.dark {
+  color-scheme: dark;
+  background-color: #141312 !important;
+  color: #f8fafc !important;
+}
+
+html.dark body {
+  background-color: #141312 !important;
+  color: #f8fafc !important;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Custom scrollbars for timeline and lists */

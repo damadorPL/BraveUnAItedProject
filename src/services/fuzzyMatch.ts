@@ -70,8 +70,11 @@ export function matchDictionary(
     }
   }
 
-  // Input containing the full dictionary value, e.g. "woj. mazowieckie"
-  for (const entry of dictionary) {
+  // Input containing the full dictionary value (longest match first to avoid substring conflicts like "opolskie" in "wielkopolskie")
+  const sortedByLen = [...dictionary].sort(
+    (a, b) => normalizeText(b).length - normalizeText(a).length
+  );
+  for (const entry of sortedByLen) {
     const entryNorm = normalizeText(entry);
     if (entryNorm.length >= 5 && norm.includes(entryNorm)) {
       return { value: entry, confidence: "auto" };

@@ -210,7 +210,15 @@ export interface Specialist {
 }
 
 export interface SyncMessage {
-  type: "RECORD_ADDED" | "CALLER_ADDED" | "RECORD_UPDATED" | "BULK_IMPORT" | "PRESENCE_PING" | "PRESENCE_EDITING";
+  type:
+    | "RECORD_ADDED"
+    | "CALLER_ADDED"
+    | "RECORD_UPDATED"
+    | "BULK_IMPORT"
+    | "PRESENCE_PING"
+    | "PRESENCE_EDITING"
+    | "CALLER_MERGED"
+    | "SPECIALISTS_UPDATED";
   senderId: string;
   senderName: string;
   timestamp: number;
