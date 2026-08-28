@@ -55,6 +55,14 @@ export function anonymizeFreeText(text: string, callers: Caller[]): string {
   return result;
 }
 
+// Sortowanie chronologiczne: "Nr porady" ma być stabilny między eksportami
+// tego samego zbioru, a nie zależeć od kolejności wpisywania rekordów.
+export function sortRecordsByCallDate(records: CallRecord[]): CallRecord[] {
+  const time = (rec: CallRecord): number =>
+    rec.callDate ? new Date(rec.callDate).getTime() : Number.POSITIVE_INFINITY;
+  return [...records].sort((a, b) => time(a) - time(b) || a.id.localeCompare(b.id));
+}
+
 export function buildExportRows(
   records: CallRecord[],
   callers: Caller[],
@@ -62,7 +70,7 @@ export function buildExportRows(
 ): ExportRow[] {
   const callersMap = buildCallersMap(callers);
 
-  return records.map((rec, index): ExportRow => {
+  return sortRecordsByCallDate(records).map((rec, index): ExportRow => {
     const caller = callersMap.get(rec.callerId);
     const dateFormatted = rec.callDate
       ? new Date(rec.callDate).toLocaleString("pl-PL", {
@@ -134,8 +142,15 @@ export function buildCsvContent(rows: ExportRow[]): string {
   const headers = Object.keys(rows[0]);
   const csvRows: string[] = [];
 
-  const quote = (value: unknown): string =>
-    "\"" + String(value ?? "").replace(/"/g, "\"\"") + "\"";
+  // Ochrona przed CSV/formula injection: wartość zaczynającą się znakiem,
+  // który Excel interpretuje jako początek formuły, poprzedzamy apostrofem.
+  const quote = (value: unknown): string => {
+    let str = String(value ?? "");
+    if (/^[=+\-@\t\r]/.test(str)) {
+      str = "'" + str;
+    }
+    return "\"" + str.replace(/"/g, "\"\"") + "\"";
+  };
 
   csvRows.push(headers.map(quote).join(";"));
 

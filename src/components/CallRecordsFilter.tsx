@@ -5,7 +5,7 @@ import {
   GUIDANCE_TYPES,
   BENEFICIARY_TYPES,
 } from "../types";
-import { Filter, RotateCcw, MapPin, UserCheck, Tag, Users, Award } from "lucide-react";
+import { Filter, RotateCcw, MapPin, UserCheck, Tag, Users, CalendarDays } from "lucide-react";
 
 export const CallRecordsFilter: React.FC = () => {
   const { filterState, setFilterState, specialists } = useApp();
@@ -136,13 +136,50 @@ export const CallRecordsFilter: React.FC = () => {
         </div>
       </div>
 
-      {/* Free text search row */}
-      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-3">
+      {/* Date range + free text search row */}
+      <div className="mt-3 pt-2.5 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[auto_auto_1fr] gap-3 items-end">
+        <div>
+          <label
+            htmlFor="filter-date-from"
+            className="block font-semibold text-slate-600 mb-1 flex items-center gap-1"
+          >
+            <CalendarDays className="w-3 h-3 text-slate-400" />
+            Data od:
+          </label>
+          <input
+            id="filter-date-from"
+            type="date"
+            value={filterState.dateFrom}
+            max={filterState.dateTo || undefined}
+            onChange={(e) => setFilterState((prev) => ({ ...prev, dateFrom: e.target.value }))}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="filter-date-to"
+            className="block font-semibold text-slate-600 mb-1 flex items-center gap-1"
+          >
+            <CalendarDays className="w-3 h-3 text-slate-400" />
+            Data do:
+          </label>
+          <input
+            id="filter-date-to"
+            type="date"
+            value={filterState.dateTo}
+            min={filterState.dateFrom || undefined}
+            onChange={(e) => setFilterState((prev) => ({ ...prev, dateTo: e.target.value }))}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          />
+        </div>
+
         <input
           type="text"
           value={filterState.searchQuery}
           onChange={(e) => setFilterState((prev) => ({ ...prev, searchQuery: e.target.value }))}
           placeholder="Szukaj w treści porad, zaleceń lub uwag (np. WZON, IPET, orzeczenie, szkoła)..."
+          aria-label="Szukaj w treści porad"
           className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
         />
       </div>

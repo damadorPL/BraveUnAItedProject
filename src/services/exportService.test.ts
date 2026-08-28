@@ -4,6 +4,7 @@ import {
   buildAnonymousId,
   buildCsvContent,
   buildExportRows,
+  sortRecordsByCallDate,
 } from "./exportService";
 import { Caller, CallRecord } from "../types";
 
@@ -141,6 +142,69 @@ describe("anonymizeFreeText", () => {
   it("nie zmienia tekstu bez danych osobowych", () => {
     const text = "Omówiono procedurę odwołania od orzeczenia WZON.";
     expect(anonymizeFreeText(text, callers)).toBe(text);
+  });
+});
+
+describe("sortRecordsByCallDate — stabilny Nr porady", () => {
+  it("sortuje rekordy chronologicznie niezależnie od kolejności wejścia", () => {
+    const early = makeRecord({ id: "rec-early", callDate: "2026-01-05T09:00:00.000Z" });
+    const middle = makeRecord({ id: "rec-middle", callDate: "2026-02-14T09:00:00.000Z" });
+    const late = makeRecord({ id: "rec-late", callDate: "2026-03-20T09:00:00.000Z" });
+
+    const sorted = sortRecordsByCallDate([late, early, middle]);
+    expect(sorted.map((r) => r.id)).toEqual(["rec-early", "rec-middle", "rec-late"]);
+  });
+
+  it("rekordy bez daty trafiają na koniec, remisy rozstrzyga id", () => {
+    const noDate = makeRecord({ id: "rec-nodate", callDate: "" });
+    const b = makeRecord({ id: "rec-b", callDate: "2026-03-10T12:00:00.000Z" });
+    const a = makeRecord({ id: "rec-a", callDate: "2026-03-10T12:00:00.000Z" });
+
+    const sorted = sortRecordsByCallDate([noDate, b, a]);
+    expect(sorted.map((r) => r.id)).toEqual(["rec-a", "rec-b", "rec-nodate"]);
+  });
+
+  it("nie modyfikuje tablicy wejściowej", () => {
+    const input = [
+      makeRecord({ id: "r2", callDate: "2026-02-01T00:00:00.000Z" }),
+      makeRecord({ id: "r1", callDate: "2026-01-01T00:00:00.000Z" }),
+    ];
+    sortRecordsByCallDate(input);
+    expect(input.map((r) => r.id)).toEqual(["r2", "r1"]);
+  });
+
+  it("buildExportRows numeruje porady po dacie, a nie po kolejności wejścia", () => {
+    const early = makeRecord({ id: "rec-early", callDate: "2026-01-05T09:00:00.000Z" });
+    const late = makeRecord({ id: "rec-late", callDate: "2026-03-20T09:00:00.000Z" });
+
+    const rows = buildExportRows([late, early], [makeCaller()], true);
+    expect(rows[0]["Nr porady"]).toBe(1);
+    expect(String(rows[0]["Kiedy udzielono porady"])).toContain("05.01.2026");
+    expect(rows[1]["Nr porady"]).toBe(2);
+    expect(String(rows[1]["Kiedy udzielono porady"])).toContain("20.03.2026");
+  });
+});
+
+describe("buildCsvContent — ochrona przed CSV injection", () => {
+  it("prefiksuje apostrofem wartości zaczynające się od =, +, -, @", () => {
+    const csv = buildCsvContent([
+      {
+        "A": "=HYPERLINK(\"http://evil\")",
+        "B": "+48 nie-numer",
+        "C": "-cmd",
+        "D": "@SUM(A1)",
+      },
+    ]);
+    const dataLine = csv.slice(1).split("\r\n")[1];
+    expect(dataLine).toBe(
+      "\"'=HYPERLINK(\"\"http://evil\"\")\";\"'+48 nie-numer\";\"'-cmd\";\"'@SUM(A1)\""
+    );
+  });
+
+  it("nie zmienia zwykłych wartości ani liczb", () => {
+    const csv = buildCsvContent([{ "Nr porady": 7, "Opis": "zwykła treść porady" }]);
+    const dataLine = csv.slice(1).split("\r\n")[1];
+    expect(dataLine).toBe('"7";"zwykła treść porady"');
   });
 });
 

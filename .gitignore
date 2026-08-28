@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# LibreOffice lock files
+.~lock.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
