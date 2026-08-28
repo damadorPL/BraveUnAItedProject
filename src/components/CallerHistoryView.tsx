@@ -35,6 +35,8 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
     updateCaller,
     addRecordAttachment,
     removeRecordAttachment,
+    setEditingRecord,
+    canEditRecord,
   } = useApp();
 
   const [activeViewMode, setActiveViewMode] = useState<"TIMELINE" | "DOCS">("TIMELINE");
@@ -332,6 +334,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                   : "Brak daty";
 
                 const recAtts = rec.attachments || [];
+                const canEdit = canEditRecord(rec);
 
                 return (
                   <div

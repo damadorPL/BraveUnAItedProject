@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import {
   PhoneCall,
@@ -10,7 +10,11 @@ import {
   ListFilter,
   BarChart3,
   ChevronDown,
+  Inbox,
+  Mail,
+  ShieldCheck,
 } from "lucide-react";
+import { ReferredCasesModal } from "./ReferredCasesModal";
 
 export const Header: React.FC = () => {
   const {
@@ -25,7 +29,15 @@ export const Header: React.FC = () => {
     setIsExcelModalOpen,
     setIsExportModalOpen,
     resetDatabase,
+    getReferredRecordsForSpecialist,
   } = useApp();
+
+  const [isReferredModalOpen, setIsReferredModalOpen] = useState(false);
+
+  const myReferredCases = getReferredRecordsForSpecialist(currentSpecialist.id);
+  const pendingReferredCount = myReferredCases.filter(
+    (r) => (r.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
+  ).length;
 
   const handleTabChange = (tab: "SEARCH" | "ALL_RECORDS" | "STATS") => {
     setSelectedCaller(null);
@@ -181,6 +193,7 @@ export const Header: React.FC = () => {
           </div>
         </div>
       </div>
+      <ReferredCasesModal isOpen={isReferredModalOpen} onClose={() => setIsReferredModalOpen(false)} />
     </header>
   );
 };

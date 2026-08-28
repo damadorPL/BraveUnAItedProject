@@ -10,40 +10,31 @@ import {
   SUBJECT_TARGETS,
   Attachment,
 } from "../types";
+import {
+  X,
+  Clock,
+  CheckCircle2,
+  Share2,
+  Trash2,
+  ShieldCheck,
+  Edit3,
+} from "lucide-react";
 import { AttachmentsManager } from "./AttachmentsManager";
 import { ReferralSelector } from "./ReferralSelector";
 import { todayDateInputValue, callDateToIso } from "../services/callDate";
-import {
-  X,
-  PlusCircle,
-  Clock,
-  User,
-  FileText,
-  CheckCircle2,
-  AlertTriangle,
-  Sparkles,
-  Paperclip,
-  Share2,
-  Tag,
-  Phone,
-  Mail,
-  Users,
-} from "lucide-react";
-import confetti from "canvas-confetti";
 
-export const NewCallRecordModal: React.FC = () => {
+export const EditCallRecordModal: React.FC = () => {
   const {
-    selectedCaller,
-    isNewRecordModalOpen,
-    setIsNewRecordModalOpen,
-    addNewRecord,
+    editingRecord,
+    setEditingRecord,
+    updateRecord,
+    deleteRecord,
     currentSpecialist,
     specialists,
+    callers,
   } = useApp();
 
-  const [guidanceType, setGuidanceType] = useState<GuidanceType>(
-    currentSpecialist.guidanceType || "w zakresie psychologii i rehabilitacji społecznej"
-  );
+  const [guidanceType, setGuidanceType] = useState<GuidanceType>("w zakresie psychologii i rehabilitacji społecznej");
   const [guidanceAreas, setGuidanceAreas] = useState<string[]>([]);
   const [contactTypes, setContactTypes] = useState<ContactType[]>(["telefon"]);
   const [subjectTargets, setSubjectTargets] = useState<SubjectTarget[]>(["dziecko"]);
@@ -55,17 +46,37 @@ export const NewCallRecordModal: React.FC = () => {
   const [callDate, setCallDate] = useState<string>(() => todayDateInputValue());
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [durationMinutes, setDurationMinutes] = useState(45);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [specialistId, setSpecialistId] = useState("");
 
-  // When specialist changes or guidanceType changes, reset areas if not valid
   useEffect(() => {
-    const availableAreas = GUIDANCE_AREAS_MAP[guidanceType] || [];
-    if (availableAreas.length > 0 && guidanceAreas.length === 0) {
-      setGuidanceAreas([availableAreas[0]]);
-    }
-  }, [guidanceType]);
+    if (editingRecord) {
+      setGuidanceType(editingRecord.guidanceType || "w zakresie psychologii i rehabilitacji społecznej");
+      setGuidanceAreas(editingRecord.guidanceAreas || []);
+      setContactTypes(editingRecord.contactTypes || ["telefon"]);
+      setSubjectTargets(editingRecord.subjectTargets || ["dziecko"]);
+      setAdviceDescription(editingRecord.adviceDescription || "");
+      setNotes(editingRecord.notes || "");
+      setReferredTo(editingRecord.referredTo || "");
+      setReferredSpecialistId(editingRecord.referredSpecialistId || "");
+      setReferredNote(editingRecord.referredNote || "");
+      setAttachments(editingRecord.attachments || []);
+      setDurationMinutes(editingRecord.durationMinutes || 30);
+      setSpecialistId(editingRecord.specialistId || currentSpecialist.id);
 
-  if (!isNewRecordModalOpen || !selectedCaller) return null;
+      if (editingRecord.callDate) {
+        try {
+          const d = new Date(editingRecord.callDate);
+          setCallDate(d.toISOString().slice(0, 10));
+        } catch (_) {
+          setCallDate(todayDateInputValue());
+        }
+      }
+    }
+  }, [editingRecord, currentSpecialist]);
+
+  if (!editingRecord) return null;
+
+  const caller = callers.find((c) => c.id === editingRecord.callerId);
 
   const toggleArea = (area: string) => {
     setGuidanceAreas((prev) =>
@@ -92,13 +103,14 @@ export const NewCallRecordModal: React.FC = () => {
       return;
     }
 
-    setIsSubmitting(true);
-    addNewRecord({
-      callerId: selectedCaller.id,
+    const assignedSpec = specialists.find((s) => s.id === specialistId) || currentSpecialist;
+
+    updateRecord({
+      ...editingRecord,
       callDate: callDateToIso(callDate),
-      specialistId: currentSpecialist.id,
-      specialistName: currentSpecialist.name,
-      specialistRole: currentSpecialist.role,
+      specialistId: assignedSpec.id,
+      specialistName: assignedSpec.name,
+      specialistRole: assignedSpec.role,
       contactTypes,
       subjectTargets,
       guidanceType,
@@ -106,50 +118,51 @@ export const NewCallRecordModal: React.FC = () => {
       adviceDescription: adviceDescription.trim(),
       notes: notes.trim(),
       referredTo: referredTo.trim(),
+      referredSpecialistId: referredSpecialistId || undefined,
+      referredNote: referredNote.trim() || undefined,
       attachments,
       durationMinutes,
     });
 
-    try {
-      confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } });
-    } catch (_) {}
+    setEditingRecord(null);
+  };
 
-    setIsSubmitting(false);
-    setIsNewRecordModalOpen(false);
-
-    // Reset form
-    setAdviceDescription("");
-    setNotes("");
-    setReferredTo("");
-    setCallDate(todayDateInputValue());
-    setAttachments([]);
+  const handleDelete = () => {
+    if (window.confirm("Czy na pewno chcesz bezpowrotnie usunąć ten wpis porady z bazy danych?")) {
+      deleteRecord(editingRecord.id);
+      setEditingRecord(null);
+    }
   };
 
   const availableAreas = GUIDANCE_AREAS_MAP[guidanceType] || [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in">
       <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-3xl overflow-hidden max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs bg-indigo-500/30 text-indigo-300 font-bold px-2 py-0.5 rounded">
-                Nowy wpis poradniczy
+              <span className="text-xs bg-amber-500/25 text-amber-300 font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                <Edit3 className="w-3 h-3" />
+                <span>Edycja wpisu porady</span>
               </span>
-              <span className="text-xs text-slate-400">
-                Dyżurujący: <strong>{currentSpecialist.name}</strong>
-              </span>
+              {currentSpecialist.isAdmin && (
+                <span className="text-xs bg-rose-500/30 text-rose-300 font-bold px-2 py-0.5 rounded flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3" />
+                  <span>Uprawnienia administratora</span>
+                </span>
+              )}
             </div>
             <h2 className="text-lg font-bold text-white mt-1">
-              {selectedCaller.firstName} {selectedCaller.lastName} &bull; {selectedCaller.city} ({selectedCaller.voivodeship})
+              {caller ? `${caller.firstName} ${caller.lastName} • ${caller.city} (${caller.voivodeship})` : "Edycja porady"}
             </h2>
           </div>
 
           <button
             type="button"
-            onClick={() => setIsNewRecordModalOpen(false)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            onClick={() => setEditingRecord(null)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -157,6 +170,27 @@ export const NewCallRecordModal: React.FC = () => {
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-xs">
+          {/* Specjalista (Admin can reassign) */}
+          {currentSpecialist.isAdmin && (
+            <div className="bg-rose-50/60 border border-rose-200 rounded-2xl p-3.5 flex items-center justify-between">
+              <div>
+                <span className="font-bold text-rose-950 block text-xs">Autor wpisu (przypisany specjalista):</span>
+                <span className="text-[11px] text-rose-800">Jako administrator możesz zmienić autora tej konsultacji.</span>
+              </div>
+              <select
+                value={specialistId}
+                onChange={(e) => setSpecialistId(e.target.value)}
+                className="bg-white border border-rose-300 rounded-xl p-2 text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-rose-500 focus:outline-none"
+              >
+                {specialists.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name} ({s.role})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* 1. Rodzaj poradnictwa */}
           <div>
             <label className="block text-xs font-bold text-slate-800 mb-1.5">
@@ -168,14 +202,13 @@ export const NewCallRecordModal: React.FC = () => {
                   type="button"
                   key={type}
                   onClick={() => setGuidanceType(type)}
-                  className={`py-2 px-3 rounded-xl font-bold text-xs border text-left transition-all ${
+                  className={`py-2 px-3 rounded-xl font-bold text-xs border text-left transition-all cursor-pointer ${
                     guidanceType === type
                       ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
                       : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                   }`}
                 >
-                  
-                  <div className="capitalize-first">{type.charAt(0).toUpperCase() + type.slice(1)}</div>
+                  <div className="mt-0.5">{type.charAt(0).toUpperCase() + type.slice(1)}</div>
                 </button>
               ))}
             </div>
@@ -194,7 +227,7 @@ export const NewCallRecordModal: React.FC = () => {
                     type="button"
                     key={area}
                     onClick={() => toggleArea(area)}
-                    className={`px-3 py-1.5 rounded-xl font-semibold text-xs border transition-all text-left flex items-center space-x-1.5 ${
+                    className={`px-3 py-1.5 rounded-xl font-semibold text-xs border transition-all text-left flex items-center space-x-1.5 cursor-pointer ${
                       isSelected
                         ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
                         : "bg-white text-slate-700 border-slate-200 hover:bg-indigo-50 hover:text-indigo-700"
@@ -213,7 +246,7 @@ export const NewCallRecordModal: React.FC = () => {
             {/* Rodzaj kontaktu */}
             <div>
               <label className="block font-bold text-slate-700 mb-1.5 text-[11px]">
-                3. Rodzaj kontaktu (wielokrotny):
+                3. Rodzaj kontaktu:
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {CONTACT_TYPES.map((ct) => {
@@ -223,7 +256,7 @@ export const NewCallRecordModal: React.FC = () => {
                       type="button"
                       key={ct}
                       onClick={() => toggleContactType(ct)}
-                      className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors  ${
+                      className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors cursor-pointer ${
                         sel
                           ? "bg-slate-900 text-white border-slate-900"
                           : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -239,7 +272,7 @@ export const NewCallRecordModal: React.FC = () => {
             {/* Kogo dotyczy porada */}
             <div>
               <label className="block font-bold text-slate-700 mb-1.5 text-[11px]">
-                4. Kogo dotyczy porada (wielokrotny):
+                4. Kogo dotyczy porada:
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {SUBJECT_TARGETS.map((st) => {
@@ -249,7 +282,7 @@ export const NewCallRecordModal: React.FC = () => {
                       type="button"
                       key={st}
                       onClick={() => toggleSubjectTarget(st)}
-                      className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors  ${
+                      className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors cursor-pointer ${
                         sel
                           ? "bg-purple-700 text-white border-purple-700"
                           : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -292,34 +325,37 @@ export const NewCallRecordModal: React.FC = () => {
             />
           </div>
 
-          {/* 7. Przekazane do innego specjalisty & Czas trwania */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-bold text-slate-800 mb-1 flex items-center gap-1">
-                <Share2 className="w-3.5 h-3.5 text-indigo-600" />
-                7. Przekazane do innego specjalisty (opcjonalnie):
-              </label>
-              <input
-                type="text"
-                value={referredTo}
-                onChange={(e) => setReferredTo(e.target.value)}
-                placeholder="Np. mec. Anna Nowak (konsultacja orzeczenia WZON)"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              />
-            </div>
+          {/* 7. Przekazanie do dyżurującego & Czas trwania */}
+          <div className="space-y-3">
+            <ReferralSelector
+              specialists={specialists}
+              currentSpecialist={currentSpecialist}
+              selectedSpecialistId={referredSpecialistId}
+              onSelectSpecialist={(spec) => {
+                if (spec) {
+                  setReferredSpecialistId(spec.id);
+                  setReferredTo(spec.name);
+                } else {
+                  setReferredSpecialistId("");
+                  setReferredTo("");
+                }
+              }}
+              referralNote={referredNote}
+              onChangeNote={setReferredNote}
+            />
 
             <div>
               <label className="block font-bold text-slate-800 mb-1 flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5 text-slate-500" />
                 Czas trwania rozmowy:
               </label>
-              <div className="grid grid-cols-4 gap-1.5">
+              <div className="grid grid-cols-4 gap-1.5 max-w-xs">
                 {[15, 30, 45, 60].map((mins) => (
                   <button
                     type="button"
                     key={mins}
                     onClick={() => setDurationMinutes(mins)}
-                    className={`py-2 rounded-lg font-bold border transition-colors text-center ${
+                    className={`py-2 rounded-lg font-bold border transition-colors text-center cursor-pointer ${
                       durationMinutes === mins
                         ? "bg-indigo-600 text-white border-indigo-600"
                         : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -332,42 +368,62 @@ export const NewCallRecordModal: React.FC = () => {
             </div>
           </div>
 
-          {/* 8. Data porady & Załączniki */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-bold text-slate-800 mb-1 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-slate-500" />
-                8. Kiedy udzielono porady:
-              </label>
-              <input
-                type="date"
-                value={callDate}
-                max={todayDateInputValue()}
-                onChange={(e) => setCallDate(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              />
-            </div>
+          {/* 8. Data porady */}
+          <div>
+            <label className="block font-bold text-slate-800 mb-1 flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-slate-500" />
+              8. Kiedy udzielono porady:
+            </label>
+            <input
+              type="date"
+              value={callDate}
+              max={todayDateInputValue()}
+              onChange={(e) => setCallDate(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+            />
+          </div>
 
-            <div className="sm:col-span-2 mt-2 pt-2 border-t border-slate-100"><AttachmentsManager attachments={attachments} onChange={setAttachments} specialistName={currentSpecialist.name} title="Załączniki do tej porady (PDF, obrazy, Excel, dokumenty tekstowe)" /></div>
+          {/* 9. Załączniki */}
+          <div className="pt-2 border-t border-slate-100">
+            <AttachmentsManager
+              attachments={attachments}
+              onChange={setAttachments}
+              specialistName={currentSpecialist.name}
+              title="Załączniki do tej porady (PDF, obrazy, Excel, dokumenty)"
+            />
           </div>
 
           {/* Footer Buttons */}
-          <div className="pt-3 border-t border-slate-200 flex items-center justify-end space-x-2.5">
-            <button
-              type="button"
-              onClick={() => setIsNewRecordModalOpen(false)}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition-colors"
-            >
-              Anuluj
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center space-x-1.5 cursor-pointer"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Zapisz poradę w kartotece</span>
-            </button>
+          <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
+            {currentSpecialist.isAdmin ? (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="flex items-center space-x-1.5 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl font-bold transition-colors cursor-pointer text-xs border border-rose-200"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Usuń tę poradę z bazy</span>
+              </button>
+            ) : (
+              <div />
+            )}
+
+            <div className="flex items-center space-x-2.5">
+              <button
+                type="button"
+                onClick={() => setEditingRecord(null)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition-colors cursor-pointer"
+              >
+                Anuluj
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center space-x-1.5 cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Zapisz zmiany w poradzie</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>
