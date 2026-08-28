@@ -258,7 +258,7 @@ export const StatsBar: React.FC = () => {
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-1.5">
-            {stats.voivodeshipRows.map(({ name, count }) => (
+            {stats.voivodeshipRows.map(({ name, count, percent }) => (
               <div
                 key={name}
                 className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-[#2C2927] last:border-b-0"
@@ -272,6 +272,9 @@ export const StatsBar: React.FC = () => {
                   }
                 >
                   {pluralizePorady(count)}
+                  {count > 0 && (
+                    <span className="font-medium text-slate-400 dark:text-slate-500 ml-1">({percent}%)</span>
+                  )}
                 </span>
               </div>
             ))}

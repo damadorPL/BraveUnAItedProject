@@ -22,6 +22,7 @@ export interface GuidanceStatsRow {
 export interface VoivodeshipStatsRow {
   name: string;
   count: number;
+  percent: number;
 }
 
 export interface ReportStats {
@@ -78,7 +79,14 @@ export function computeReportStats(
   });
   const voivodeshipRows = VOIVODESHIPS.filter(
     (v) => v !== "brak" || (voivodeshipCounts.get("brak") || 0) > 0
-  ).map((v) => ({ name: v, count: voivodeshipCounts.get(v) || 0 }));
+  ).map((v) => {
+    const count = voivodeshipCounts.get(v) || 0;
+    return {
+      name: v,
+      count,
+      percent: records.length > 0 ? Math.round((count / records.length) * 100) : 0,
+    };
+  });
 
   return {
     totalRecords: records.length,
