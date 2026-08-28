@@ -5,32 +5,105 @@ import {
   GuidanceType,
   GUIDANCE_TYPES,
   GUIDANCE_AREAS_MAP,
-  Voivodeship,
   VOIVODESHIPS,
-  BeneficiaryType,
   BENEFICIARY_TYPES,
-  ContactType,
+  BeneficiaryType,
   CONTACT_TYPES,
-  SubjectTarget,
+  ContactType,
   SUBJECT_TARGETS,
+  SubjectTarget,
   DisabilityCertificateStatus,
   DisabilityDegree,
   DISABILITY_DEGREES,
 } from "../types";
 import { normalizeText } from "./storage";
+import { matchDictionary, levenshtein, KeywordHints } from "./fuzzyMatch";
+
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+const MAX_DATA_ROWS = 5000;
+const MAX_CELL_LENGTH = 2000;
+const MAX_NAME_LENGTH = 60;
+const MIN_CALL_YEAR = 2000;
+const DUPLICATE_NAME_MAX_DISTANCE = 2;
+
+// ---------------------------------------------------------------------------
+// Result types
+// ---------------------------------------------------------------------------
+
+export interface ReviewTarget {
+  entity: "caller" | "record";
+  entityId: string;
+  field: string;
+  multiIndex?: number;
+}
+
+export interface ValueReview {
+  id: string;
+  rowNumber: number;
+  fieldLabel: string;
+  rawValue: string;
+  suggested: string | null;
+  fallback: string;
+  options: string[];
+  target: ReviewTarget;
+}
+
+export interface DuplicateReview {
+  id: string;
+  newCallerId: string;
+  newCallerName: string;
+  existingCallerId: string;
+  existingCallerName: string;
+  rowNumbers: number[];
+}
+
+export interface SkippedRow {
+  rowNumber: number;
+  reasons: string[];
+}
+
+export interface AutoCorrection {
+  rowNumber: number;
+  fieldLabel: string;
+  from: string;
+  to: string;
+}
+
+export interface ImportPreviewRow {
+  callerName: string;
+  voivodeship: string;
+  guidanceType: string;
+  area: string;
+  desc: string;
+}
 
 export interface ParsedMigrationResult {
   callers: Caller[];
   records: CallRecord[];
+  valueReviews: ValueReview[];
+  duplicateReviews: DuplicateReview[];
+  skippedRows: SkippedRow[];
+  corrections: AutoCorrection[];
   stats: {
     totalRows: number;
     validRows: number;
+    skippedCount: number;
     newCallersCount: number;
     existingCallersMatched: number;
-    errors: string[];
+    correctionsCount: number;
+    reviewCount: number;
   };
-  previewRows: any[];
+  previewRows: ImportPreviewRow[];
 }
+
+export interface ImportResolutions {
+  values: Record<string, string>;
+  duplicates: Record<string, "merge" | "separate">;
+}
+
+// ---------------------------------------------------------------------------
+// Template download
+// ---------------------------------------------------------------------------
 
 export function downloadExcelTemplate(): void {
   const headers = [
@@ -130,199 +203,438 @@ export function downloadExcelTemplate(): void {
   XLSX.writeFile(wb, "Wzorzec_Bazy_Historii_Porad_PFRON.xlsx");
 }
 
-function matchVoivodeship(raw: string): Voivodeship {
-  if (!raw) return "mazowieckie";
-  const norm = normalizeText(raw);
-  const found = VOIVODESHIPS.find((v) => normalizeText(v) === norm || norm.includes(normalizeText(v)));
-  return found || "mazowieckie";
+// ---------------------------------------------------------------------------
+// Sanitization
+// ---------------------------------------------------------------------------
+
+function sanitizeCell(value: unknown, maxLength: number = MAX_CELL_LENGTH): string {
+  let s = typeof value === "string" ? value : value == null ? "" : String(value);
+  // eslint-disable-next-line no-control-regex
+  s = s.replace(/[\u0000-\u001F\u007F]/g, " ");
+  // Neutralize spreadsheet formula injection (=, +, @ at cell start)
+  s = s.replace(/^[=+@]+/, "");
+  s = s.replace(/\s+/g, " ").trim();
+  return s.length > maxLength ? s.slice(0, maxLength) : s;
 }
 
-function matchGuidanceType(raw: string): GuidanceType {
-  if (!raw) return "w zakresie psychologii i rehabilitacji społecznej";
-  const norm = raw.toLowerCase();
-  if (norm.includes("prawn")) return "prawno-obywatelskie";
-  if (norm.includes("parent")) return "Parent to Parent";
-  if (norm.includes("społecz") || norm.includes("spolecz")) return "społeczne";
-  if (norm.includes("psycholog") || norm.includes("rehabilitac")) return "w zakresie psychologii i rehabilitacji społecznej";
-  return "w zakresie psychologii i rehabilitacji społecznej";
+function sanitizeName(value: unknown): string {
+  const s = sanitizeCell(value, MAX_NAME_LENGTH);
+  return s
+    .replace(/[^\p{L}\p{M}\s'.-]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function matchBeneficiary(raw: string): BeneficiaryType[] {
-  if (!raw) return ["rodzic"];
-  const norm = raw.toLowerCase();
-  const res: BeneficiaryType[] = [];
-  if (norm.includes("rodzic")) res.push("rodzic");
-  if (norm.includes("opiekun")) res.push("opiekun");
-  if (norm.includes("dorosł") || norm.includes("spektrum") || norm.includes("samorzecz")) res.push("osoba dorosła w spektrum");
-  if (res.length === 0) res.push("inne");
-  return res;
+function parseCallDate(value: unknown): string | null {
+  const toValidISO = (d: Date): string | null => {
+    if (isNaN(d.getTime())) return null;
+    const year = d.getFullYear();
+    const maxDate = Date.now() + 24 * 60 * 60 * 1000;
+    if (year < MIN_CALL_YEAR || d.getTime() > maxDate) return null;
+    return d.toISOString();
+  };
+
+  if (value instanceof Date) return toValidISO(value);
+
+  // Excel date serial (days since 1900-01-01; 25569 = Unix epoch)
+  if (typeof value === "number" && value > 20000 && value < 70000) {
+    return toValidISO(new Date(Math.round((value - 25569) * 86400000)));
+  }
+
+  const s = sanitizeCell(value, 40);
+  if (!s) return null;
+
+  const dmy = s.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})(?:[\sT]+(\d{1,2}):(\d{2}))?$/);
+  if (dmy) {
+    return toValidISO(
+      new Date(
+        Number(dmy[3]),
+        Number(dmy[2]) - 1,
+        Number(dmy[1]),
+        Number(dmy[4] || 12),
+        Number(dmy[5] || 0)
+      )
+    );
+  }
+
+  return toValidISO(new Date(s));
 }
 
-function matchContactType(raw: string): ContactType[] {
-  if (!raw) return ["telefon"];
-  const norm = raw.toLowerCase();
-  const res: ContactType[] = [];
-  if (norm.includes("tel") || norm.includes("kom")) res.push("telefon");
-  if (norm.includes("mail") || norm.includes("e-mail")) res.push("e-mail");
-  if (norm.includes("osobist") || norm.includes("spotkan")) res.push("osobisty");
-  if (res.length === 0) res.push("inne");
-  return res;
-}
+// ---------------------------------------------------------------------------
+// Dictionary keyword hints (order matters: specific before generic)
+// ---------------------------------------------------------------------------
 
-function matchSubjectTarget(raw: string): SubjectTarget[] {
-  if (!raw) return ["dziecko"];
-  const norm = raw.toLowerCase();
-  const res: SubjectTarget[] = [];
-  if (norm.includes("dziec") || norm.includes("uczn")) res.push("dziecko");
-  if (norm.includes("dorosł") || norm.includes("dorosl")) res.push("osoba dorosła");
-  if (res.length === 0) res.push("inne");
-  return res;
-}
+const BENEFICIARY_KEYWORDS: KeywordHints = [
+  ["osoba dorosła w spektrum", ["spektrum", "samorzecz"]],
+  ["rodzic", ["rodzic", "mama", "tata", "matka", "ojciec"]],
+  ["opiekun", ["opiekun"]],
+];
 
-function matchDisabilityStatus(raw: string): DisabilityCertificateStatus {
-  if (!raw) return "tak";
-  const norm = raw.toLowerCase();
-  if (norm.includes("nie") || norm === "brak") return "nie";
-  if (norm.includes("trakc") || norm.includes("diagnoz")) return "w trakcie";
-  return "tak";
-}
+const CONTACT_KEYWORDS: KeywordHints = [
+  ["e-mail", ["mail"]],
+  ["telefon", ["tel", "kom"]],
+  ["osobisty", ["osobist", "spotkan"]],
+];
 
-function matchDisabilityDegree(raw: string): DisabilityDegree {
-  if (!raw) return "orzeczenie o niepełnosprawności";
-  const norm = raw.toLowerCase();
-  if (norm.includes("lekk")) return "lekki";
-  if (norm.includes("umiark")) return "umiarkowany";
-  if (norm.includes("znaczn")) return "znaczny";
-  if (norm.includes("orzeczen") || norm.includes("dzieck")) return "orzeczenie o niepełnosprawności";
-  return "brak / nie dotyczy";
+const SUBJECT_KEYWORDS: KeywordHints = [
+  ["dziecko", ["dziec", "uczn", "syn", "cork", "córk"]],
+  ["osoba dorosła", ["dorosl"]],
+];
+
+const GUIDANCE_TYPE_KEYWORDS: KeywordHints = [
+  ["w zakresie psychologii i rehabilitacji społecznej", ["psycholog", "rehabilitac"]],
+  ["prawno-obywatelskie", ["prawn", "obywatel"]],
+  ["Parent to Parent", ["parent", "p2p"]],
+  ["społeczne", ["spolecz"]],
+];
+
+const CERT_STATUS_VALUES: DisabilityCertificateStatus[] = ["tak", "nie", "w trakcie"];
+const CERT_KEYWORDS: KeywordHints = [
+  ["w trakcie", ["trakc", "diagnoz", "oczekuj"]],
+  ["nie", ["nie", "brak"]],
+  ["tak", ["tak", "posiada", "ma orzecz"]],
+];
+
+const DEGREE_KEYWORDS: KeywordHints = [
+  ["lekki", ["lekk"]],
+  ["umiarkowany", ["umiark"]],
+  ["znaczny", ["znaczn"]],
+  ["orzeczenie o niepełnosprawności", ["orzecz", "dzieck"]],
+  ["brak / nie dotyczy", ["brak", "nie dotyczy"]],
+];
+
+const ALL_GUIDANCE_AREAS: string[] = Array.from(
+  new Set(Object.values(GUIDANCE_AREAS_MAP).flat())
+);
+
+// ---------------------------------------------------------------------------
+// Parsing
+// ---------------------------------------------------------------------------
+
+function makeId(prefix: string): string {
+  return prefix + "-" + Date.now() + "-" + Math.random().toString(36).substring(2, 8);
 }
 
 export async function parseExcelFile(
   file: File,
   existingCallers: Caller[]
 ): Promise<ParsedMigrationResult> {
-  const data = await file.arrayBuffer();
-  const workbook = XLSX.read(data, { type: "array" });
-  const firstSheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[firstSheetName];
-
-  const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
-
-  if (rows.length < 2) {
-    throw new Error("Plik Excel jest pusty lub nie zawiera wierszy.");
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    throw new Error("Plik jest za duży (limit 10 MB). Podziel dane na mniejsze pliki.");
+  }
+  if (!/\.(xlsx|xls|csv)$/i.test(file.name)) {
+    throw new Error("Nieobsługiwany format pliku. Wybierz plik .xlsx, .xls lub .csv.");
   }
 
-  // Row 0 or Row 1 might contain headers
+  const data = await file.arrayBuffer();
+  const workbook = XLSX.read(data, { type: "array", cellDates: true });
+  const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+  if (!worksheet) {
+    throw new Error("Plik nie zawiera żadnego arkusza z danymi.");
+  }
+
+  const rows: unknown[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+
+  if (rows.length < 2) {
+    throw new Error("Plik Excel jest pusty lub nie zawiera wierszy z danymi.");
+  }
+  if (rows.length > MAX_DATA_ROWS + 1) {
+    throw new Error(`Plik zawiera ponad ${MAX_DATA_ROWS} wierszy. Podziel dane na mniejsze pliki.`);
+  }
+
+  // Header row may be preceded by a description row (like in the official template)
   let headerRowIndex = 0;
   for (let i = 0; i < Math.min(3, rows.length); i++) {
-    const r = rows[i].map((c) => String(c || "").toLowerCase());
-    if (r.some((c) => c.includes("kiedy") || c.includes("imię") || c.includes("nazwisko") || c.includes("województwo") || c.includes("porad"))) {
+    const r = rows[i].map((c) => sanitizeCell(c).toLowerCase());
+    if (r.some((c) => c.includes("kiedy") || c.includes("imię") || c.includes("imie") || c.includes("nazwisko") || c.includes("województwo"))) {
       headerRowIndex = i;
       break;
     }
   }
 
-  const rawHeaders: string[] = rows[headerRowIndex].map((h) => String(h || "").trim().toLowerCase());
-
+  const rawHeaders: string[] = rows[headerRowIndex].map((h) => sanitizeCell(h).toLowerCase());
   const findIdx = (keywords: string[]) =>
     rawHeaders.findIndex((h) => keywords.some((k) => h.includes(k)));
 
   const idxCallDate = findIdx(["kiedy", "data", "termin"]);
   const idxFirstName = findIdx(["imię", "imie", "first"]);
-  const idxLastName = findIdx(["nazwisko", "last", "osoba", "klient"]);
-  const idxVoivodeship = findIdx(["województwo", "wojewodztwo", "woj", "region"]);
-  const idxBeneficiary = findIdx(["kim jest beneficjent", "beneficjent", "kategoria"]);
+  const idxLastName = findIdx(["nazwisko", "last"]);
+  const idxVoivodeship = findIdx(["województwo", "wojewodztwo", "woj.", "region"]);
+  const idxBeneficiary = findIdx(["kim jest beneficjent", "beneficjent"]);
   const idxContactType = findIdx(["rodzaj kontaktu", "kontakt"]);
-  const idxSubjectTarget = findIdx(["kogo dotyczy porada", "kogo dotyczy", "dotyczy"]);
-  const idxGuidanceType = findIdx(["rodzaj poradnictwa", "poradnictwo", "typ porady"]);
+  const idxSubjectTarget = findIdx(["kogo dotyczy"]);
+  const idxGuidanceType = findIdx(["rodzaj poradnictwa", "poradnictw"]);
   const idxGuidanceArea = findIdx(["obszar", "dziedzina"]);
   const idxAdviceDesc = findIdx(["rodzaj porady", "opis", "problem", "zgłoszenie", "treść"]);
-  const idxHasCert = findIdx(["posiadanie orzeczenia", "orzeczenie"]);
-  const idxDegree = findIdx(["stopień niepełnosprawności", "stopień", "stopien"]);
-  const idxNotes = findIdx(["uwagi", "notatka", "zalecenia", "rekomendacje"]);
-  const idxReferred = findIdx(["przekazane", "przekazanie", "inny specjalista"]);
+  const idxHasCert = findIdx(["posiadanie orzeczenia", "orzeczeni"]);
+  const idxDegree = findIdx(["stopień", "stopien"]);
+  const idxNotes = findIdx(["uwagi", "notatka", "zalecenia"]);
+  const idxReferred = findIdx(["przekazan", "inny specjalista"]);
 
-  const callersMap = new Map<string, Caller>();
+  if (idxLastName === -1 && idxFirstName === -1) {
+    throw new Error(
+      "Nie znaleziono kolumn z imieniem i nazwiskiem. Sprawdź, czy pierwszy wiersz zawiera nagłówki zgodne z wzorcem (pobierz szablon)."
+    );
+  }
+
+  const cell = (row: unknown[], idx: number): unknown => (idx !== -1 ? row[idx] : "");
+
+  const valueReviews: ValueReview[] = [];
+  const duplicateReviews: DuplicateReview[] = [];
+  const skippedRows: SkippedRow[] = [];
+  const corrections: AutoCorrection[] = [];
+
+  const resolveSingle = (
+    raw: string,
+    dictionary: readonly string[],
+    keywords: KeywordHints | undefined,
+    fieldLabel: string,
+    fallback: string,
+    rowNumber: number,
+    target: ReviewTarget
+  ): string => {
+    if (!raw) return fallback;
+    const m = matchDictionary(raw, dictionary, keywords);
+    if (m.confidence === "exact") return m.value;
+    if (m.confidence === "auto") {
+      corrections.push({ rowNumber, fieldLabel, from: raw, to: m.value });
+      return m.value;
+    }
+    const suggested = m.confidence === "uncertain" ? m.value : null;
+    valueReviews.push({
+      id: makeId("rev"),
+      rowNumber,
+      fieldLabel,
+      rawValue: raw,
+      suggested,
+      fallback,
+      options: [...dictionary],
+      target,
+    });
+    return suggested ?? fallback;
+  };
+
+  const resolveMulti = (
+    raw: string,
+    dictionary: readonly string[],
+    keywords: KeywordHints | undefined,
+    fieldLabel: string,
+    fallback: string,
+    rowNumber: number,
+    targetBase: Omit<ReviewTarget, "multiIndex">
+  ): string[] => {
+    if (!raw) return [fallback];
+
+    // Dictionary values may themselves contain commas, so split on
+    // semicolon/newline first and fall back to commas per unmatched token.
+    const tokens = raw
+      .split(/[;\n|]+/)
+      .map((t) => t.trim())
+      .filter(Boolean);
+
+    const expanded: string[] = [];
+    for (const token of tokens) {
+      const whole = matchDictionary(token, dictionary, keywords);
+      if (whole.confidence === "none" && token.includes(",")) {
+        const parts = token.split(",").map((p) => p.trim()).filter(Boolean);
+        const partMatches = parts.map((p) => matchDictionary(p, dictionary, keywords));
+        if (partMatches.every((pm) => pm.confidence !== "none")) {
+          expanded.push(...parts);
+          continue;
+        }
+      }
+      expanded.push(token);
+    }
+
+    const out: string[] = [];
+    for (const token of expanded) {
+      const idx = out.length;
+      out.push(
+        resolveSingle(token, dictionary, keywords, fieldLabel, fallback, rowNumber, {
+          ...targetBase,
+          multiIndex: idx,
+        })
+      );
+    }
+    return out.length > 0 ? out : [fallback];
+  };
+
+  const callersByKey = new Map<string, Caller>();
+  const callerRowNumbers = new Map<string, number[]>();
   existingCallers.forEach((c) => {
-    const key = normalizeText(c.firstName + "_" + c.lastName);
-    callersMap.set(key, c);
+    callersByKey.set(normalizeText(c.firstName + "_" + c.lastName), c);
   });
+  const existingIds = new Set(existingCallers.map((c) => c.id));
+  const reportedDuplicatePairs = new Set<string>();
+
+  const findSimilarCaller = (firstName: string, lastName: string): Caller | null => {
+    const fullNorm = normalizeText(firstName + lastName);
+    let best: Caller | null = null;
+    let bestDist = Infinity;
+    for (const c of callersByKey.values()) {
+      const dist = levenshtein(fullNorm, normalizeText(c.firstName + c.lastName));
+      if (dist > 0 && dist <= DUPLICATE_NAME_MAX_DISTANCE && dist < bestDist) {
+        bestDist = dist;
+        best = c;
+      }
+    }
+    return best;
+  };
 
   const parsedRecords: CallRecord[] = [];
-  const errors: string[] = [];
-  const previewRows: any[] = [];
+  const previewRows: ImportPreviewRow[] = [];
   let newCallersCount = 0;
   let existingMatchedCount = 0;
+  let totalRows = 0;
 
   for (let i = headerRowIndex + 1; i < rows.length; i++) {
     const row = rows[i];
-    if (!row || row.every((c) => !c || String(c).trim() === "")) continue;
+    if (!row || row.every((c) => sanitizeCell(c) === "")) continue;
+    totalRows++;
+    const rowNumber = i + 1;
 
-    const firstName = String(idxFirstName !== -1 ? row[idxFirstName] : "Anonim").trim() || "Anonim";
-    const lastName = String(idxLastName !== -1 ? row[idxLastName] : "").trim() || ("Dzwoniący #" + i);
-    const voivodeshipRaw = String(idxVoivodeship !== -1 ? row[idxVoivodeship] : "").trim();
-    const beneficiaryRaw = String(idxBeneficiary !== -1 ? row[idxBeneficiary] : "").trim();
-    const contactRaw = String(idxContactType !== -1 ? row[idxContactType] : "").trim();
-    const subjectRaw = String(idxSubjectTarget !== -1 ? row[idxSubjectTarget] : "").trim();
-    const guidanceRaw = String(idxGuidanceType !== -1 ? row[idxGuidanceType] : "").trim();
-    const areaRaw = String(idxGuidanceArea !== -1 ? row[idxGuidanceArea] : "").trim();
-    const descRaw = String(idxAdviceDesc !== -1 ? row[idxAdviceDesc] : "").trim() || "Konsultacja telefoniczna";
-    const certRaw = String(idxHasCert !== -1 ? row[idxHasCert] : "").trim();
-    const degreeRaw = String(idxDegree !== -1 ? row[idxDegree] : "").trim();
-    const notesRaw = String(idxNotes !== -1 ? row[idxNotes] : "").trim();
-    const referredRaw = String(idxReferred !== -1 ? row[idxReferred] : "").trim();
-    const callDateRaw = String(idxCallDate !== -1 ? row[idxCallDate] : "").trim();
+    const firstName = sanitizeName(cell(row, idxFirstName));
+    const lastName = sanitizeName(cell(row, idxLastName));
+    const adviceDescription = sanitizeCell(cell(row, idxAdviceDesc));
+    const callDateISO = parseCallDate(cell(row, idxCallDate));
 
-    let callDateISO = new Date().toISOString();
-    if (callDateRaw) {
-      const parsedDate = new Date(callDateRaw);
-      if (!isNaN(parsedDate.getTime())) {
-        callDateISO = parsedDate.toISOString();
-      }
+    const reasons: string[] = [];
+    if (!firstName) reasons.push("brak imienia");
+    if (!lastName) reasons.push("brak nazwiska");
+    if (!callDateISO) reasons.push("pusta lub niepoprawna data porady");
+    if (!adviceDescription) reasons.push("pusta treść porady");
+    if (reasons.length > 0 || !callDateISO) {
+      skippedRows.push({ rowNumber, reasons });
+      continue;
     }
 
     const callerKey = normalizeText(firstName + "_" + lastName);
-    let caller = callersMap.get(callerKey);
+    let caller = callersByKey.get(callerKey);
 
     if (caller) {
       existingMatchedCount++;
       caller.updatedAt = callDateISO;
     } else {
       newCallersCount++;
-      const randomSuffix = Math.random().toString(36).substring(2, 8);
+      const callerId = makeId("caller-migrated");
       caller = {
-        id: "caller-migrated-" + Date.now() + "-" + randomSuffix,
+        id: callerId,
         firstName,
         lastName,
         phoneNumber: "Brak numeru",
-        voivodeship: matchVoivodeship(voivodeshipRaw),
+        voivodeship: resolveSingle(
+          sanitizeCell(cell(row, idxVoivodeship), 60),
+          VOIVODESHIPS,
+          undefined,
+          "Województwo",
+          "brak",
+          rowNumber,
+          { entity: "caller", entityId: callerId, field: "voivodeship" }
+        ) as Caller["voivodeship"],
         city: "Nie podano",
-        beneficiaryTypes: matchBeneficiary(beneficiaryRaw),
-        hasDisabilityCertificate: matchDisabilityStatus(certRaw),
-        disabilityDegree: matchDisabilityDegree(degreeRaw),
+        beneficiaryTypes: resolveMulti(
+          sanitizeCell(cell(row, idxBeneficiary), 200),
+          BENEFICIARY_TYPES,
+          BENEFICIARY_KEYWORDS,
+          "Kim jest beneficjent",
+          "inne",
+          rowNumber,
+          { entity: "caller", entityId: callerId, field: "beneficiaryTypes" }
+        ) as BeneficiaryType[],
+        hasDisabilityCertificate: resolveSingle(
+          sanitizeCell(cell(row, idxHasCert), 60),
+          CERT_STATUS_VALUES,
+          CERT_KEYWORDS,
+          "Posiadanie orzeczenia",
+          "nie",
+          rowNumber,
+          { entity: "caller", entityId: callerId, field: "hasDisabilityCertificate" }
+        ) as DisabilityCertificateStatus,
+        disabilityDegree: resolveSingle(
+          sanitizeCell(cell(row, idxDegree), 60),
+          DISABILITY_DEGREES,
+          DEGREE_KEYWORDS,
+          "Stopień niepełnosprawności",
+          "brak / nie dotyczy",
+          rowNumber,
+          { entity: "caller", entityId: callerId, field: "disabilityDegree" }
+        ) as DisabilityDegree,
         tags: ["Zaimportowano z Excela"],
         createdAt: callDateISO,
         updatedAt: callDateISO,
       };
-      callersMap.set(callerKey, caller);
-    }
+      callersByKey.set(callerKey, caller);
 
-    const randomRecSuffix = Math.random().toString(36).substring(2, 8);
-    const guidanceType = matchGuidanceType(guidanceRaw);
+      const similar = findSimilarCaller(firstName, lastName);
+      if (similar) {
+        const pairKey = caller.id + "|" + similar.id;
+        if (!reportedDuplicatePairs.has(pairKey)) {
+          reportedDuplicatePairs.add(pairKey);
+          duplicateReviews.push({
+            id: makeId("dup"),
+            newCallerId: caller.id,
+            newCallerName: firstName + " " + lastName,
+            existingCallerId: similar.id,
+            existingCallerName: similar.firstName + " " + similar.lastName,
+            rowNumbers: [],
+          });
+        }
+      }
+    }
+    callerRowNumbers.set(caller.id, [...(callerRowNumbers.get(caller.id) || []), rowNumber]);
+
+    const recordId = makeId("rec-migrated");
+    const guidanceType = resolveSingle(
+      sanitizeCell(cell(row, idxGuidanceType), 120),
+      GUIDANCE_TYPES,
+      GUIDANCE_TYPE_KEYWORDS,
+      "Rodzaj poradnictwa",
+      "inne",
+      rowNumber,
+      { entity: "record", entityId: recordId, field: "guidanceType" }
+    ) as GuidanceType;
+
+    const areaDict = GUIDANCE_AREAS_MAP[guidanceType] ?? ALL_GUIDANCE_AREAS;
+    const areaFallback = areaDict[areaDict.length - 1];
+
     const record: CallRecord = {
-      id: "rec-migrated-" + Date.now() + "-" + randomRecSuffix,
+      id: recordId,
       callerId: caller.id,
       callDate: callDateISO,
       specialistId: "spec-migrated",
       specialistName: "Dyżurujący Specjalista",
       specialistRole: "Konsultant",
-      contactTypes: matchContactType(contactRaw),
-      subjectTargets: matchSubjectTarget(subjectRaw),
+      contactTypes: resolveMulti(
+        sanitizeCell(cell(row, idxContactType), 200),
+        CONTACT_TYPES,
+        CONTACT_KEYWORDS,
+        "Rodzaj kontaktu",
+        "inne",
+        rowNumber,
+        { entity: "record", entityId: recordId, field: "contactTypes" }
+      ) as ContactType[],
+      subjectTargets: resolveMulti(
+        sanitizeCell(cell(row, idxSubjectTarget), 200),
+        SUBJECT_TARGETS,
+        SUBJECT_KEYWORDS,
+        "Kogo dotyczy porada",
+        "inne",
+        rowNumber,
+        { entity: "record", entityId: recordId, field: "subjectTargets" }
+      ) as SubjectTarget[],
       guidanceType,
-      guidanceAreas: areaRaw ? [areaRaw] : (GUIDANCE_AREAS_MAP[guidanceType] ? [GUIDANCE_AREAS_MAP[guidanceType][0]] : ["inne"]),
-      adviceDescription: descRaw,
-      notes: notesRaw,
-      referredTo: referredRaw,
+      guidanceAreas: resolveMulti(
+        sanitizeCell(cell(row, idxGuidanceArea), 500),
+        areaDict,
+        undefined,
+        "Obszar porady",
+        areaFallback,
+        rowNumber,
+        { entity: "record", entityId: recordId, field: "guidanceAreas" }
+      ),
+      adviceDescription,
+      notes: sanitizeCell(cell(row, idxNotes)),
+      referredTo: sanitizeCell(cell(row, idxReferred), 200),
       durationMinutes: 30,
       createdAt: callDateISO,
     };
@@ -334,21 +646,104 @@ export async function parseExcelFile(
         voivodeship: caller.voivodeship,
         guidanceType: record.guidanceType,
         area: record.guidanceAreas.join(", "),
-        desc: descRaw.length > 50 ? descRaw.substring(0, 50) + "..." : descRaw,
+        desc:
+          adviceDescription.length > 60
+            ? adviceDescription.substring(0, 60) + "..."
+            : adviceDescription,
       });
     }
   }
 
+  duplicateReviews.forEach((d) => {
+    d.rowNumbers = callerRowNumbers.get(d.newCallerId) || [];
+  });
+
+  // Only surface duplicate pairs where the existing side is a real, previously
+  // saved caller or another caller created in this import
+  duplicateReviews.forEach((d) => {
+    if (!existingIds.has(d.existingCallerId)) {
+      d.existingCallerName += " (również z tego importu)";
+    }
+  });
+
   return {
-    callers: Array.from(callersMap.values()),
+    callers: Array.from(callersByKey.values()),
     records: parsedRecords,
+    valueReviews,
+    duplicateReviews,
+    skippedRows,
+    corrections,
     stats: {
-      totalRows: rows.length - (headerRowIndex + 1),
+      totalRows,
       validRows: parsedRecords.length,
+      skippedCount: skippedRows.length,
       newCallersCount,
       existingCallersMatched: existingMatchedCount,
-      errors,
+      correctionsCount: corrections.length,
+      reviewCount: valueReviews.length + duplicateReviews.length,
     },
     previewRows,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Finalization — applies user review decisions and merges duplicates
+// ---------------------------------------------------------------------------
+
+export function finalizeImport(
+  parsed: ParsedMigrationResult,
+  resolutions: ImportResolutions
+): { callers: Caller[]; records: CallRecord[] } {
+  const callers: Caller[] = JSON.parse(JSON.stringify(parsed.callers));
+  const records: CallRecord[] = JSON.parse(JSON.stringify(parsed.records));
+
+  const callerById = new Map(callers.map((c) => [c.id, c]));
+  const recordById = new Map(records.map((r) => [r.id, r]));
+
+  for (const review of parsed.valueReviews) {
+    const chosen = resolutions.values[review.id] ?? review.suggested ?? review.fallback;
+    const entity: Record<string, unknown> | undefined =
+      review.target.entity === "caller"
+        ? (callerById.get(review.target.entityId) as unknown as Record<string, unknown>)
+        : (recordById.get(review.target.entityId) as unknown as Record<string, unknown>);
+    if (!entity) continue;
+
+    if (review.target.multiIndex !== undefined) {
+      const arr = entity[review.target.field];
+      if (Array.isArray(arr) && review.target.multiIndex < arr.length) {
+        arr[review.target.multiIndex] = chosen;
+      }
+    } else {
+      entity[review.target.field] = chosen;
+    }
+  }
+
+  const droppedCallerIds = new Set<string>();
+  for (const dup of parsed.duplicateReviews) {
+    const decision = resolutions.duplicates[dup.id] ?? "merge";
+    if (decision !== "merge") continue;
+    const target = callerById.get(dup.existingCallerId);
+    if (!target || droppedCallerIds.has(dup.existingCallerId)) continue;
+
+    droppedCallerIds.add(dup.newCallerId);
+    records.forEach((r) => {
+      if (r.callerId === dup.newCallerId) {
+        r.callerId = dup.existingCallerId;
+        if (r.callDate > target.updatedAt) target.updatedAt = r.callDate;
+      }
+    });
+  }
+
+  const dedupe = (arr: string[]): string[] => Array.from(new Set(arr));
+  const finalCallers = callers.filter((c) => !droppedCallerIds.has(c.id));
+  finalCallers.forEach((c) => {
+    c.beneficiaryTypes = dedupe(c.beneficiaryTypes) as BeneficiaryType[];
+  });
+  records.forEach((r) => {
+    r.contactTypes = dedupe(r.contactTypes) as ContactType[];
+    r.subjectTargets = dedupe(r.subjectTargets) as SubjectTarget[];
+    r.guidanceAreas = dedupe(r.guidanceAreas);
+  });
+
+  return { callers: finalCallers, records };
 }

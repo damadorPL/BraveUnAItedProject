@@ -1,6 +1,11 @@
 import React, { useState, useRef } from "react";
 import { useApp } from "../context/AppContext";
-import { downloadExcelTemplate, parseExcelFile, ParsedMigrationResult } from "../services/excelMigrator";
+import {
+  downloadExcelTemplate,
+  parseExcelFile,
+  finalizeImport,
+  ParsedMigrationResult,
+} from "../services/excelMigrator";
 import {
   X,
   FileSpreadsheet,
@@ -8,11 +13,14 @@ import {
   Download,
   CheckCircle2,
   AlertTriangle,
-  Users,
-  FileText,
-  Sparkles,
+  SkipForward,
+  Wand2,
+  HelpCircle,
+  UserX,
 } from "lucide-react";
 import confetti from "canvas-confetti";
+
+const MAX_LISTED_ITEMS = 8;
 
 export const ExcelMigratorModal: React.FC = () => {
   const { isExcelModalOpen, setIsExcelModalOpen, callers, applyBulkImport } = useApp();
@@ -22,6 +30,10 @@ export const ExcelMigratorModal: React.FC = () => {
   const [parsing, setParsing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [migrationResult, setMigrationResult] = useState<ParsedMigrationResult | null>(null);
+  const [valueResolutions, setValueResolutions] = useState<Record<string, string>>({});
+  const [duplicateResolutions, setDuplicateResolutions] = useState<
+    Record<string, "merge" | "separate">
+  >({});
   const [isSuccess, setIsSuccess] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -33,6 +45,8 @@ export const ExcelMigratorModal: React.FC = () => {
     setFile(selectedFile);
     setParsing(true);
     setMigrationResult(null);
+    setValueResolutions({});
+    setDuplicateResolutions({});
 
     try {
       const result = await parseExcelFile(selectedFile, callers);
@@ -53,9 +67,13 @@ export const ExcelMigratorModal: React.FC = () => {
   };
 
   const handleApply = () => {
-    if (!migrationResult) return;
+    if (!migrationResult || migrationResult.stats.validRows === 0) return;
 
-    applyBulkImport(migrationResult.callers, migrationResult.records);
+    const { callers: finalCallers, records: finalRecords } = finalizeImport(migrationResult, {
+      values: valueResolutions,
+      duplicates: duplicateResolutions,
+    });
+    applyBulkImport(finalCallers, finalRecords);
     setIsSuccess(true);
 
     try {
@@ -67,8 +85,12 @@ export const ExcelMigratorModal: React.FC = () => {
       setIsSuccess(false);
       setMigrationResult(null);
       setFile(null);
+      setValueResolutions({});
+      setDuplicateResolutions({});
     }, 2200);
   };
+
+  const stats = migrationResult?.stats;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
@@ -89,6 +111,7 @@ export const ExcelMigratorModal: React.FC = () => {
 
           <button
             onClick={() => setIsExcelModalOpen(false)}
+            aria-label="Zamknij okno importu"
             className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
@@ -155,10 +178,14 @@ export const ExcelMigratorModal: React.FC = () => {
 
                 <Upload className="w-10 h-10 text-indigo-600 mx-auto mb-2" />
                 <p className="text-sm font-bold text-slate-800">
-                  {file ? file.name : "Przeciągnij plik Excel (.xlsx, .csv) lub kliknij, aby wybrać"}
+                  {parsing
+                    ? "Analizowanie pliku..."
+                    : file
+                      ? file.name
+                      : "Przeciągnij plik Excel (.xlsx, .csv) lub kliknij, aby wybrać"}
                 </p>
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Obsługiwane formaty: Microsoft Excel (.xlsx, .xls), CSV z separatorem średnik/przecinek.
+                  Obsługiwane formaty: Microsoft Excel (.xlsx, .xls), CSV z separatorem średnik/przecinek. Maks. 10 MB.
                 </p>
               </div>
 
@@ -173,63 +200,197 @@ export const ExcelMigratorModal: React.FC = () => {
                 </div>
               )}
 
-              {/* Migration Stats & Preview */}
-              {migrationResult && (
+              {/* Migration Stats, Report & Review */}
+              {migrationResult && stats && (
                 <div className="space-y-4">
                   {/* Stat Badges */}
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-center">
-                      <div className="text-xl font-extrabold text-indigo-700">
-                        {migrationResult.stats.validRows}
-                      </div>
-                      <div className="text-[11px] text-indigo-950 font-semibold">Odczytanych wpisów</div>
+                      <div className="text-xl font-extrabold text-indigo-700">{stats.validRows}</div>
+                      <div className="text-[11px] text-indigo-950 font-semibold">Poprawnych wpisów</div>
                     </div>
 
                     <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-center">
                       <div className="text-xl font-extrabold text-emerald-700">
-                        +{migrationResult.stats.newCallersCount}
+                        +{stats.newCallersCount}
                       </div>
                       <div className="text-[11px] text-emerald-950 font-semibold">Nowych dzwoniących</div>
                     </div>
 
+                    <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
+                      <div className="text-xl font-extrabold text-amber-700">{stats.skippedCount}</div>
+                      <div className="text-[11px] text-amber-950 font-semibold">Pominiętych wierszy</div>
+                    </div>
+
                     <div className="bg-purple-50 border border-purple-100 rounded-xl p-3 text-center">
-                      <div className="text-xl font-extrabold text-purple-700">
-                        {migrationResult.stats.existingCallersMatched}
-                      </div>
-                      <div className="text-[11px] text-purple-950 font-semibold">Dopasowanych kartotek</div>
+                      <div className="text-xl font-extrabold text-purple-700">{stats.reviewCount}</div>
+                      <div className="text-[11px] text-purple-950 font-semibold">Do weryfikacji</div>
                     </div>
                   </div>
 
+                  {/* Skipped rows */}
+                  {migrationResult.skippedRows.length > 0 && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                      <div className="flex items-center space-x-1.5 font-bold text-amber-900 mb-1.5">
+                        <SkipForward className="w-3.5 h-3.5" />
+                        <span>Pominięte wiersze (do poprawy w pliku źródłowym):</span>
+                      </div>
+                      <ul className="space-y-0.5 text-amber-900 text-[11px] list-disc list-inside">
+                        {migrationResult.skippedRows.slice(0, MAX_LISTED_ITEMS).map((s) => (
+                          <li key={s.rowNumber}>
+                            Wiersz {s.rowNumber}: {s.reasons.join(", ")}
+                          </li>
+                        ))}
+                      </ul>
+                      {migrationResult.skippedRows.length > MAX_LISTED_ITEMS && (
+                        <div className="text-[11px] text-amber-700 mt-1">
+                          …i {migrationResult.skippedRows.length - MAX_LISTED_ITEMS} kolejnych.
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Auto-corrections */}
+                  {migrationResult.corrections.length > 0 && (
+                    <div className="bg-sky-50 border border-sky-200 rounded-xl p-3">
+                      <div className="flex items-center space-x-1.5 font-bold text-sky-900 mb-1.5">
+                        <Wand2 className="w-3.5 h-3.5" />
+                        <span>Automatycznie poprawione literówki ({migrationResult.corrections.length}):</span>
+                      </div>
+                      <ul className="space-y-0.5 text-sky-900 text-[11px] list-disc list-inside">
+                        {migrationResult.corrections.slice(0, MAX_LISTED_ITEMS).map((c, i) => (
+                          <li key={i}>
+                            Wiersz {c.rowNumber} · {c.fieldLabel}: „{c.from}" → <b>{c.to}</b>
+                          </li>
+                        ))}
+                      </ul>
+                      {migrationResult.corrections.length > MAX_LISTED_ITEMS && (
+                        <div className="text-[11px] text-sky-700 mt-1">
+                          …i {migrationResult.corrections.length - MAX_LISTED_ITEMS} kolejnych.
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Uncertain values review */}
+                  {migrationResult.valueReviews.length > 0 && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 space-y-2">
+                      <div className="flex items-center space-x-1.5 font-bold text-purple-900">
+                        <HelpCircle className="w-3.5 h-3.5" />
+                        <span>Niejednoznaczne wartości — potwierdź dopasowanie:</span>
+                      </div>
+                      {migrationResult.valueReviews.map((rev) => (
+                        <div
+                          key={rev.id}
+                          className="bg-white border border-purple-100 rounded-lg p-2.5 flex flex-wrap items-center gap-2"
+                        >
+                          <div className="grow min-w-[180px]">
+                            <div className="text-[11px] text-slate-500">
+                              Wiersz {rev.rowNumber} · {rev.fieldLabel}
+                            </div>
+                            <div className="font-semibold text-slate-900">„{rev.rawValue}"</div>
+                          </div>
+                          <select
+                            aria-label={`Dopasowanie dla wiersza ${rev.rowNumber}, pole ${rev.fieldLabel}`}
+                            value={valueResolutions[rev.id] ?? rev.suggested ?? rev.fallback}
+                            onChange={(e) =>
+                              setValueResolutions((prev) => ({ ...prev, [rev.id]: e.target.value }))
+                            }
+                            className="border border-purple-200 rounded-lg px-2 py-1.5 bg-white text-slate-800 font-semibold max-w-[260px]"
+                          >
+                            {rev.options.map((opt) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Possible duplicate callers */}
+                  {migrationResult.duplicateReviews.length > 0 && (
+                    <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 space-y-2">
+                      <div className="flex items-center space-x-1.5 font-bold text-rose-900">
+                        <UserX className="w-3.5 h-3.5" />
+                        <span>Możliwe duplikaty kartotek (podobne nazwiska):</span>
+                      </div>
+                      {migrationResult.duplicateReviews.map((dup) => (
+                        <div key={dup.id} className="bg-white border border-rose-100 rounded-lg p-2.5">
+                          <div className="text-slate-900">
+                            Z pliku: <b>{dup.newCallerName}</b>
+                            {dup.rowNumbers.length > 0 && (
+                              <span className="text-slate-500"> (wiersz {dup.rowNumbers.join(", ")})</span>
+                            )}{" "}
+                            — w bazie istnieje: <b>{dup.existingCallerName}</b>
+                          </div>
+                          <div className="flex items-center gap-4 mt-1.5">
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                              <input
+                                type="radio"
+                                name={`dup-${dup.id}`}
+                                checked={(duplicateResolutions[dup.id] ?? "merge") === "merge"}
+                                onChange={() =>
+                                  setDuplicateResolutions((prev) => ({ ...prev, [dup.id]: "merge" }))
+                                }
+                              />
+                              <span className="font-semibold text-slate-800">
+                                To ta sama osoba — scal z istniejącą kartoteką
+                              </span>
+                            </label>
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                              <input
+                                type="radio"
+                                name={`dup-${dup.id}`}
+                                checked={duplicateResolutions[dup.id] === "separate"}
+                                onChange={() =>
+                                  setDuplicateResolutions((prev) => ({
+                                    ...prev,
+                                    [dup.id]: "separate",
+                                  }))
+                                }
+                              />
+                              <span className="font-semibold text-slate-800">To inna osoba — utwórz nową</span>
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Preview Table */}
-                  <div>
-                    <div className="font-bold text-slate-800 text-xs mb-2">
-                      Podgląd pierwszych rekordów z pliku:
-                    </div>
-                    <div className="border border-slate-200 rounded-xl overflow-hidden">
-                      <table className="w-full text-left text-[11px]">
-                        <thead className="bg-slate-100 text-slate-700 font-bold">
-                          <tr>
-                            <th className="py-2 px-3">Osoba Dzwoniąca</th>
-                            <th className="py-2 px-3">Telefon</th>
-                            <th className="py-2 px-3">Województwo</th>
-                            <th className="py-2 px-3">Typ Porady</th>
-                            <th className="py-2 px-3">Specjalista</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 text-slate-600">
-                          {migrationResult.previewRows.map((r, i) => (
-                            <tr key={i} className="hover:bg-slate-50">
-                              <td className="py-2 px-3 font-semibold text-slate-900">{r.callerName}</td>
-                              <td className="py-2 px-3 font-mono">{r.phone}</td>
-                              <td className="py-2 px-3">{r.voivodeship}</td>
-                              <td className="py-2 px-3 font-bold">{r.adviceType}</td>
-                              <td className="py-2 px-3">{r.specialistName}</td>
+                  {migrationResult.previewRows.length > 0 && (
+                    <div>
+                      <div className="font-bold text-slate-800 text-xs mb-2">
+                        Podgląd pierwszych rekordów z pliku:
+                      </div>
+                      <div className="border border-slate-200 rounded-xl overflow-hidden">
+                        <table className="w-full text-left text-[11px]">
+                          <thead className="bg-slate-100 text-slate-700 font-bold">
+                            <tr>
+                              <th className="py-2 px-3">Osoba Dzwoniąca</th>
+                              <th className="py-2 px-3">Województwo</th>
+                              <th className="py-2 px-3">Rodzaj Poradnictwa</th>
+                              <th className="py-2 px-3">Obszar</th>
+                              <th className="py-2 px-3">Opis</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 text-slate-600">
+                            {migrationResult.previewRows.map((r, i) => (
+                              <tr key={i} className="hover:bg-slate-50">
+                                <td className="py-2 px-3 font-semibold text-slate-900">{r.callerName}</td>
+                                <td className="py-2 px-3">{r.voivodeship}</td>
+                                <td className="py-2 px-3 font-bold">{r.guidanceType}</td>
+                                <td className="py-2 px-3">{r.area}</td>
+                                <td className="py-2 px-3">{r.desc}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </>
@@ -248,10 +409,11 @@ export const ExcelMigratorModal: React.FC = () => {
               <button
                 type="button"
                 onClick={handleApply}
-                className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center space-x-1.5"
+                disabled={migrationResult.stats.validRows === 0}
+                className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center space-x-1.5"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                <span>Zatwierdź i scal z bazą</span>
+                <span>Zatwierdź i scal z bazą ({migrationResult.stats.validRows} wpisów)</span>
               </button>
             )}
           </div>
