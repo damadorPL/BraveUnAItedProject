@@ -210,33 +210,33 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
             </div>
 
             {/* Sub-info Badges */}
-            <div className="mt-3 flex flex-wrap items-center gap-y-2 gap-x-4 text-xs text-slate-600 dark:text-slate-400">
+            <div className="mt-3 flex flex-wrap items-center gap-y-2 gap-x-4 text-xs text-slate-700 dark:text-slate-300">
               <div className="flex items-center">
-                <Phone className="w-3.5 h-3.5 mr-1.5 text-slate-400 dark:text-slate-500" />
+                <Phone className="w-3.5 h-3.5 mr-1.5 text-slate-500 dark:text-slate-400" />
                 <span className="font-mono font-bold text-slate-900 dark:text-white text-sm">
                   {caller.phoneNumber || "Brak numeru"}
                 </span>
               </div>
 
               <div className="flex items-center">
-                <MapPin className="w-3.5 h-3.5 mr-1.5 text-slate-400 dark:text-slate-500" />
-                <span className="font-medium text-slate-800 dark:text-slate-200">{caller.city || "Brak miasta"}</span>
-                <span className="mx-1 text-slate-300 dark:text-slate-600">•</span>
-                <span className="text-slate-600 dark:text-slate-400 font-semibold">{caller.voivodeship || "Polska"}</span>
+                <MapPin className="w-3.5 h-3.5 mr-1.5 text-slate-500 dark:text-slate-400" />
+                <span className="font-semibold text-slate-900 dark:text-slate-100">{caller.city || "Brak miasta"}</span>
+                <span className="mx-1 text-slate-400 dark:text-slate-600">•</span>
+                <span className="text-slate-700 dark:text-slate-300 font-semibold">{caller.voivodeship || "Polska"}</span>
               </div>
 
               <div className="flex items-center">
                 <Users className="w-3.5 h-3.5 mr-1.5 text-[#296B6E] dark:text-teal-400" />
                 <span>
-                  Beneficjent: <strong className="text-slate-800 dark:text-slate-200">{beneficiaryStr}</strong>
+                  Beneficjent: <strong className="text-slate-900 dark:text-slate-100">{beneficiaryStr}</strong>
                 </span>
               </div>
 
               <div className="flex items-center">
-                <Award className="w-3.5 h-3.5 mr-1.5 text-purple-600 dark:text-purple-400" />
+                <Award className="w-3.5 h-3.5 mr-1.5 text-purple-700 dark:text-purple-400" />
                 <span>
                   Orzeczenie:{" "}
-                  <strong className="text-slate-800 dark:text-slate-200">
+                  <strong className="text-slate-900 dark:text-slate-100">
                     {caller.hasDisabilityCertificate === "tak"
                       ? `Tak (${caller.disabilityDegree || "posiada"})`
                       : caller.hasDisabilityCertificate === "w trakcie"
@@ -253,7 +253,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
               caller.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-[11px] bg-slate-100 dark:bg-[#2A2724] text-slate-700 dark:text-slate-300 font-medium px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#383431]"
+                  className="text-[11px] bg-slate-100 dark:bg-[#2A2724] text-slate-800 dark:text-slate-200 font-bold px-2.5 py-1 rounded-lg border border-slate-300 dark:border-[#383431]"
                 >
                   {tag}
                 </span>
@@ -483,10 +483,10 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                           </button>
                         ) : (
                           <span
-                            className="flex items-center space-x-1 px-2.5 py-1 bg-slate-50 dark:bg-[#23211F] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-[#383431] rounded-xl text-[11px] font-medium"
+                            className="flex items-center space-x-1 px-2.5 py-1 bg-slate-50 dark:bg-[#23211F] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#383431] rounded-xl text-[11px] font-medium"
                             title="Tylko autor lub administrator może edytować ten wpis"
                           >
-                            <Lock className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                            <Lock className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                             <span>Tylko odczyt</span>
                           </span>
                         )}
@@ -496,7 +496,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                     {/* Guidance Areas Badges */}
                     {rec.guidanceAreas && rec.guidanceAreas.length > 0 && (
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mr-1">
+                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 mr-1">
                           Obszar:
                         </span>
                         {rec.guidanceAreas.map((area) => (
@@ -540,7 +540,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                       <div className="bg-amber-50 dark:bg-[#251F14] border border-amber-200 dark:border-amber-600/40 rounded-2xl p-3 text-xs text-amber-950 dark:text-[#FFB200] space-y-1.5">
                         <div className="flex items-center justify-between flex-wrap gap-2">
                           <div className="flex items-center space-x-2">
-                            <Share2 className="w-3.5 h-3.5 text-amber-600 dark:text-[#FFB200] shrink-0" />
+                            <Share2 className="w-3.5 h-3.5 text-amber-700 dark:text-[#FFB200] shrink-0" />
                             <span>
                               <strong>Przekazano do:</strong> {rec.referredTo}
                             </span>
@@ -549,7 +549,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                             className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                               (rec.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
                                 ? "bg-amber-200/70 dark:bg-amber-900/60 text-amber-950 dark:text-[#FFDF06] border-amber-300 dark:border-amber-700"
-                                : "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800"
+                                : "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800"
                             }`}
                           >
                             {(rec.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
@@ -559,7 +559,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                         </div>
                         {rec.referredNote && (
                           <div className="text-[11px] text-amber-900 dark:text-amber-200/90 pl-5 flex items-start gap-1 italic">
-                            <MessageSquare className="w-3 h-3 text-amber-600 dark:text-[#FFB200] shrink-0 mt-0.5" />
+                            <MessageSquare className="w-3 h-3 text-amber-700 dark:text-[#FFB200] shrink-0 mt-0.5" />
                             <span>„{rec.referredNote}”</span>
                           </div>
                         )}

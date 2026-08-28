@@ -135,7 +135,7 @@ export const ReferredCasesModal: React.FC<Props> = ({ isOpen, onClose }) => {
             </button>
           </div>
 
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
+          <div className="text-[11px] text-slate-600 dark:text-slate-300 hidden sm:block">
             Powiadomienia e-mail są wysyłane natychmiast po przekazaniu
           </div>
         </div>
@@ -145,8 +145,8 @@ export const ReferredCasesModal: React.FC<Props> = ({ isOpen, onClose }) => {
           {filteredCases.length === 0 ? (
             <div className="bg-white dark:bg-[#1E1C1A] rounded-3xl border border-slate-200 dark:border-[#383431] p-12 text-center shadow-xs">
               <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
-              <h3 className="text-base font-bold text-slate-800 dark:text-white">Brak oczekujących spraw do załatwienia</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Brak oczekujących spraw do załatwienia</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-md mx-auto">
                 Nie masz obecnie żadnych przekazanych konsultacji wymagających Twojej interwencji.
               </p>
             </div>
@@ -169,29 +169,29 @@ export const ReferredCasesModal: React.FC<Props> = ({ isOpen, onClose }) => {
                         </span>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                           status === "OCZEKUJĄCA"
-                            ? "bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-700/50"
-                            : "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700/50"
+                            ? "bg-amber-50 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-700/50"
+                            : "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700/50"
                         }`}>
                           {status === "OCZEKUJĄCA" ? "🟡 Oczekuje na kontakt" : "🟢 Załatwiona"}
                         </span>
                       </div>
 
-                      <div className="flex items-center space-x-3 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      <div className="flex items-center space-x-3 text-xs text-slate-600 dark:text-slate-300 mt-1">
                         <span className="flex items-center">
-                          <Phone className="w-3 h-3 mr-1 text-slate-400 dark:text-slate-500" />
-                          <strong className="text-slate-800 dark:text-slate-200 font-mono">{caller?.phoneNumber || "Brak nr"}</strong>
+                          <Phone className="w-3 h-3 mr-1 text-slate-500 dark:text-slate-400" />
+                          <strong className="text-slate-900 dark:text-slate-100 font-mono">{caller?.phoneNumber || "Brak nr"}</strong>
                         </span>
                         <span>&bull;</span>
                         <span className="flex items-center">
-                          <MapPin className="w-3 h-3 mr-1 text-slate-400 dark:text-slate-500" />
+                          <MapPin className="w-3 h-3 mr-1 text-slate-500 dark:text-slate-400" />
                           {caller?.city || "—"}, {caller?.voivodeship}
                         </span>
                       </div>
                     </div>
 
-                    <div className="text-right text-xs text-slate-500 dark:text-slate-400">
-                      <div>Przekazał/a: <strong className="text-slate-800 dark:text-slate-200">{rec.specialistName}</strong></div>
-                      <div className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                    <div className="text-right text-xs text-slate-600 dark:text-slate-300">
+                      <div>Przekazał/a: <strong className="text-slate-900 dark:text-slate-100">{rec.specialistName}</strong></div>
+                      <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
                         Data: {new Date(rec.callDate || rec.createdAt).toLocaleDateString("pl-PL")}
                       </div>
                     </div>
@@ -202,7 +202,7 @@ export const ReferredCasesModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     {rec.referredNote && (
                       <div className="bg-amber-50 dark:bg-[#241E15] border border-amber-200/80 dark:border-amber-600/40 rounded-2xl p-3.5 text-amber-950 dark:text-[#FFB200]">
                         <div className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-[#FFB200] text-[11px] mb-1">
-                          <MessageSquare className="w-3.5 h-3.5 text-amber-600 dark:text-[#FFB200]" />
+                          <MessageSquare className="w-3.5 h-3.5 text-amber-700 dark:text-[#FFB200]" />
                           <span>Notatka / wytyczne od {rec.specialistName}:</span>
                         </div>
                         <p className="leading-relaxed font-medium">{rec.referredNote}</p>
@@ -210,10 +210,10 @@ export const ReferredCasesModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     )}
 
                     <div className="bg-slate-50 dark:bg-[#161514] border border-slate-200 dark:border-[#2C2927] rounded-2xl p-3 text-slate-700 dark:text-slate-300">
-                      <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-0.5">
+                      <div className="text-[10px] font-bold text-slate-600 dark:text-slate-300 mb-0.5">
                         Czego dotyczyła wcześniejsza porada:
                       </div>
-                      <p className="line-clamp-2 text-slate-800 dark:text-slate-200">{rec.adviceDescription}</p>
+                      <p className="line-clamp-2 text-slate-900 dark:text-slate-100">{rec.adviceDescription}</p>
                     </div>
                   </div>
 

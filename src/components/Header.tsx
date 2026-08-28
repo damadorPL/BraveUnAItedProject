@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { getSpecialistInitials } from "../services/auth";
 import {
-  PhoneCall,
   FileSpreadsheet,
   Download,
   UserPlus,
@@ -79,9 +78,11 @@ export const Header: React.FC = () => {
             onClick={() => handleTabChange("SEARCH")}
             className="flex items-center space-x-2 cursor-pointer shrink-0 select-none group"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-[#FFB200] via-[#FFB200] to-[#E5A000] rounded-xl text-[#2D2A28] shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform font-bold shrink-0">
-              <PhoneCall className="w-4 h-4" />
-            </div>
+            <img
+              src="/synapsis-mark.png"
+              alt="Fundacja SYNAPSIS"
+              className="w-8 h-8 shadow-sm group-hover:scale-105 transition-transform shrink-0"
+            />
             <div>
               <span className="font-black text-sm sm:text-base tracking-tight text-white whitespace-nowrap">
                 Baza Porad
@@ -231,11 +232,11 @@ export const Header: React.FC = () => {
             </button>
 
             {/* Logged-in Specialist Profile */}
-            <div className="border-l border-[#3E3A37] pl-1.5 ml-0.5 flex items-center space-x-1">
-              <div className="flex items-center space-x-1.5 bg-[#242220] py-1 px-2 rounded-xl border border-[#3E3A37]">
+            <div className="border-l border-[#3E3A37] pl-2 ml-0.5 flex items-center space-x-1.5">
+              <div className="flex items-center space-x-2 bg-[#242220] py-1 px-2.5 rounded-xl border border-[#3E3A37]">
                 <div className="relative shrink-0">
                   <div
-                    className={`w-6 h-6 ${currentSpecialist.avatarBg} rounded-lg flex items-center justify-center text-white text-[10px] font-black`}
+                    className={`w-7 h-7 ${currentSpecialist.avatarBg} rounded-lg flex items-center justify-center text-white text-[10px] font-black`}
                     aria-hidden="true"
                   >
                     {getSpecialistInitials(currentSpecialist.name)}
@@ -245,12 +246,19 @@ export const Header: React.FC = () => {
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 border border-[#242220]"></span>
                   </span>
                 </div>
-                <div className="text-left">
-                  <div className="text-[9px] font-bold leading-none text-slate-400">
-                    {currentSpecialist.isAdmin ? "Admin" : "Dyżur"}
+                <div className="text-left select-none">
+                  <div className="text-[9px] font-bold leading-none text-slate-300">
+                    {currentSpecialist.isAdmin ? (
+                      <span className="text-amber-400 font-semibold flex items-center gap-0.5">
+                        <ShieldCheck className="w-2.5 h-2.5" />
+                        Administrator
+                      </span>
+                    ) : (
+                      <span className="text-slate-300">Dyżurujący</span>
+                    )}
                   </div>
-                  <div className="text-xs font-bold text-white max-w-[100px] truncate">
-                    {currentSpecialist.name.split(" ")[0]}
+                  <div className="text-xs font-bold text-white whitespace-nowrap">
+                    {currentSpecialist.name}
                   </div>
                 </div>
                 <button
@@ -258,7 +266,7 @@ export const Header: React.FC = () => {
                   onClick={logout}
                   title="Wyloguj się"
                   aria-label="Wyloguj się"
-                  className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-[#34302E] transition-colors cursor-pointer shrink-0 ml-0.5"
+                  className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-[#34302E] transition-colors cursor-pointer shrink-0 ml-1"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                 </button>
@@ -346,7 +354,7 @@ export const Header: React.FC = () => {
             {/* User Avatar Compact Badge */}
             <div
               onClick={() => setIsProfileModalOpen(true)}
-              className="flex items-center space-x-1.5 bg-[#242220] border border-[#3E3A37] hover:border-[#FFB200] p-1 rounded-xl cursor-pointer transition-colors"
+              className="flex items-center space-x-1.5 bg-[#242220] border border-[#3E3A37] hover:border-[#FFB200] py-1 px-1.5 rounded-xl cursor-pointer transition-colors"
               title={`Zalogowano: ${currentSpecialist.name} (kliknij, aby edytować profil)`}
             >
               <div
@@ -354,8 +362,8 @@ export const Header: React.FC = () => {
               >
                 {getSpecialistInitials(currentSpecialist.name)}
               </div>
-              <span className="hidden md:inline text-xs font-bold text-white max-w-[90px] lg:max-w-[130px] truncate pr-1">
-                {currentSpecialist.name.split(" ")[0]}
+              <span className="hidden md:inline text-xs font-bold text-white max-w-[160px] truncate pr-1">
+                {currentSpecialist.name}
               </span>
             </div>
 
@@ -398,7 +406,7 @@ export const Header: React.FC = () => {
                   )}
                 </div>
                 <div className="text-[11px] text-[#FFB200] truncate font-medium">{currentSpecialist.role}</div>
-                <div className="text-[10px] text-slate-400 font-mono truncate">{currentSpecialist.email}</div>
+                <div className="text-[10px] text-slate-300 font-mono truncate">{currentSpecialist.email}</div>
               </div>
             </div>
 
@@ -430,7 +438,7 @@ export const Header: React.FC = () => {
 
           {/* Navigation Links */}
           <div className="space-y-1">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">
+            <div className="text-[10px] font-bold text-slate-300 uppercase tracking-wider px-2 mb-1">
               Nawigacja
             </div>
 
@@ -445,7 +453,7 @@ export const Header: React.FC = () => {
             >
               <div className="flex items-center space-x-2.5">
                 <Search className="w-4 h-4" />
-                <span>Kartoteka i wyszukiwarka</span>
+                <span>Baza historii kontaktów</span>
               </div>
               <ChevronRight className="w-4 h-4 opacity-50" />
             </button>
@@ -466,6 +474,7 @@ export const Header: React.FC = () => {
               <ChevronRight className="w-4 h-4 opacity-50" />
             </button>
 
+            {/* Przekazane sprawy */}
             <button
               type="button"
               onClick={() => {
@@ -478,15 +487,13 @@ export const Header: React.FC = () => {
                 <Inbox className="w-4 h-4 text-[#FFB200]" />
                 <span>Przekazane sprawy (Handoff)</span>
               </div>
-              {myReferredCases.length > 0 && (
-                <span
-                  className={`text-[11px] font-black px-2 py-0.5 rounded-full ${
-                    pendingReferredCount > 0
-                      ? "bg-[#FFB200] text-[#2D2A28]"
-                      : "bg-slate-700 text-slate-300"
-                  }`}
-                >
-                  {pendingReferredCount > 0 ? `${pendingReferredCount} oczekujących` : `${myReferredCases.length}`}
+              {pendingReferredCount > 0 ? (
+                <span className="bg-[#FFB200] text-[#2D2A28] text-[10px] font-black px-2 py-0.5 rounded-full shadow-2xs">
+                  {pendingReferredCount} nowe
+                </span>
+              ) : (
+                <span className="text-[10px] text-slate-300 font-mono">
+                  {myReferredCases.length}
                 </span>
               )}
             </button>
@@ -512,7 +519,7 @@ export const Header: React.FC = () => {
 
           {/* Quick Actions in Mobile Menu */}
           <div className="space-y-1 pt-2 border-t border-[#3E3A37]">
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">
+            <div className="text-[10px] font-bold text-slate-300 uppercase tracking-wider px-2 mb-1">
               Akcje i narzędzia
             </div>
 
@@ -576,7 +583,7 @@ export const Header: React.FC = () => {
                   resetDatabase();
                 }
               }}
-              className="w-full flex items-center space-x-2.5 px-3.5 py-2 text-slate-400 hover:text-slate-200 text-xs font-semibold cursor-pointer pt-1"
+              className="w-full flex items-center space-x-2.5 px-3.5 py-2 text-slate-300 hover:text-white text-xs font-semibold cursor-pointer pt-1"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Przywróć bazę demo</span>

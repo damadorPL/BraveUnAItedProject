@@ -145,7 +145,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
                 setError(null);
               }}
               placeholder="np. a.nowak@fundacja-spektrum.pl"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
             />
 
             {recognized && (
@@ -162,12 +162,12 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-slate-900 truncate">{recognized.name}</div>
                   {recognized.isAdmin ? (
-                    <div className="flex items-center gap-1 text-[11px] font-bold text-amber-700">
+                    <div className="flex items-center gap-1 text-[11px] font-bold text-amber-800">
                       <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
                       <span>Administrator</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1 text-[11px] font-bold text-[#296B6E]">
+                    <div className="flex items-center gap-1 text-[11px] font-bold text-[#1F5254]">
                       <UserCheck className="w-3.5 h-3.5 shrink-0" />
                       <span>Dyżurujący specjalista • {recognized.title}</span>
                     </div>
@@ -200,19 +200,19 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
           <form onSubmit={handleSetPassword} noValidate>
             {/* Symulowana wiadomość e-mail (aplikacja demo nie wysyła prawdziwych maili) */}
             <div className="mt-2 mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs">
-              <div className="flex items-center gap-1.5 font-bold text-amber-800 mb-1.5">
+              <div className="flex items-center gap-1.5 font-bold text-amber-900 mb-1.5">
                 <Mail className="w-3.5 h-3.5 shrink-0" />
                 <span>Symulacja skrzynki: {recognized.email}</span>
               </div>
-              <div className="bg-white border border-amber-100 rounded-lg p-2.5 text-slate-700">
+              <div className="bg-white border border-amber-100 rounded-lg p-2.5 text-slate-800">
                 <p className="font-bold text-slate-900">Temat: Reset hasła — Baza Porad</p>
                 <p className="mt-1">
                   Twój kod weryfikacyjny:{" "}
-                  <code className="font-mono font-black text-[#296B6E] bg-[#E6F3F3] px-1.5 py-0.5 rounded-md tracking-widest">
+                  <code className="font-mono font-black text-[#1F5254] bg-[#E6F3F3] px-1.5 py-0.5 rounded-md tracking-widest">
                     {sentCode}
                   </code>
                 </p>
-                <p className="mt-1 text-[11px] text-slate-400">
+                <p className="mt-1 text-[11px] text-slate-600">
                   Jeśli to nie Ty prosisz o reset, zignoruj tę wiadomość.
                 </p>
               </div>
@@ -236,7 +236,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
                     setError(null);
                   }}
                   placeholder="6-cyfrowy kod"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono tracking-widest text-slate-900 placeholder:text-slate-400 placeholder:font-sans placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono tracking-widest text-slate-900 placeholder:text-slate-500 placeholder:font-sans placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
                 />
               </div>
 
@@ -255,13 +255,13 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
                       setError(null);
                     }}
                     placeholder="••••••••"
-                    className="w-full px-3.5 py-2.5 pr-11 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
+                    className="w-full px-3.5 py-2.5 pr-11 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
                     aria-label={showPassword ? "Ukryj hasło" : "Pokaż hasło"}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -282,7 +282,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
                     setError(null);
                   }}
                   placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
                 />
               </div>
 

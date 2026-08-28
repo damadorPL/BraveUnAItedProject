@@ -102,7 +102,7 @@ const MainContent: React.FC = () => {
             <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
               Pulpit analityczny i raporty PFRON
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
               Statystyki linii wsparcia, wskaźniki grantowe i podsumowania geograficzne
             </p>
           </div>
@@ -127,7 +127,7 @@ const MainContent: React.FC = () => {
                         {pendingCases.length} {pendingCases.length === 1 ? "oczekująca" : "oczekujące"}
                       </span>
                     </h2>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                    <p className="text-xs text-slate-700 dark:text-slate-300 mt-0.5">
                       Inni dyżurujący specjaliści przekazali do Ciebie poniższe osoby wymagające konsultacji:
                     </p>
                   </div>
@@ -157,13 +157,13 @@ const MainContent: React.FC = () => {
                           <span className="font-black text-slate-900 dark:text-white text-xs">
                             {caller ? `${caller.firstName} ${caller.lastName}` : "Kontakt z bazy"}
                           </span>
-                          <span className="text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800 shrink-0">
+                          <span className="text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-950 dark:text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800 shrink-0">
                             Od: {rec.specialistName}
                           </span>
                         </div>
 
                         {caller && (
-                          <div className="flex items-center space-x-2 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          <div className="flex items-center space-x-2 text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
                             <span className="font-mono">{caller.phoneNumber || "Brak nr"}</span>
                             <span>•</span>
                             <span>{caller.city} ({caller.voivodeship})</span>
@@ -172,7 +172,7 @@ const MainContent: React.FC = () => {
 
                         {rec.referredNote && (
                           <div className="mt-2 text-[11px] bg-amber-50 dark:bg-[#252018] text-amber-950 dark:text-[#FFB200] p-2.5 rounded-xl border border-amber-200/60 dark:border-amber-900/40 flex items-start gap-1.5 font-medium">
-                            <MessageSquare className="w-3.5 h-3.5 text-amber-600 dark:text-[#FFB200] shrink-0 mt-0.5" />
+                            <MessageSquare className="w-3.5 h-3.5 text-amber-700 dark:text-[#FFB200] shrink-0 mt-0.5" />
                             <span className="line-clamp-2">{rec.referredNote}</span>
                           </div>
                         )}
@@ -184,7 +184,7 @@ const MainContent: React.FC = () => {
                           onClick={() => {
                             if (caller) setSelectedCaller(caller);
                           }}
-                          className="text-[11px] font-bold text-[#296B6E] dark:text-teal-400 hover:underline cursor-pointer"
+                          className="text-[11px] font-bold text-[#1F5254] dark:text-teal-400 hover:underline cursor-pointer"
                         >
                           Otwórz kartotekę
                         </button>
@@ -214,7 +214,7 @@ const MainContent: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               Szybka baza historii rozmów
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2">
+            <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 mt-2">
               Wpisz nazwisko lub numer telefonu, aby w <strong>mniej niż 5 sekund</strong> sprawdzić, czy kontakt odbywał się wcześniej i jakie zalecenia otrzymał.
             </p>
           </div>
@@ -319,10 +319,10 @@ const MainContent: React.FC = () => {
                                 <span className="font-extrabold text-slate-900 dark:text-white text-base group-hover:text-[#FFB200] transition-colors">
                                   {caller.firstName} {caller.lastName}
                                 </span>
-                                <div className="flex items-center text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                  <MapPin className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                                  <span className="font-medium text-slate-700 dark:text-slate-300">{caller.city}</span>
-                                  <span className="mx-1 text-slate-300 dark:text-slate-600">•</span>
+                                <div className="flex items-center text-xs text-slate-600 dark:text-slate-300 mt-1">
+                                  <MapPin className="w-3.5 h-3.5 mr-1 text-slate-500 dark:text-slate-400" />
+                                  <span className="font-semibold text-slate-800 dark:text-slate-200">{caller.city}</span>
+                                  <span className="mx-1 text-slate-400 dark:text-slate-600">•</span>
                                   <span>{caller.voivodeship}</span>
                                 </div>
                               </div>
@@ -332,24 +332,24 @@ const MainContent: React.FC = () => {
                               </span>
                             </div>
 
-                            <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-[#1A1918] px-2.5 py-1 rounded-xl">
-                              <span className="font-medium text-slate-700 dark:text-slate-300">{beneficiaryLabel}</span>
-                              <span className="text-[#296B6E] dark:text-teal-400 font-semibold">
+                            <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-[#1A1918] px-2.5 py-1 rounded-xl">
+                              <span className="font-semibold text-slate-800 dark:text-slate-200">{beneficiaryLabel}</span>
+                              <span className="text-[#1F5254] dark:text-teal-400 font-bold">
                                 Orzeczenie: {caller.hasDisabilityCertificate === "tak" ? "Tak" : caller.hasDisabilityCertificate}
                               </span>
                             </div>
 
-                            <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-[#3E3A37] space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
+                            <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-[#3E3A37] space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
                               <div className="flex items-center">
-                                <Phone className="w-3.5 h-3.5 mr-1.5 text-slate-400 dark:text-slate-500" />
-                                <span className="font-mono font-medium text-slate-800 dark:text-slate-200">
+                                <Phone className="w-3.5 h-3.5 mr-1.5 text-slate-500 dark:text-slate-400" />
+                                <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
                                   {caller.phoneNumber || "Brak numeru"}
                                 </span>
                               </div>
 
-                              <div className="flex items-center text-slate-500 dark:text-slate-400">
-                                <Clock className="w-3.5 h-3.5 mr-1.5 text-slate-400 dark:text-slate-500" />
-                                <span>Ostatnia porada: <strong className="text-slate-700 dark:text-slate-200">{lastDateFormatted}</strong></span>
+                              <div className="flex items-center text-slate-600 dark:text-slate-300">
+                                <Clock className="w-3.5 h-3.5 mr-1.5 text-slate-500 dark:text-slate-400" />
+                                <span>Ostatnia porada: <strong className="text-slate-900 dark:text-slate-100">{lastDateFormatted}</strong></span>
                               </div>
                             </div>
 
@@ -358,7 +358,7 @@ const MainContent: React.FC = () => {
                                 caller.tags.slice(0, 3).map((tag) => (
                                   <span
                                     key={tag}
-                                    className="text-[10px] bg-slate-100 dark:bg-[#1A1918] text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md font-medium"
+                                    className="text-[10px] bg-slate-100 dark:bg-[#1A1918] text-slate-800 dark:text-slate-200 px-2 py-0.5 rounded-md font-semibold"
                                   >
                                     {tag}
                                   </span>
@@ -367,7 +367,7 @@ const MainContent: React.FC = () => {
                           </div>
 
                             <div className="mt-4 pt-3 border-t border-slate-100 dark:border-[#3E3A37] flex items-center justify-between text-xs font-bold transition-all">
-                              <div className="flex items-center text-[#296B6E] dark:text-teal-400 group-hover:text-[#FFB200] group-hover:translate-x-0.5 transition-all">
+                              <div className="flex items-center text-[#1F5254] dark:text-teal-400 font-bold group-hover:text-amber-700 dark:group-hover:text-[#FFB200] group-hover:translate-x-0.5 transition-all">
                                 <span>Otwórz kartotekę</span>
                                 <ChevronRight className="w-4 h-4 ml-1" />
                               </div>
@@ -378,7 +378,7 @@ const MainContent: React.FC = () => {
                                   e.stopPropagation();
                                   setEditingCaller(caller);
                                 }}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-[#2D2A28] dark:hover:text-[#FFB200] hover:bg-amber-100/70 dark:hover:bg-[#2D2A28] transition-colors cursor-pointer"
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-[#2D2A28] dark:hover:text-[#FFB200] hover:bg-amber-100/70 dark:hover:bg-[#2D2A28] transition-colors cursor-pointer"
                                 title="Edytuj dane kontaktu"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
@@ -466,12 +466,12 @@ const AuthGate: React.FC = () => {
         <LiveSyncBanner />
         <EmailNotificationModal />
 
-        <footer className="mt-auto py-6 border-t border-slate-200 dark:border-[#2C2927] bg-white dark:bg-[#1A1817] text-center text-xs text-slate-400 dark:text-slate-400">
+        <footer className="mt-auto py-6 border-t border-slate-200 dark:border-[#2C2927] bg-white dark:bg-[#1A1817] text-center text-xs text-slate-600 dark:text-slate-400">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
             <span>
               UnAIted &bull; <strong>Wspólna baza historii rozmów dla dyżurujących specjalistów</strong>
             </span>
-            <span className="text-[11px] text-slate-400 flex items-center gap-1">
+            <span className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               Szyfrowanie zgodne z art. 9 RODO (dane medyczne) &bull; Linia PFRON
             </span>

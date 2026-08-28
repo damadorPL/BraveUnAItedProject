@@ -183,7 +183,7 @@ export const EditCallerModal: React.FC = () => {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="np. Anna"
-                className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-400 dark:placeholder-slate-500"
+                className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-500 dark:placeholder-slate-400"
               />
             </div>
 
@@ -192,12 +192,12 @@ export const EditCallerModal: React.FC = () => {
                 Nazwisko / Identyfikator *
               </label>
               <input
-                type="text"
                 required
+                type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="np. Kowalska (lub Mama Jasia)"
-                className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-400 dark:placeholder-slate-500"
+                className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-500 dark:placeholder-slate-400"
               />
             </div>
           </div>
@@ -206,7 +206,7 @@ export const EditCallerModal: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1">
-                <Phone className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                <Phone className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 <span>Numer telefonu:</span>
               </label>
               <input
@@ -214,13 +214,13 @@ export const EditCallerModal: React.FC = () => {
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="np. 601 234 567"
-                className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-400 dark:placeholder-slate-500 font-mono"
+                className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-500 dark:placeholder-slate-400 font-mono"
               />
             </div>
 
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                <MapPin className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 <span>Miejscowość / Miasto:</span>
               </label>
               <input
@@ -228,7 +228,7 @@ export const EditCallerModal: React.FC = () => {
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="np. Warszawa / Kraków"
-                className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-400 dark:placeholder-slate-500"
+                className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-500 dark:placeholder-slate-400"
               />
             </div>
           </div>
@@ -241,7 +241,7 @@ export const EditCallerModal: React.FC = () => {
             <select
               value={voivodeship}
               onChange={(e) => setVoivodeship(e.target.value as Voivodeship)}
-              className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none cursor-pointer"
+              className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none cursor-pointer"
             >
               {VOIVODESHIPS.map((v) => (
                 <option key={v} value={v} className="dark:bg-[#1E1C1A]">
