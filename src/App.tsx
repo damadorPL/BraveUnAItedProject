@@ -40,7 +40,7 @@ const MainContent: React.FC = () => {
   } = useApp();
 
   const [callerPage, setCallerPage] = useState(1);
-  const [callerPageSize, setCallerPageSize] = useState(6);
+  const [callerPageSize, setCallerPageSize] = useState(12);
 
   useEffect(() => {
     setCallerPage(1);

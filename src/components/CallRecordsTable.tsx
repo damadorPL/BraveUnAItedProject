@@ -30,7 +30,7 @@ export const CallRecordsTable: React.FC = () => {
   } = useApp();
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(12);
 
   useEffect(() => {
     setPage(1);
