@@ -13,8 +13,13 @@ import {
   Inbox,
   Mail,
   ShieldCheck,
+  Settings,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { ReferredCasesModal } from "./ReferredCasesModal";
+import { UserProfileModal } from "./UserProfileModal";
+import { AdminPanelModal } from "./AdminPanelModal";
 
 export const Header: React.FC = () => {
   const {
@@ -28,6 +33,12 @@ export const Header: React.FC = () => {
     setIsNewCallerModalOpen,
     setIsExcelModalOpen,
     setIsExportModalOpen,
+    isProfileModalOpen,
+    setIsProfileModalOpen,
+    isAdminPanelOpen,
+    setIsAdminPanelOpen,
+    isDarkMode,
+    toggleDarkMode,
     resetDatabase,
     getReferredRecordsForSpecialist,
   } = useApp();
@@ -151,6 +162,19 @@ export const Header: React.FC = () => {
               </button>
             )}
 
+            {/* Admin Panel Button */}
+            {currentSpecialist.isAdmin && (
+              <button
+                type="button"
+                onClick={() => setIsAdminPanelOpen(true)}
+                className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-black bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 transition-all cursor-pointer whitespace-nowrap shadow-xs"
+                title="Panel Administratora: scalanie kontaktów i zarządzanie dyżurującymi"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden md:inline">Panel Admina</span>
+              </button>
+            )}
+
             {/* Reset Demo Button */}
             <button
               type="button"
@@ -166,7 +190,7 @@ export const Header: React.FC = () => {
             </button>
 
             {/* Specialist Profile Selector */}
-            <div className="border-l border-[#3E3A37] pl-2 ml-0.5">
+            <div className="border-l border-[#3E3A37] pl-2 ml-0.5 flex items-center space-x-1.5">
               <div className="flex items-center space-x-2 bg-[#242220] py-1 px-2.5 rounded-xl border border-[#3E3A37]">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -204,11 +228,37 @@ export const Header: React.FC = () => {
                   </select>
                 </div>
               </div>
+
+              {/* Edit Profile Button (for everyone) */}
+              <button
+                type="button"
+                onClick={() => setIsProfileModalOpen(true)}
+                className="p-1.5 bg-[#242220] hover:bg-[#34302E] text-slate-300 hover:text-white rounded-xl border border-[#3E3A37] transition-colors cursor-pointer shrink-0"
+                title="Edytuj swój profil i adres e-mail do powiadomień"
+              >
+                <Settings className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Dark Mode Toggle Button */}
+              <button
+                type="button"
+                onClick={toggleDarkMode}
+                className="p-1.5 bg-[#242220] hover:bg-[#34302E] text-slate-300 hover:text-white rounded-xl border border-[#3E3A37] transition-all cursor-pointer shrink-0 flex items-center justify-center"
+                title={isDarkMode ? "Przełącz na tryb jasny (Light mode)" : "Przełącz na tryb ciemny (Dark mode)"}
+              >
+                {isDarkMode ? (
+                  <Sun className="w-3.5 h-3.5 text-[#FFB200]" />
+                ) : (
+                  <Moon className="w-3.5 h-3.5 text-slate-300" />
+                )}
+              </button>
             </div>
           </div>
         </div>
       </div>
       <ReferredCasesModal isOpen={isReferredModalOpen} onClose={() => setIsReferredModalOpen(false)} />
+      <UserProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
+      <AdminPanelModal isOpen={isAdminPanelOpen} onClose={() => setIsAdminPanelOpen(false)} />
     </header>
   );
 };

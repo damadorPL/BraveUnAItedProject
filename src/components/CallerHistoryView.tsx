@@ -38,6 +38,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
     addRecordAttachment,
     removeRecordAttachment,
     setEditingRecord,
+    setEditingCaller,
     canEditRecord,
   } = useApp();
 
@@ -48,15 +49,15 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
   const getGuidanceBadgeColor = (type?: GuidanceType) => {
     switch (type) {
       case "prawno-obywatelskie":
-        return "bg-blue-50 text-blue-700 border-blue-200 ring-blue-500/20";
+        return "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60 ring-blue-500/20";
       case "w zakresie psychologii i rehabilitacji społecznej":
-        return "bg-purple-50 text-purple-700 border-purple-200 ring-purple-500/20";
+        return "bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/60 ring-purple-500/20";
       case "Parent to Parent":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200 ring-emerald-500/20";
+        return "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60 ring-emerald-500/20";
       case "społeczne":
-        return "bg-indigo-50 text-indigo-700 border-indigo-200 ring-indigo-500/20";
+        return "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/60 ring-indigo-500/20";
       default:
-        return "bg-slate-50 text-slate-700 border-slate-200 ring-slate-500/20";
+        return "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 ring-slate-500/20";
     }
   };
 
@@ -91,13 +92,13 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
 
   if (!caller) {
     return (
-      <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center">
+      <div className="bg-white dark:bg-[#1E1C1A] p-8 rounded-2xl border border-slate-200 dark:border-[#383431] text-center">
         <AlertCircle className="w-8 h-8 text-rose-500 mx-auto mb-2" />
-        <h3 className="font-bold text-slate-800">Nie odnaleziono danych kontaktu</h3>
+        <h3 className="font-bold text-slate-800 dark:text-white">Nie odnaleziono danych kontaktu</h3>
         <button
           type="button"
           onClick={() => setSelectedCaller(null)}
-          className="mt-3 px-4 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-semibold cursor-pointer"
+          className="mt-3 px-4 py-1.5 bg-slate-100 dark:bg-[#2C2927] hover:bg-slate-200 dark:hover:bg-[#383431] text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold cursor-pointer"
         >
           Wróć do listy
         </button>
@@ -140,28 +141,39 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Top Bar with Return & Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <button
           type="button"
           onClick={() => setSelectedCaller(null)}
-          className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 hover:text-[#296B6E] bg-white hover:bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm hover:shadow transition-all cursor-pointer"
+          className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-[#296B6E] dark:hover:text-[#FFB200] bg-white dark:bg-[#1E1C1A] hover:bg-slate-50 dark:hover:bg-[#282522] px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#383431] shadow-sm hover:shadow transition-all cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>← Wróć do rejestru / wyszukiwania</span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => setIsNewRecordModalOpen(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer"
-        >
-          <PlusCircle className="w-4 h-4" />
-          <span>Dodaj nową poradę</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <button
+            type="button"
+            onClick={() => setEditingCaller(caller)}
+            className="flex items-center space-x-1.5 px-3.5 py-2 bg-white dark:bg-[#1E1C1A] hover:bg-slate-50 dark:hover:bg-[#282522] text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold border border-slate-200 dark:border-[#383431] shadow-sm hover:shadow transition-all cursor-pointer"
+          >
+            <Edit3 className="w-4 h-4 text-[#296B6E] dark:text-[#FFB200]" />
+            <span>Edytuj kartotekę</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsNewRecordModalOpen(true)}
+            className="flex items-center space-x-2 px-4 py-2 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>Dodaj nową poradę</span>
+          </button>
+        </div>
       </div>
 
       {/* Caller Header Card */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm relative overflow-hidden">
+      <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-6 shadow-sm relative overflow-hidden">
         {/* Live Presence Alert if another specialist views this card */}
         {livePresenceSpecialist && (
           <div className="mb-4 bg-amber-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-between shadow-sm animate-pulse">
@@ -178,42 +190,51 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center space-x-3 flex-wrap gap-y-1">
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                 {caller.firstName || "Anonim"} {caller.lastName || "Dzwoniący"}
               </h1>
-              <span className="bg-[#FFB200]/20 text-amber-950 text-xs font-bold px-2.5 py-1 rounded-full border border-[#FFB200]/40">
+              <span className="bg-[#FFB200]/20 text-amber-950 dark:text-[#FFB200] text-xs font-bold px-2.5 py-1 rounded-full border border-[#FFB200]/40">
                 {records.length} {records.length === 1 ? "porada w historii" : "porady w historii"}
               </span>
+              <button
+                type="button"
+                onClick={() => setEditingCaller(caller)}
+                className="text-xs text-slate-500 hover:text-[#296B6E] dark:hover:text-[#FFB200] bg-slate-100 dark:bg-[#2A2724] hover:bg-slate-200 dark:hover:bg-[#383431] px-2.5 py-1 rounded-xl font-bold border border-slate-200 dark:border-[#383431] transition-colors flex items-center gap-1 cursor-pointer"
+                title="Edytuj dane kontaktu"
+              >
+                <Edit3 className="w-3.5 h-3.5 text-[#296B6E] dark:text-[#FFB200]" />
+                <span>Edytuj</span>
+              </button>
             </div>
 
             {/* Sub-info Badges */}
-            <div className="mt-3 flex flex-wrap items-center gap-y-2 gap-x-4 text-xs text-slate-600">
+            <div className="mt-3 flex flex-wrap items-center gap-y-2 gap-x-4 text-xs text-slate-600 dark:text-slate-400">
               <div className="flex items-center">
-                <Phone className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
-                <span className="font-mono font-bold text-slate-900 text-sm">
+                <Phone className="w-3.5 h-3.5 mr-1.5 text-slate-400 dark:text-slate-500" />
+                <span className="font-mono font-bold text-slate-900 dark:text-white text-sm">
                   {caller.phoneNumber || "Brak numeru"}
                 </span>
               </div>
 
               <div className="flex items-center">
-                <MapPin className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
-                <span className="font-medium text-slate-800">{caller.city || "Brak miasta"}</span>
-                <span className="mx-1 text-slate-300">•</span>
-                <span className="text-slate-600 font-semibold">{caller.voivodeship || "Polska"}</span>
+                <MapPin className="w-3.5 h-3.5 mr-1.5 text-slate-400 dark:text-slate-500" />
+                <span className="font-medium text-slate-800 dark:text-slate-200">{caller.city || "Brak miasta"}</span>
+                <span className="mx-1 text-slate-300 dark:text-slate-600">•</span>
+                <span className="text-slate-600 dark:text-slate-400 font-semibold">{caller.voivodeship || "Polska"}</span>
               </div>
 
               <div className="flex items-center">
-                <Users className="w-3.5 h-3.5 mr-1.5 text-[#296B6E]" />
+                <Users className="w-3.5 h-3.5 mr-1.5 text-[#296B6E] dark:text-teal-400" />
                 <span>
-                  Beneficjent: <strong className="text-slate-800">{beneficiaryStr}</strong>
+                  Beneficjent: <strong className="text-slate-800 dark:text-slate-200">{beneficiaryStr}</strong>
                 </span>
               </div>
 
               <div className="flex items-center">
-                <Award className="w-3.5 h-3.5 mr-1.5 text-purple-600" />
+                <Award className="w-3.5 h-3.5 mr-1.5 text-purple-600 dark:text-purple-400" />
                 <span>
                   Orzeczenie:{" "}
-                  <strong className="text-slate-800">
+                  <strong className="text-slate-800 dark:text-slate-200">
                     {caller.hasDisabilityCertificate === "tak"
                       ? `Tak (${caller.disabilityDegree || "posiada"})`
                       : caller.hasDisabilityCertificate === "w trakcie"
@@ -230,7 +251,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
               caller.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-[11px] bg-slate-100 text-slate-700 font-medium px-2.5 py-1 rounded-lg border border-slate-200"
+                  className="text-[11px] bg-slate-100 dark:bg-[#2A2724] text-slate-700 dark:text-slate-300 font-medium px-2.5 py-1 rounded-lg border border-slate-200 dark:border-[#383431]"
                 >
                   {tag}
                 </span>
@@ -239,16 +260,16 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
         </div>
 
         {/* 5-Second AI Briefing Box */}
-        <div className="mt-5 bg-gradient-to-r from-amber-50/90 via-slate-50 to-teal-50/60 border border-amber-200/80 rounded-2xl p-4">
+        <div className="mt-5 bg-gradient-to-r from-amber-50/90 via-slate-50 to-teal-50/60 dark:from-[#262015] dark:via-[#1D1B19] dark:to-[#162728] border border-amber-200/80 dark:border-amber-500/30 rounded-2xl p-4">
           <div className="flex items-start space-x-2.5">
             <div className="bg-[#296B6E] text-white p-1.5 rounded-xl shadow-sm shrink-0">
               <Sparkles className="w-4 h-4 text-[#FFB200]" />
             </div>
             <div>
-              <div className="text-xs font-bold text-[#2D2A28]">
+              <div className="text-xs font-bold text-[#2D2A28] dark:text-[#FFB200]">
                 Szybki skrót kontekstu dla dyżurującego (5 sekund):
               </div>
-              <p className="text-xs text-slate-700 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-700 dark:text-slate-200 mt-1 leading-relaxed">
                 {generateSummary()}
               </p>
             </div>
@@ -257,15 +278,15 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
       </div>
 
       {/* Main Content Tabs: Timeline vs Caller Documents */}
-      <div className="flex items-center justify-between pt-2 border-b border-slate-200 pb-3">
+      <div className="flex items-center justify-between pt-2 border-b border-slate-200 dark:border-[#2C2927] pb-3">
         <div className="flex items-center space-x-2">
           <button
             type="button"
             onClick={() => setActiveViewMode("TIMELINE")}
             className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeViewMode === "TIMELINE"
-                ? "bg-[#2D2A28] text-[#FFB200] shadow-sm"
-                : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+                ? "bg-[#2D2A28] dark:bg-[#FFB200] text-[#FFB200] dark:text-[#2D2A28] shadow-sm"
+                : "bg-white dark:bg-[#1E1C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#282522] border border-slate-200 dark:border-[#383431]"
             }`}
           >
             <Clock className="w-4 h-4" />
@@ -277,8 +298,8 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
             onClick={() => setActiveViewMode("DOCS")}
             className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeViewMode === "DOCS"
-                ? "bg-[#2D2A28] text-[#FFB200] shadow-sm"
-                : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
+                ? "bg-[#2D2A28] dark:bg-[#FFB200] text-[#FFB200] dark:text-[#2D2A28] shadow-sm"
+                : "bg-white dark:bg-[#1E1C1A] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#282522] border border-slate-200 dark:border-[#383431]"
             }`}
           >
             <FolderOpen className="w-4 h-4" />
@@ -286,17 +307,17 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
           </button>
         </div>
 
-        <div className="text-xs text-slate-500">
+        <div className="text-xs text-slate-500 dark:text-slate-400">
           Łącznie załączników w kartotece: <strong>{callerAttachmentsCount + totalRecordAttachmentsCount}</strong>
         </div>
       </div>
 
       {/* View Mode 1: Caller Documents Tab */}
       {activeViewMode === "DOCS" && (
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm animate-in fade-in space-y-4">
+        <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-6 shadow-sm animate-in fade-in space-y-4">
           <div>
-            <h3 className="font-bold text-slate-900 text-sm">Główna dokumentacja kontaktu</h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm">Główna dokumentacja kontaktu</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Załącz orzeczenia o niepełnosprawności, opinie poradni psychologiczno-pedagogicznych, IPET, wnioski WZON, tabele obserwacji oraz skany zaświadczeń lekarskich (PDF, JPG, PNG, Excel, DOCX, TXT).
             </p>
           </div>
@@ -314,10 +335,10 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
       {activeViewMode === "TIMELINE" && (
         <>
           {records.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-              <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-              <h3 className="text-sm font-semibold text-slate-700">Brak zarejestrowanych porad w tej kartotece</h3>
-              <p className="text-xs text-slate-400 mt-1">
+            <div className="bg-white dark:bg-[#1E1C1A] rounded-2xl border border-slate-200 dark:border-[#383431] p-8 text-center">
+              <AlertCircle className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Brak zarejestrowanych porad w tej kartotece</h3>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                 Kliknij przycisk powyżej, aby zarejestrować pierwszą poradę z dzisiejszej rozmowy.
               </p>
             </div>
@@ -341,31 +362,31 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                 return (
                   <div
                     key={rec.id}
-                    className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs hover:shadow-md transition-shadow relative overflow-hidden space-y-3.5"
+                    className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-5 shadow-xs hover:shadow-md transition-shadow relative overflow-hidden space-y-3.5"
                   >
                     {/* Top Row: Date, Duration, Specialist */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-[#2C2927]">
                       <div className="flex items-center space-x-2.5 flex-wrap gap-y-1">
-                        <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200">
+                        <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-[#2A2724] text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center border border-slate-200 dark:border-[#383431]">
                           {records.length - index}
                         </span>
-                        <span className="text-xs font-bold text-slate-900">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">
                           {dateFormatted}
                         </span>
-                        <span className="text-xs text-slate-400">•</span>
-                        <span className="text-xs text-slate-500 flex items-center">
-                          <Clock className="w-3 h-3 mr-1 text-slate-400" />
+                        <span className="text-xs text-slate-400 dark:text-slate-600">•</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center">
+                          <Clock className="w-3 h-3 mr-1 text-slate-400 dark:text-slate-500" />
                           {rec.durationMinutes || 30} min
                         </span>
 
                         {rec.contactTypes && rec.contactTypes.map((ct) => (
-                          <span key={ct} className="text-[10px] bg-slate-100 text-slate-600 font-medium px-2 py-0.5 rounded">
+                          <span key={ct} className="text-[10px] bg-slate-100 dark:bg-[#2A2724] text-slate-600 dark:text-slate-300 font-medium px-2 py-0.5 rounded border border-slate-200/60 dark:border-[#383431]">
                             {ct === "telefon" ? "📞 tel" : ct === "e-mail" ? "✉️ mail" : ct}
                           </span>
                         ))}
 
                         {rec.subjectTargets && rec.subjectTargets.map((st) => (
-                          <span key={st} className="text-[10px] bg-purple-50 text-purple-700 font-semibold px-2 py-0.5 rounded border border-purple-100">
+                          <span key={st} className="text-[10px] bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 font-semibold px-2 py-0.5 rounded border border-purple-100 dark:border-purple-800/50">
                             {st}
                           </span>
                         ))}
@@ -379,7 +400,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                         >
                           {rec.guidanceType || "Porada"}
                         </span>
-                        <span className="text-xs bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded border border-slate-200">
+                        <span className="text-xs bg-slate-100 dark:bg-[#2A2724] text-slate-700 dark:text-slate-300 font-semibold px-2 py-0.5 rounded border border-slate-200 dark:border-[#383431]">
                           {rec.specialistName || "Specjalista"} ({rec.specialistRole || "Konsultant"})
                         </span>
 
@@ -387,18 +408,18 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                           <button
                             type="button"
                             onClick={() => setEditingRecord(rec)}
-                            className="flex items-center space-x-1 px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer ml-1"
+                            className="flex items-center space-x-1 px-3 py-1 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-900 dark:text-[#FFB200] border border-amber-300 dark:border-amber-600/50 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer ml-1"
                             title={currentSpecialist.isAdmin ? "Edytuj tę poradę jako Administrator" : "Edytuj swoją poradę"}
                           >
-                            <Edit3 className="w-3.5 h-3.5 text-amber-700" />
+                            <Edit3 className="w-3.5 h-3.5 text-amber-700 dark:text-[#FFB200]" />
                             <span>{currentSpecialist.isAdmin ? "Edytuj (Admin)" : "Edytuj"}</span>
                           </button>
                         ) : (
                           <span
-                            className="flex items-center space-x-1 px-2.5 py-1 bg-slate-50 text-slate-400 border border-slate-200 rounded-xl text-[11px] font-medium"
+                            className="flex items-center space-x-1 px-2.5 py-1 bg-slate-50 dark:bg-[#23211F] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-[#383431] rounded-xl text-[11px] font-medium"
                             title="Tylko autor lub administrator może edytować ten wpis"
                           >
-                            <Lock className="w-3 h-3 text-slate-400" />
+                            <Lock className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                             <span>Tylko odczyt</span>
                           </span>
                         )}
@@ -408,13 +429,13 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                     {/* Guidance Areas Badges */}
                     {rec.guidanceAreas && rec.guidanceAreas.length > 0 && (
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-slate-400 mr-1">
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mr-1">
                           Obszar:
                         </span>
                         {rec.guidanceAreas.map((area) => (
                           <span
                             key={area}
-                            className="text-xs bg-indigo-50/70 text-indigo-900 font-semibold px-2.5 py-0.5 rounded-lg border border-indigo-100"
+                            className="text-xs bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-300 font-semibold px-2.5 py-0.5 rounded-lg border border-indigo-100 dark:border-indigo-800/40"
                           >
                             {area}
                           </span>
@@ -425,23 +446,23 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                     {/* Problem / Description and Notes */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                       {/* Rodzaj porady (opis, czego dotyczyła) */}
-                      <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/80">
-                        <div className="font-bold text-slate-700 text-[10px] flex items-center mb-1.5">
-                          <FileText className="w-3.5 h-3.5 mr-1 text-slate-500" />
+                      <div className="bg-slate-50/80 dark:bg-[#161514] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#2C2927]">
+                        <div className="font-bold text-slate-700 dark:text-slate-300 text-[10px] flex items-center mb-1.5">
+                          <FileText className="w-3.5 h-3.5 mr-1 text-slate-500 dark:text-slate-400" />
                           Rodzaj porady (opis zgłoszenia)
                         </div>
-                        <p className="text-slate-900 leading-relaxed whitespace-pre-wrap font-medium">
+                        <p className="text-slate-900 dark:text-slate-100 leading-relaxed whitespace-pre-wrap font-medium">
                           {rec.adviceDescription || "Brak opisu."}
                         </p>
                       </div>
 
                       {/* Uwagi */}
-                      <div className="bg-indigo-50/40 p-3.5 rounded-2xl border border-indigo-100/80">
-                        <div className="font-bold text-indigo-900 text-[10px] flex items-center mb-1.5">
-                          <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-indigo-600" />
+                      <div className="bg-indigo-50/40 dark:bg-[#181B24] p-3.5 rounded-2xl border border-indigo-100/80 dark:border-indigo-950/60">
+                        <div className="font-bold text-indigo-900 dark:text-indigo-300 text-[10px] flex items-center mb-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-indigo-600 dark:text-indigo-400" />
                           Uwagi, udzielona pomoc i wskazówki
                         </div>
-                        <p className="text-slate-800 leading-relaxed whitespace-pre-wrap">
+                        <p className="text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">
                           {rec.notes || "Brak dodatkowych uwag."}
                         </p>
                       </div>
@@ -449,21 +470,21 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
 
                     {/* Przekazane do innego specjalisty */}
                     {rec.referredTo && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-xs text-amber-950 flex items-center justify-between">
+                      <div className="bg-amber-50 dark:bg-[#251F14] border border-amber-200 dark:border-amber-600/40 rounded-xl p-2.5 text-xs text-amber-950 dark:text-amber-200 flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <Share2 className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                          <Share2 className="w-3.5 h-3.5 text-amber-600 dark:text-[#FFB200] shrink-0" />
                           <span>
                             <strong>Przekazane do:</strong> {rec.referredTo}
                           </span>
                         </div>
-                        <span className="text-[10px] bg-amber-200/60 font-bold px-2 py-0.5 rounded text-amber-900">
+                        <span className="text-[10px] bg-amber-200/60 dark:bg-amber-900/60 font-bold px-2 py-0.5 rounded text-amber-900 dark:text-[#FFB200]">
                           Kontynuacja
                         </span>
                       </div>
                     )}
 
                     {/* Record Attachments Manager */}
-                    <div className="pt-2 border-t border-slate-100">
+                    <div className="pt-2 border-t border-slate-100 dark:border-[#2C2927]">
                       <AttachmentsManager
                         attachments={recAtts}
                         onChange={(newAtts) => handleRecordAttachmentsChange(rec.id, newAtts)}

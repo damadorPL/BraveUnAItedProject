@@ -47,7 +47,15 @@ export function loadRecords(): CallRecord[] {
       localStorage.setItem(RECORDS_KEY, JSON.stringify(INITIAL_RECORDS));
       return INITIAL_RECORDS;
     }
-    return JSON.parse(raw);
+    const parsed: CallRecord[] = JSON.parse(raw);
+    if (parsed.length < INITIAL_RECORDS.length) {
+      // Merge initial records with any user-added records
+      const existingIds = new Set(parsed.map((r) => r.id));
+      const merged = [...parsed, ...INITIAL_RECORDS.filter((r) => !existingIds.has(r.id))];
+      localStorage.setItem(RECORDS_KEY, JSON.stringify(merged));
+      return merged;
+    }
+    return parsed;
   } catch (err) {
     console.error("Failed to load records:", err);
     return INITIAL_RECORDS;
@@ -80,6 +88,14 @@ export function loadSpecialists(): Specialist[] {
     return parsed;
   } catch (err) {
     return INITIAL_SPECIALISTS;
+  }
+}
+
+export function saveSpecialists(specialists: Specialist[]): void {
+  try {
+    localStorage.setItem(SPECIALISTS_KEY, JSON.stringify(specialists));
+  } catch (err) {
+    console.error("Failed to save specialists:", err);
   }
 }
 

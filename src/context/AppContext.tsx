@@ -15,6 +15,7 @@ import {
   loadRecords,
   saveRecords,
   loadSpecialists,
+  saveSpecialists,
   resetToSampleData,
   searchCallers,
 } from "../services/storage";
@@ -43,6 +44,12 @@ interface AppContextType {
   setIsExcelModalOpen: (open: boolean) => void;
   isExportModalOpen: boolean;
   setIsExportModalOpen: (open: boolean) => void;
+  isProfileModalOpen: boolean;
+  setIsProfileModalOpen: (open: boolean) => void;
+  isAdminPanelOpen: boolean;
+  setIsAdminPanelOpen: (open: boolean) => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
 
   sentEmails: EmailNotification[];
   activeEmailModal: EmailNotification | null;
@@ -59,6 +66,11 @@ interface AppContextType {
   deleteCaller: (callerId: string) => void;
   canEditRecord: (record: CallRecord) => boolean;
   canEditCaller: (caller: Caller) => boolean;
+
+  addSpecialist: (data: Omit<Specialist, "id">) => Specialist;
+  updateSpecialist: (spec: Specialist) => void;
+  deleteSpecialist: (specialistId: string) => void;
+  mergeCallers: (sourceCallerId: string, targetCallerId: string, customMergedData?: Partial<Caller>) => void;
 
   addCallerAttachment: (callerId: string, attachment: Attachment) => void;
   removeCallerAttachment: (callerId: string, attachmentId: string) => void;
@@ -83,7 +95,7 @@ const SYNC_CHANNEL_NAME = "unaited_call_history_sync_v1";
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [callers, setCallers] = useState<Caller[]>(() => loadCallers());
   const [records, setRecords] = useState<CallRecord[]>(() => loadRecords());
-  const [specialists] = useState<Specialist[]>(() => loadSpecialists());
+  const [specialists, setSpecialists] = useState<Specialist[]>(() => loadSpecialists());
   const [currentSpecialist, setCurrentSpecialist] = useState<Specialist>(() => specialists[0]);
 
   const [selectedCaller, setSelectedCaller] = useState<Caller | null>(null);
@@ -111,6 +123,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isNewRecordModalOpen, setIsNewRecordModalOpen] = useState(false);
   const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem("brave_theme_mode");
+      if (saved) return saved === "dark";
+      return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (isDarkMode) {
+        document.documentElement.classList.add("dark");
+        localStorage.setItem("brave_theme_mode", "dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem("brave_theme_mode", "light");
+      }
+    } catch (_) {}
+  }, [isDarkMode]);
+
+  const toggleDarkMode = useCallback(() => {
+    setIsDarkMode((prev) => !prev);
+  }, []);
 
   const [livePresenceSpecialist, setLivePresenceSpecialist] = useState<string | null>(null);
   const [liveNotification, setLiveNotification] = useState<string | null>(null);
@@ -462,6 +502,110 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [records, broadcast]
   );
 
+  const addSpecialist = useCallback(
+    (data: Omit<Specialist, "id">) => {
+      const newSpec: Specialist = {
+        ...data,
+        id: "spec-" + Date.now(),
+      };
+      setSpecialists((prev) => {
+        const next = [...prev, newSpec];
+        saveSpecialists(next);
+        return next;
+      });
+      broadcast({ type: "SPECIALISTS_UPDATED", payload: { specialist: newSpec } });
+      return newSpec;
+    },
+    [broadcast]
+  );
+
+  const updateSpecialist = useCallback(
+    (updated: Specialist) => {
+      setSpecialists((prev) => {
+        const next = prev.map((s) => (s.id === updated.id ? updated : s));
+        saveSpecialists(next);
+        return next;
+      });
+      if (currentSpecialistRef.current.id === updated.id) {
+        setCurrentSpecialist(updated);
+      }
+      broadcast({ type: "SPECIALISTS_UPDATED", payload: { specialist: updated } });
+    },
+    [broadcast]
+  );
+
+  const deleteSpecialist = useCallback(
+    (specialistId: string) => {
+      setSpecialists((prev) => {
+        const next = prev.filter((s) => s.id !== specialistId);
+        saveSpecialists(next);
+        return next;
+      });
+      broadcast({ type: "SPECIALISTS_UPDATED", payload: { deletedId: specialistId } });
+    },
+    [broadcast]
+  );
+
+  const mergeCallers = useCallback(
+    (sourceCallerId: string, targetCallerId: string, customMergedData?: Partial<Caller>) => {
+      const source = callers.find((c) => c.id === sourceCallerId);
+      const target = callers.find((c) => c.id === targetCallerId);
+      if (!source || !target) return;
+
+      const now = new Date().toISOString();
+
+      // 1. Combine attachments
+      const combinedAttachments = [
+        ...(target.attachments || []),
+        ...(source.attachments || []).filter(
+          (sa) => !(target.attachments || []).some((ta) => ta.id === sa.id || ta.name === sa.name)
+        ),
+      ];
+
+      // 2. Combine tags
+      const combinedTags = Array.from(new Set([...(target.tags || []), ...(source.tags || [])]));
+
+      // 3. Combine beneficiary types
+      const combinedBeneficiaries = Array.from(
+        new Set([...(target.beneficiaryTypes || []), ...(source.beneficiaryTypes || [])])
+      );
+
+      const mergedTarget: Caller = {
+        ...target,
+        ...customMergedData,
+        tags: combinedTags,
+        beneficiaryTypes: combinedBeneficiaries,
+        attachments: combinedAttachments,
+        updatedAt: now,
+      };
+
+      // 4. Update callers list
+      const nextCallers = callers
+        .map((c) => (c.id === targetCallerId ? mergedTarget : c))
+        .filter((c) => c.id !== sourceCallerId);
+      setCallers(nextCallers);
+      saveCallers(nextCallers);
+
+      // 5. Update records
+      const nextRecords = records.map((r) =>
+        r.callerId === sourceCallerId ? { ...r, callerId: targetCallerId, updatedAt: now } : r
+      );
+      setRecords(nextRecords);
+      saveRecords(nextRecords);
+
+      // 6. Update selectedCaller if relevant
+      if (selectedCallerRef.current?.id === sourceCallerId || selectedCallerRef.current?.id === targetCallerId) {
+        setSelectedCaller(mergedTarget);
+      }
+
+      broadcast({
+        type: "CALLER_MERGED",
+        payload: { sourceCallerId, targetCallerId, mergedTarget },
+      });
+    },
+    [callers, records, broadcast]
+  );
+
   const resetDatabase = useCallback(() => {
     const res = resetToSampleData();
     setCallers(res.callers);
@@ -495,6 +639,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsExcelModalOpen,
         isExportModalOpen,
         setIsExportModalOpen,
+        isProfileModalOpen,
+        setIsProfileModalOpen,
+        isAdminPanelOpen,
+        setIsAdminPanelOpen,
+        isDarkMode,
+        toggleDarkMode,
         sentEmails,
         activeEmailModal,
         setActiveEmailModal,
@@ -509,6 +659,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteCaller,
         canEditRecord,
         canEditCaller,
+        addSpecialist,
+        updateSpecialist,
+        deleteSpecialist,
+        mergeCallers,
         addCallerAttachment,
         removeCallerAttachment,
         addRecordAttachment,

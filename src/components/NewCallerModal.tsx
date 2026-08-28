@@ -18,6 +18,7 @@ import {
   Attachment,
 } from "../types";
 import { AttachmentsManager } from "./AttachmentsManager";
+import { ReferralSelector } from "./ReferralSelector";
 import { todayDateInputValue, callDateToIso } from "../services/callDate";
 import {
   X,
@@ -41,6 +42,7 @@ export const NewCallerModal: React.FC = () => {
     setSelectedCaller,
     searchQuery,
     currentSpecialist,
+    specialists,
   } = useApp();
 
   const [firstName, setFirstName] = useState("");
@@ -67,6 +69,8 @@ export const NewCallerModal: React.FC = () => {
   const [contactTypes, setContactTypes] = useState<ContactType[]>(["telefon"]);
   const [subjectTargets, setSubjectTargets] = useState<SubjectTarget[]>(["dziecko"]);
   const [referredTo, setReferredTo] = useState("");
+  const [referredSpecialistId, setReferredSpecialistId] = useState("");
+  const [referredNote, setReferredNote] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [adviceDescription, setAdviceDescription] = useState("");
   const [notes, setNotes] = useState("");
@@ -142,6 +146,8 @@ export const NewCallerModal: React.FC = () => {
         adviceDescription: adviceDescription.trim(),
         notes: notes.trim(),
         referredTo: referredTo.trim(),
+        referredSpecialistId: referredSpecialistId || undefined,
+        referredNote: referredNote.trim() || undefined,
         attachments,
         durationMinutes: 30,
       });
@@ -165,21 +171,23 @@ export const NewCallerModal: React.FC = () => {
     setContactTypes(["telefon"]);
     setSubjectTargets(["dziecko"]);
     setReferredTo("");
+    setReferredSpecialistId("");
+    setReferredNote("");
     setAttachments([]);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
-      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+      <div className="bg-white dark:bg-[#1E1C1A] rounded-3xl shadow-2xl border border-slate-200 dark:border-[#383431] w-full max-w-2xl overflow-hidden max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
+        <div className="bg-[#2D2A28] text-white p-5 flex items-center justify-between border-b border-[#3E3A37]">
           <div className="flex items-center space-x-2.5">
-            <div className="bg-emerald-600 p-2 rounded-xl text-white">
+            <div className="bg-[#FFB200] text-[#2D2A28] p-2 rounded-xl font-bold shadow-sm">
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Zarejestruj nowy kontakt</h2>
-              <p className="text-xs text-slate-400">
+              <h2 className="text-lg font-black text-white">Zarejestruj nowy kontakt</h2>
+              <p className="text-xs text-slate-300">
                 Pola zgodne z oficjalnym wzorcem linii wsparcia fundacji
               </p>
             </div>
@@ -188,7 +196,7 @@ export const NewCallerModal: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsNewCallerModalOpen(false)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-[#3E3A37] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -199,7 +207,7 @@ export const NewCallerModal: React.FC = () => {
           {/* Identity Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">
+              <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
                 Imię (opcjonalnie):
               </label>
               <input
@@ -207,12 +215,12 @@ export const NewCallerModal: React.FC = () => {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="Np. Katarzyna"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-400 dark:placeholder-slate-500"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">
+              <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
                 Nazwisko lub pseudonim <span className="text-red-500">*</span>:
               </label>
               <input
@@ -221,7 +229,7 @@ export const NewCallerModal: React.FC = () => {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Np. Kowalska"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-semibold"
+                className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none font-semibold placeholder-slate-400 dark:placeholder-slate-500"
               />
             </div>
           </div>
@@ -229,7 +237,7 @@ export const NewCallerModal: React.FC = () => {
           {/* Contact & Location Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">
+              <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
                 Numer telefonu:
               </label>
               <input
@@ -237,21 +245,21 @@ export const NewCallerModal: React.FC = () => {
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="Np. 601 234 567"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono"
+                className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none font-mono placeholder-slate-400 dark:placeholder-slate-500"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">
+              <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
                 Województwo:
               </label>
               <select
                 value={voivodeship}
                 onChange={(e) => setVoivodeship(e.target.value as Voivodeship)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
               >
                 {VOIVODESHIPS.map((v) => (
-                  <option key={v} value={v} className="">
+                  <option key={v} value={v} className="dark:bg-[#1E1C1A]">
                     {v}
                   </option>
                 ))}
@@ -259,7 +267,7 @@ export const NewCallerModal: React.FC = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">
+              <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
                 Miejscowość:
               </label>
               <input
@@ -267,14 +275,14 @@ export const NewCallerModal: React.FC = () => {
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="Np. Warszawa"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-400 dark:placeholder-slate-500"
               />
             </div>
           </div>
 
           {/* Kim jest beneficjent (Wielokrotny) */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1.5 text-[11px]">
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5 text-[11px]">
               Kim jest beneficjent (wybór wielokrotny):
             </label>
             <div className="flex flex-wrap gap-2">
@@ -285,10 +293,10 @@ export const NewCallerModal: React.FC = () => {
                     type="button"
                     key={b}
                     onClick={() => toggleBeneficiary(b)}
-                    className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors  ${
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors cursor-pointer ${
                       isSel
-                        ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
-                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                        ? "bg-[#2D2A28] dark:bg-[#FFB200] text-[#FFB200] dark:text-[#2D2A28] border-[#2D2A28] dark:border-[#FFB200] shadow-xs"
+                        : "bg-slate-50 dark:bg-[#141312] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#383431] hover:bg-slate-100 dark:hover:bg-[#2A2724]"
                     }`}
                   >
                     {b === "rodzic" ? "👨‍👩‍👧 Rodzic" : b === "opiekun" ? "🛡️ Opiekun" : b === "osoba dorosła w spektrum" ? "🧠 Osoba dorosła w spektrum" : "Inne"}
@@ -299,34 +307,34 @@ export const NewCallerModal: React.FC = () => {
           </div>
 
           {/* Posiadanie orzeczenia & Stopień niepełnosprawności */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 bg-slate-50 dark:bg-[#161514] p-3.5 rounded-2xl border border-slate-200 dark:border-[#2C2927]">
             <div>
-              <label className="block font-bold text-slate-800 mb-1">
+              <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
                 Posiadanie orzeczenia o niepełnosprawności:
               </label>
               <select
                 value={hasDisabilityCertificate}
                 onChange={(e) => setHasDisabilityCertificate(e.target.value as DisabilityCertificateStatus)}
-                className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-semibold"
+                className="w-full bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none font-semibold"
               >
-                <option value="tak">Tak (posiada)</option>
-                <option value="nie">Nie (brak)</option>
-                <option value="w trakcie">W trakcie diagnozy / procedury</option>
+                <option value="tak" className="dark:bg-[#1E1C1A]">Tak (posiada)</option>
+                <option value="nie" className="dark:bg-[#1E1C1A]">Nie (brak)</option>
+                <option value="w trakcie" className="dark:bg-[#1E1C1A]">W trakcie diagnozy / procedury</option>
               </select>
             </div>
 
             <div>
-              <label className="block font-bold text-slate-800 mb-1">
+              <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
                 Stopień niepełnosprawności:
               </label>
               <select
                 value={disabilityDegree}
                 disabled={hasDisabilityCertificate === "nie"}
                 onChange={(e) => setDisabilityDegree(e.target.value as DisabilityDegree)}
-                className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400"
+                className="w-full bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none disabled:opacity-40"
               >
                 {DISABILITY_DEGREES.map((d) => (
-                  <option key={d} value={d} className="">
+                  <option key={d} value={d} className="dark:bg-[#1E1C1A]">
                     {d}
                   </option>
                 ))}
@@ -336,7 +344,7 @@ export const NewCallerModal: React.FC = () => {
 
           {/* Tags */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1">
+            <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
               Tagi / słowa kluczowe (po przecinku):
             </label>
             <input
@@ -344,29 +352,29 @@ export const NewCallerModal: React.FC = () => {
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               placeholder="Np. Syn 7 lat, WZON punkt 7, Szkoła podstawowa"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-400 dark:placeholder-slate-500"
             />
           </div>
 
           {/* Section to register first call record immediately */}
-          <div className="pt-3 border-t border-slate-200">
+          <div className="pt-3 border-t border-slate-200 dark:border-[#2C2927]">
             <div className="flex items-center justify-between mb-3">
-              <label className="flex items-center space-x-2 font-bold text-indigo-900 cursor-pointer">
+              <label className="flex items-center space-x-2 font-bold text-[#2D2A28] dark:text-[#FFB200] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={addRecordNow}
                   onChange={(e) => setAddRecordNow(e.target.checked)}
-                  className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4"
+                  className="rounded text-[#FFB200] focus:ring-[#FFB200] w-4 h-4 cursor-pointer"
                 />
                 <span>Zarejestruj od razu treść trwającej porady</span>
               </label>
             </div>
 
             {addRecordNow && (
-              <div className="bg-indigo-50/40 p-4 rounded-2xl border border-indigo-100 space-y-3">
+              <div className="bg-indigo-50/40 dark:bg-[#161514] p-4 rounded-2xl border border-indigo-100 dark:border-[#2C2927] space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
                       Kiedy udzielono porady:
                     </label>
                     <input
@@ -374,21 +382,21 @@ export const NewCallerModal: React.FC = () => {
                       value={callDate}
                       max={todayDateInputValue()}
                       onChange={(e) => setCallDate(e.target.value)}
-                      className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                      className="w-full bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl p-2 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">
+                    <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
                       Rodzaj poradnictwa:
                     </label>
                     <select
                       value={guidanceType}
                       onChange={(e) => handleGuidanceTypeChange(e.target.value as GuidanceType)}
-                      className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs font-bold text-indigo-900"
+                      className="w-full bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl p-2 text-xs font-bold text-[#2D2A28] dark:text-[#FFB200]"
                     >
                       {GUIDANCE_TYPES.map((t) => (
-                        <option key={t} value={t}>
+                        <option key={t} value={t} className="dark:bg-[#1E1C1A]">
                           {t}
                         </option>
                       ))}
@@ -397,7 +405,7 @@ export const NewCallerModal: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                     Obszar, którego dotyczy porada (wybór wielokrotny):
                   </label>
                   <div className="flex flex-wrap gap-1.5">
@@ -408,10 +416,10 @@ export const NewCallerModal: React.FC = () => {
                           type="button"
                           key={area}
                           onClick={() => toggleArea(area)}
-                          className={`px-3 py-1.5 rounded-xl font-semibold text-xs border transition-colors text-left ${
+                          className={`px-3 py-1.5 rounded-xl font-semibold text-xs border transition-colors text-left cursor-pointer ${
                             isSel
-                              ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
-                              : "bg-white text-slate-700 border-slate-200 hover:bg-indigo-50 hover:text-indigo-700"
+                              ? "bg-[#2D2A28] dark:bg-[#FFB200] text-[#FFB200] dark:text-[#2D2A28] border-[#2D2A28] dark:border-[#FFB200] shadow-xs"
+                              : "bg-white dark:bg-[#1E1C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#383431] hover:bg-amber-50 dark:hover:bg-[#2F271B]"
                           }`}
                         >
                           {area}
@@ -423,7 +431,7 @@ export const NewCallerModal: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1.5">
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                       Rodzaj kontaktu (wielokrotny):
                     </label>
                     <div className="flex flex-wrap gap-1.5">
@@ -434,10 +442,10 @@ export const NewCallerModal: React.FC = () => {
                             type="button"
                             key={ct}
                             onClick={() => toggleContactType(ct)}
-                            className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors ${
+                            className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors cursor-pointer ${
                               sel
-                                ? "bg-slate-900 text-white border-slate-900"
-                                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                                ? "bg-slate-900 dark:bg-[#FFB200] text-white dark:text-[#2D2A28] border-slate-900 dark:border-[#FFB200]"
+                                : "bg-white dark:bg-[#1E1C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#383431] hover:bg-slate-100 dark:hover:bg-[#2A2724]"
                             }`}
                           >
                             {ct === "telefon" ? "📞 Telefon" : ct === "e-mail" ? "✉️ E-mail" : ct === "osobisty" ? "👤 Osobisty" : "Inne"}
@@ -448,7 +456,7 @@ export const NewCallerModal: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1.5">
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                       Kogo dotyczy porada (wielokrotny):
                     </label>
                     <div className="flex flex-wrap gap-1.5">
@@ -459,10 +467,10 @@ export const NewCallerModal: React.FC = () => {
                             type="button"
                             key={st}
                             onClick={() => toggleSubjectTarget(st)}
-                            className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors ${
+                            className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors cursor-pointer ${
                               sel
-                                ? "bg-purple-700 text-white border-purple-700"
-                                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                                ? "bg-purple-700 dark:bg-purple-600 text-white border-purple-700 dark:border-purple-600"
+                                : "bg-white dark:bg-[#1E1C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#383431] hover:bg-slate-100 dark:hover:bg-[#2A2724]"
                             }`}
                           >
                             {st === "dziecko" ? "👶 Dziecko" : st === "osoba dorosła" ? "🧑 Osoba dorosła" : "Inne"}
@@ -474,7 +482,7 @@ export const NewCallerModal: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
                     Rodzaj porady (krótki opis, czego dotyczyła):
                   </label>
                   <textarea
@@ -482,12 +490,12 @@ export const NewCallerModal: React.FC = () => {
                     value={adviceDescription}
                     onChange={(e) => setAdviceDescription(e.target.value)}
                     placeholder="Opis sprawy zgłoszonej przez osobę..."
-                    className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-400 dark:placeholder-slate-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">
+                  <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1">
                     Uwagi i zalecenia:
                   </label>
                   <textarea
@@ -495,40 +503,47 @@ export const NewCallerModal: React.FC = () => {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Wskazówki, udzielona pomoc..."
-                    className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-400 dark:placeholder-slate-500"
                   />
                 </div>
 
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">
-                    Przekazane do innego specjalisty (opcjonalnie):
-                  </label>
-                  <input
-                    type="text"
-                    value={referredTo}
-                    onChange={(e) => setReferredTo(e.target.value)}
-                    placeholder="Np. mec. Anna Nowak (konsultacja orzeczenia WZON)"
-                    className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                  />
-                </div>
+                {/* Przekazanie do innego specjalisty */}
+                <ReferralSelector
+                  specialists={specialists}
+                  currentSpecialist={currentSpecialist}
+                  selectedSpecialistId={referredSpecialistId}
+                  onSelectSpecialist={(spec) => {
+                    if (spec) {
+                      setReferredSpecialistId(spec.id);
+                      setReferredTo(spec.name);
+                    } else {
+                      setReferredSpecialistId("");
+                      setReferredTo("");
+                    }
+                  }}
+                  referralNote={referredNote}
+                  onChangeNote={setReferredNote}
+                />
 
-                <div className="mt-2 pt-2 border-t border-slate-100"><AttachmentsManager attachments={attachments} onChange={setAttachments} specialistName={currentSpecialist.name} title="Załączniki (PDF, Excel, obrazy, DOCX)" /></div>
+                <div className="mt-2 pt-2 border-t border-slate-100 dark:border-[#2C2927]">
+                  <AttachmentsManager attachments={attachments} onChange={setAttachments} specialistName={currentSpecialist.name} title="Załączniki (PDF, Excel, obrazy, DOCX)" />
+                </div>
               </div>
             )}
           </div>
 
           {/* Footer Buttons */}
-          <div className="pt-3 border-t border-slate-200 flex items-center justify-end space-x-2.5">
+          <div className="pt-3 border-t border-slate-200 dark:border-[#2C2927] flex items-center justify-end space-x-2.5">
             <button
               type="button"
               onClick={() => setIsNewCallerModalOpen(false)}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition-colors"
+              className="px-4 py-2 bg-slate-100 dark:bg-[#2C2927] hover:bg-slate-200 dark:hover:bg-[#383431] text-slate-700 dark:text-slate-300 rounded-xl font-semibold transition-colors cursor-pointer"
             >
               Anuluj
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center space-x-1.5 cursor-pointer"
+              className="px-5 py-2 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl font-black shadow-md hover:shadow-lg transition-all flex items-center space-x-1.5 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>Utwórz kartotekę</span>

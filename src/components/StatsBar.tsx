@@ -101,7 +101,7 @@ export const StatsBar: React.FC = () => {
   return (
     <div className="space-y-6 text-xs animate-in fade-in">
       {/* Reporting period selector */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-4 shadow-xs">
+      <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-4 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-end gap-3 md:justify-between">
           <div className="w-56">
             <DateRangePicker
@@ -123,8 +123,8 @@ export const StatsBar: React.FC = () => {
                   onClick={() => setDateRange(preset.from, preset.to)}
                   className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors cursor-pointer ${
                     isActive
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                      ? "bg-[#2D2A28] dark:bg-[#FFB200] text-[#FFB200] dark:text-[#2D2A28] border-[#2D2A28] dark:border-[#FFB200]"
+                      : "bg-slate-50 dark:bg-[#141312] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#383431] hover:bg-slate-100 dark:hover:bg-[#2A2724]"
                   }`}
                 >
                   {preset.label}
@@ -135,7 +135,7 @@ export const StatsBar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setDateRange("", "")}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl font-semibold text-xs text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-100 transition-colors cursor-pointer"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl font-semibold text-xs text-rose-600 hover:text-rose-700 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 border border-rose-100 dark:border-rose-900/50 transition-colors cursor-pointer"
               >
                 <RotateCcw className="w-3 h-3" />
                 <span>Cały okres</span>
@@ -145,7 +145,7 @@ export const StatsBar: React.FC = () => {
         </div>
 
         {hasOtherFilters && (
-          <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-[#2C2927] text-[11px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/40 rounded-xl px-3 py-2">
             Statystyki uwzględniają także pozostałe aktywne filtry rejestru porad (województwo,
             rodzaj poradnictwa, specjalista, wyszukiwanie itp.).
           </div>
@@ -155,68 +155,68 @@ export const StatsBar: React.FC = () => {
       {/* Top 4 KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1 */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
+        <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-slate-500 font-semibold text-[11px]">
+            <span className="text-slate-500 dark:text-slate-400 font-semibold text-[11px]">
               Udzielone porady
             </span>
-            <div className="bg-indigo-50 text-indigo-600 p-2.5 rounded-2xl">
+            <div className="bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 p-2.5 rounded-2xl">
               <PhoneCall className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-slate-900">{stats.totalRecords}</div>
-          <div className="mt-1 text-[11px] text-slate-400">
+          <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{stats.totalRecords}</div>
+          <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
             Porady zarejestrowane w wybranym okresie
           </div>
         </div>
 
         {/* KPI 2 */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
+        <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-slate-500 font-semibold text-[11px]">
+            <span className="text-slate-500 dark:text-slate-400 font-semibold text-[11px]">
               Beneficjenci objęci poradami
             </span>
-            <div className="bg-emerald-50 text-emerald-600 p-2.5 rounded-2xl">
+            <div className="bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 p-2.5 rounded-2xl">
               <Users className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-slate-900">{stats.uniqueBeneficiaries}</div>
-          <div className="mt-1 text-[11px] text-slate-400">
+          <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{stats.uniqueBeneficiaries}</div>
+          <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
             Unikalne kartoteki z poradami w wybranym okresie
           </div>
         </div>
 
         {/* KPI 3 */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
+        <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-slate-500 font-semibold text-[11px]">
+            <span className="text-slate-500 dark:text-slate-400 font-semibold text-[11px]">
               Posiadający orzeczenie OzN
             </span>
-            <div className="bg-purple-50 text-purple-600 p-2.5 rounded-2xl">
+            <div className="bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 p-2.5 rounded-2xl">
               <Award className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-slate-900">
+          <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
             {stats.certifiedBeneficiaries}{" "}
-            <span className="text-sm font-normal text-slate-400">({stats.certifiedPercent}%)</span>
+            <span className="text-sm font-normal text-slate-400 dark:text-slate-500">({stats.certifiedPercent}%)</span>
           </div>
-          <div className="mt-1 text-[11px] text-slate-400">
+          <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
             Wśród beneficjentów objętych poradami
           </div>
         </div>
 
         {/* KPI 4 */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
+        <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-slate-500 font-semibold text-[11px]">
+            <span className="text-slate-500 dark:text-slate-400 font-semibold text-[11px]">
               Godziny dyżurów
             </span>
-            <div className="bg-blue-50 text-blue-600 p-2.5 rounded-2xl">
+            <div className="bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 p-2.5 rounded-2xl">
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-slate-900">{totalHours} godz.</div>
-          <div className="mt-1 text-[11px] text-slate-400">
+          <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{totalHours} godz.</div>
+          <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">
             Suma zarejestrowanego czasu porad (bez porad bez podanego czasu)
           </div>
         </div>
@@ -225,9 +225,9 @@ export const StatsBar: React.FC = () => {
       {/* Breakdown by Guidance Type and Regions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Guidance Types Chart Box */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
-          <h3 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-indigo-600" />
+        <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-5 shadow-xs">
+          <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-[#296B6E] dark:text-[#FFB200]" />
             <span>Struktura rodzajów poradnictwa</span>
           </h3>
 
@@ -236,7 +236,7 @@ export const StatsBar: React.FC = () => {
               const meta = GUIDANCE_TYPE_META[type];
               return (
                 <div key={type}>
-                  <div className="flex justify-between font-semibold text-slate-700 mb-1">
+                  <div className="flex justify-between font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     <span className="flex items-center gap-1.5">
                       {meta.icon} {label}
                     </span>
@@ -244,7 +244,7 @@ export const StatsBar: React.FC = () => {
                       {count} ({percent}%)
                     </span>
                   </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-slate-100 dark:bg-[#2C2927] rounded-full h-2 overflow-hidden">
                     <div
                       className={`${meta.barClass} h-2 rounded-full transition-all duration-500`}
                       style={{
@@ -260,9 +260,9 @@ export const StatsBar: React.FC = () => {
         </div>
 
         {/* Regions Box */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
-          <h3 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-emerald-600" />
+        <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-5 shadow-xs">
+          <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>Zasięg geograficzny — porady wg województw</span>
           </h3>
 
@@ -270,14 +270,14 @@ export const StatsBar: React.FC = () => {
             {stats.voivodeshipRows.map(({ name, count }) => (
               <div
                 key={name}
-                className="flex items-center justify-between py-1 border-b border-slate-100 last:border-b-0"
+                className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-[#2C2927] last:border-b-0"
               >
-                <span className={count > 0 ? "font-semibold text-slate-800" : "text-slate-400"}>
+                <span className={count > 0 ? "font-semibold text-slate-800 dark:text-slate-200" : "text-slate-400 dark:text-slate-600"}>
                   {name === "brak" ? "brak danych" : name}
                 </span>
                 <span
                   className={
-                    count > 0 ? "font-bold text-indigo-600" : "text-slate-300 font-medium"
+                    count > 0 ? "font-bold text-indigo-600 dark:text-[#FFB200]" : "text-slate-300 dark:text-slate-700 font-medium"
                   }
                 >
                   {count} {poradyLabel(count)}
@@ -286,7 +286,7 @@ export const StatsBar: React.FC = () => {
             ))}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400">
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-[#2C2927] text-[11px] text-slate-400 dark:text-slate-500">
             Linia poradnicza obsługuje zgłoszenia ze wszystkich 16 województw w ramach umowy z PFRON.
           </div>
         </div>
