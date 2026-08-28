@@ -1,7 +1,8 @@
 import React from "react";
 import { useApp } from "../context/AppContext";
-import { GUIDANCE_TYPES, GuidanceType, VOIVODESHIPS } from "../types";
+import { GuidanceType } from "../types";
 import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
+import { computeReportStats } from "../utils/reportStats";
 import {
   BarChart3,
   PhoneCall,
@@ -18,36 +19,30 @@ import {
 } from "lucide-react";
 
 interface GuidanceTypeMeta {
-  label: string;
   icon: React.ReactNode;
   barClass: string;
 }
 
-// Metadane prezentacyjne dla każdego rodzaju poradnictwa z GUIDANCE_TYPES —
-// nowy rodzaj w types/index.ts od razu pojawi się na wykresie (z fallbackiem).
+// Metadane czysto prezentacyjne (ikona, kolor paska) — etykiety sprawozdawcze
+// żyją w utils/reportStats.ts, wspólnie z eksportem raportu.
 const GUIDANCE_TYPE_META: Record<GuidanceType, GuidanceTypeMeta> = {
   "prawno-obywatelskie": {
-    label: "Prawno-obywatelskie (WZON, szkoła, ZUS, prawo)",
     icon: <Scale className="w-3.5 h-3.5 text-blue-600" />,
     barClass: "bg-blue-600",
   },
   "w zakresie psychologii i rehabilitacji społecznej": {
-    label: "W zakresie psychologii i rehabilitacji społecznej",
     icon: <Brain className="w-3.5 h-3.5 text-purple-600" />,
     barClass: "bg-purple-600",
   },
   "Parent to Parent": {
-    label: "Parent to Parent (doradztwo rodzicielskie)",
     icon: <HeartHandshake className="w-3.5 h-3.5 text-emerald-600" />,
     barClass: "bg-emerald-600",
   },
   "społeczne": {
-    label: "Społeczne (diagnostyka, wsparcie terapeutyczne)",
     icon: <Users className="w-3.5 h-3.5 text-indigo-600" />,
     barClass: "bg-indigo-600",
   },
   "inne": {
-    label: "Inne",
     icon: <Tag className="w-3.5 h-3.5 text-slate-500" />,
     barClass: "bg-slate-500",
   },
@@ -94,34 +89,10 @@ export const StatsBar: React.FC = () => {
       filterState.specialistId
   );
 
-  // Bez fabrykowania czasu: sumujemy tylko faktycznie zarejestrowane minuty.
-  const totalMinutes = filteredRecords.reduce(
-    (acc, r) => acc + (typeof r.durationMinutes === "number" && r.durationMinutes > 0 ? r.durationMinutes : 0),
-    0
-  );
-  const totalHours = (totalMinutes / 60).toFixed(1);
-
-  // Beneficjenci objęci poradami w wybranym zakresie (unikalne kartoteki).
-  const beneficiaryIds = new Set(filteredRecords.map((r) => r.callerId));
-  const beneficiaries = [...beneficiaryIds]
-    .map((id) => callersMap.get(id))
-    .filter((c): c is NonNullable<typeof c> => Boolean(c));
-  const certCount = beneficiaries.filter((c) => c.hasDisabilityCertificate === "tak").length;
-
-  const guidanceCounts = new Map<GuidanceType, number>();
-  filteredRecords.forEach((r) => {
-    guidanceCounts.set(r.guidanceType, (guidanceCounts.get(r.guidanceType) || 0) + 1);
-  });
-
-  // Liczba porad (nie kartotek) per województwo — pełna lista dla raportu PFRON.
-  const voivodeshipCounts = new Map<string, number>();
-  filteredRecords.forEach((r) => {
-    const voivodeship = callersMap.get(r.callerId)?.voivodeship || "brak";
-    voivodeshipCounts.set(voivodeship, (voivodeshipCounts.get(voivodeship) || 0) + 1);
-  });
-  const voivodeshipRows = VOIVODESHIPS.filter(
-    (v) => v !== "brak" || (voivodeshipCounts.get("brak") || 0) > 0
-  ).map((v) => ({ name: v, count: voivodeshipCounts.get(v) || 0 }));
+  // Wspólna logika liczenia ze sprawozdawczym eksportem (arkusz "Podsumowanie")
+  // — widok i plik raportu muszą pokazywać identyczne wartości.
+  const stats = computeReportStats(filteredRecords, callersMap);
+  const totalHours = (stats.totalMinutes / 60).toFixed(1);
 
   const setDateRange = (from: string, to: string) => {
     setFilterState((prev) => ({ ...prev, dateFrom: from, dateTo: to }));
@@ -221,7 +192,7 @@ export const StatsBar: React.FC = () => {
               <PhoneCall className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-slate-900">{filteredRecords.length}</div>
+          <div className="mt-2 text-2xl font-black text-slate-900">{stats.totalRecords}</div>
           <div className="mt-1 text-[11px] text-slate-400">
             Porady zarejestrowane w wybranym okresie
           </div>
@@ -237,7 +208,7 @@ export const StatsBar: React.FC = () => {
               <Users className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-slate-900">{beneficiaryIds.size}</div>
+          <div className="mt-2 text-2xl font-black text-slate-900">{stats.uniqueBeneficiaries}</div>
           <div className="mt-1 text-[11px] text-slate-400">
             Unikalne kartoteki z poradami w wybranym okresie
           </div>
@@ -254,10 +225,8 @@ export const StatsBar: React.FC = () => {
             </div>
           </div>
           <div className="mt-2 text-2xl font-black text-slate-900">
-            {certCount}{" "}
-            <span className="text-sm font-normal text-slate-400">
-              ({beneficiaries.length > 0 ? Math.round((certCount / beneficiaries.length) * 100) : 0}%)
-            </span>
+            {stats.certifiedBeneficiaries}{" "}
+            <span className="text-sm font-normal text-slate-400">({stats.certifiedPercent}%)</span>
           </div>
           <div className="mt-1 text-[11px] text-slate-400">
             Wśród beneficjentów objętych poradami
@@ -291,16 +260,13 @@ export const StatsBar: React.FC = () => {
           </h3>
 
           <div className="space-y-3.5">
-            {GUIDANCE_TYPES.map((type) => {
+            {stats.guidanceRows.map(({ type, label, count, percent }) => {
               const meta = GUIDANCE_TYPE_META[type];
-              const count = guidanceCounts.get(type) || 0;
-              const percent =
-                filteredRecords.length > 0 ? Math.round((count / filteredRecords.length) * 100) : 0;
               return (
                 <div key={type}>
                   <div className="flex justify-between font-semibold text-slate-700 mb-1">
                     <span className="flex items-center gap-1.5">
-                      {meta.icon} {meta.label}
+                      {meta.icon} {label}
                     </span>
                     <span>
                       {count} ({percent}%)
@@ -311,9 +277,7 @@ export const StatsBar: React.FC = () => {
                       className={`${meta.barClass} h-2 rounded-full transition-all duration-500`}
                       style={{
                         width:
-                          filteredRecords.length > 0
-                            ? (count / filteredRecords.length) * 100 + "%"
-                            : "0%",
+                          stats.totalRecords > 0 ? (count / stats.totalRecords) * 100 + "%" : "0%",
                       }}
                     />
                   </div>
@@ -331,7 +295,7 @@ export const StatsBar: React.FC = () => {
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-1.5">
-            {voivodeshipRows.map(({ name, count }) => (
+            {stats.voivodeshipRows.map(({ name, count }) => (
               <div
                 key={name}
                 className="flex items-center justify-between py-1 border-b border-slate-100 last:border-b-0"

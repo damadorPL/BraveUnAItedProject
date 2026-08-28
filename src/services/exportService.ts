@@ -1,11 +1,20 @@
 import * as XLSX from "xlsx";
 import { Caller, CallRecord } from "../types";
 import { buildCallersMap } from "../utils/recordFilters";
+import { computeReportStats } from "../utils/reportStats";
+
+// Okres sprawozdawczy (daty ISO YYYY-MM-DD z filtrów rejestru) — trafia do
+// metadanych arkusza "Podsumowanie", żeby plik sam mówił, czego dotyczy.
+export interface ExportPeriod {
+  from?: string;
+  to?: string;
+}
 
 export interface ExportOptions {
   anonymized?: boolean;
   format?: "csv" | "xlsx";
   filenamePrefix?: string;
+  period?: ExportPeriod;
 }
 
 export type ExportRow = Record<string, string | number>;
@@ -137,6 +146,75 @@ export function buildExportRows(
   });
 }
 
+export type SummaryCell = string | number;
+
+function formatPeriodDate(isoDate: string | undefined, fallback: string): string {
+  if (!isoDate) return fallback;
+  const parsed = new Date(isoDate);
+  return Number.isNaN(parsed.getTime()) ? fallback : parsed.toLocaleDateString("pl-PL");
+}
+
+// Arkusz "Podsumowanie": gotowy raport statystyczny okresu sprawozdawczego —
+// te same wartości, które pokazuje widok statystyk (wspólne computeReportStats).
+export function buildSummarySheetData(
+  records: CallRecord[],
+  callers: Caller[],
+  options: { anonymized: boolean; period?: ExportPeriod }
+): SummaryCell[][] {
+  const stats = computeReportStats(records, buildCallersMap(callers));
+  const totalHours = (stats.totalMinutes / 60).toFixed(1);
+
+  const rows: SummaryCell[][] = [
+    ["Raport statystyczny — rejestr porad linii PFRON"],
+    [],
+    ["Wygenerowano", new Date().toLocaleString("pl-PL")],
+    ["Okres sprawozdawczy od", formatPeriodDate(options.period?.from, "początek rejestru")],
+    ["Okres sprawozdawczy do", formatPeriodDate(options.period?.to, "koniec rejestru")],
+    [
+      "Tryb eksportu",
+      options.anonymized
+        ? "anonimizowany (raport dla grantodawcy)"
+        : "pełny (do użytku służbowego)",
+    ],
+    [],
+    ["Wskaźnik", "Wartość"],
+    ["Udzielone porady", stats.totalRecords],
+    ["Beneficjenci objęci poradami (unikalne kartoteki)", stats.uniqueBeneficiaries],
+    [
+      "W tym z orzeczeniem o niepełnosprawności",
+      stats.certifiedBeneficiaries + " (" + stats.certifiedPercent + "%)",
+    ],
+    ["Suma zarejestrowanego czasu porad (godz.)", totalHours],
+    [],
+    ["Struktura rodzajów poradnictwa", "Liczba porad", "Udział"],
+  ];
+
+  stats.guidanceRows.forEach((row) => {
+    rows.push([row.label, row.count, row.percent + "%"]);
+  });
+
+  rows.push([]);
+  rows.push(["Zasięg geograficzny — województwo", "Liczba porad"]);
+  stats.voivodeshipRows.forEach((row) => {
+    rows.push([row.name === "brak" ? "brak danych" : row.name, row.count]);
+  });
+
+  return rows;
+}
+
+// Szerokości kolumn dopasowane do najdłuższej wartości (z limitem, żeby długie
+// opisy porad nie rozciągały arkusza w nieskończoność).
+function columnWidthsFromMatrix(matrix: SummaryCell[][]): { wch: number }[] {
+  const widths: number[] = [];
+  matrix.forEach((row) => {
+    row.forEach((cell, index) => {
+      const length = String(cell ?? "").length;
+      widths[index] = Math.max(widths[index] || 0, length);
+    });
+  });
+  return widths.map((w) => ({ wch: Math.min(Math.max(w + 2, 10), 60) }));
+}
+
 // CSV pod polskiego Excela: separator ";", BOM UTF-8, CRLF, pola w cudzysłowach.
 export function buildCsvContent(rows: ExportRow[]): string {
   const headers = Object.keys(rows[0]);
@@ -166,7 +244,12 @@ export function exportRecordsData(
   callers: Caller[],
   options: ExportOptions = {}
 ): boolean {
-  const { anonymized = false, format = "csv", filenamePrefix = "Baza_Porad_PFRON" } = options;
+  const {
+    anonymized = false,
+    format = "csv",
+    filenamePrefix = "Baza_Porad_PFRON",
+    period,
+  } = options;
 
   const exportData = buildExportRows(records, callers, anonymized);
 
@@ -180,9 +263,22 @@ export function exportRecordsData(
   const filename = filenamePrefix + "_" + timestamp + modeSuffix;
 
   if (format === "xlsx") {
+    const headers = Object.keys(exportData[0]);
+    const dataMatrix: SummaryCell[][] = [
+      headers,
+      ...exportData.map((row) => headers.map((header) => row[header])),
+    ];
+
     const ws = XLSX.utils.json_to_sheet(exportData);
+    ws["!cols"] = columnWidthsFromMatrix(dataMatrix);
+
+    const summaryData = buildSummarySheetData(records, callers, { anonymized, period });
+    const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+    summaryWs["!cols"] = columnWidthsFromMatrix(summaryData);
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Historia Porad");
+    XLSX.utils.book_append_sheet(wb, summaryWs, "Podsumowanie");
     XLSX.writeFile(wb, filename + ".xlsx");
     return true;
   }

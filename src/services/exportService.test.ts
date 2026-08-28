@@ -4,6 +4,7 @@ import {
   buildAnonymousId,
   buildCsvContent,
   buildExportRows,
+  buildSummarySheetData,
   sortRecordsByCallDate,
 } from "./exportService";
 import { Caller, CallRecord } from "../types";
@@ -221,5 +222,58 @@ describe("buildCsvContent", () => {
     expect(lines[0]).toBe('"Nr porady";"Opis"');
     expect(lines[1]).toBe('"1";"zwykły tekst"');
     expect(lines[2]).toBe('"2";"ma ""cudzysłów""; i średnik"');
+  });
+});
+
+describe("buildSummarySheetData", () => {
+  const callers = [
+    makeCaller({ id: "c1", hasDisabilityCertificate: "tak", voivodeship: "śląskie" }),
+    makeCaller({ id: "c2", hasDisabilityCertificate: "nie" }),
+  ];
+  const records = [
+    makeRecord({ id: "r1", callerId: "c1", durationMinutes: 30 }),
+    makeRecord({ id: "r2", callerId: "c2", durationMinutes: 60, guidanceType: "inne" }),
+  ];
+
+  it("zawiera metadane okresu sprawozdawczego i trybu eksportu", () => {
+    const rows = buildSummarySheetData(records, callers, {
+      anonymized: true,
+      period: { from: "2026-01-01", to: "2026-03-31" },
+    });
+
+    const flat = rows.map((r) => r.join("|"));
+    expect(flat).toContain("Okres sprawozdawczy od|1.01.2026");
+    expect(flat).toContain("Okres sprawozdawczy do|31.03.2026");
+    expect(flat.some((l) => l.startsWith("Tryb eksportu|anonimizowany"))).toBe(true);
+  });
+
+  it("bez okresu wpisuje pełny zakres rejestru", () => {
+    const rows = buildSummarySheetData(records, callers, { anonymized: false });
+    const flat = rows.map((r) => r.join("|"));
+    expect(flat).toContain("Okres sprawozdawczy od|początek rejestru");
+    expect(flat).toContain("Okres sprawozdawczy do|koniec rejestru");
+    expect(flat.some((l) => l.startsWith("Tryb eksportu|pełny"))).toBe(true);
+  });
+
+  it("liczy KPI i sekcje zgodnie z computeReportStats", () => {
+    const rows = buildSummarySheetData(records, callers, { anonymized: true });
+    const flat = rows.map((r) => r.join("|"));
+
+    expect(flat).toContain("Udzielone porady|2");
+    expect(flat).toContain("Beneficjenci objęci poradami (unikalne kartoteki)|2");
+    expect(flat).toContain("W tym z orzeczeniem o niepełnosprawności|1 (50%)");
+    expect(flat).toContain("Suma zarejestrowanego czasu porad (godz.)|1.5");
+    expect(flat).toContain("Inne|1|50%");
+    expect(flat).toContain("śląskie|1");
+    expect(flat).toContain("mazowieckie|1");
+    // pełna lista województw bez wiersza "brak danych", bo wszyscy mają województwo
+    expect(flat.some((l) => l.startsWith("brak danych|"))).toBe(false);
+  });
+
+  it("nie zawiera danych osobowych — tylko agregaty", () => {
+    const serialized = JSON.stringify(buildSummarySheetData(records, callers, { anonymized: true }));
+    expect(serialized).not.toContain("Kowalska");
+    expect(serialized).not.toContain("600100200");
+    expect(serialized).not.toContain("Grójec");
   });
 });

@@ -27,6 +27,10 @@ export const ExportModal: React.FC = () => {
       anonymized,
       format,
       filenamePrefix: "Baza_Porad_PFRON",
+      period: {
+        from: filterState.dateFrom || undefined,
+        to: filterState.dateTo || undefined,
+      },
     });
 
     if (!exported) return;
@@ -161,6 +165,13 @@ export const ExportModal: React.FC = () => {
                 <span>Excel (.xlsx)</span>
               </button>
             </div>
+            {format === "xlsx" && (
+              <p className="mt-2 text-[11px] text-slate-500">
+                Plik Excel zawiera dodatkowy arkusz „Podsumowanie” — raport statystyczny wybranego
+                okresu sprawozdawczego (liczba porad, beneficjenci, struktura poradnictwa, zasięg
+                wg województw).
+              </p>
+            )}
           </div>
 
           {/* Footer Buttons */}
