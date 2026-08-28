@@ -18,6 +18,7 @@ import {
   Trash2,
   ShieldCheck,
   Edit3,
+  ChevronDown,
 } from "lucide-react";
 import { AttachmentsManager } from "./AttachmentsManager";
 import { ReferralSelector } from "./ReferralSelector";
@@ -172,22 +173,25 @@ export const EditCallRecordModal: React.FC = () => {
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-xs">
           {/* Specjalista (Admin can reassign) */}
           {currentSpecialist.isAdmin && (
-            <div className="bg-amber-50/80 dark:bg-[#241E15] border border-amber-200 dark:border-amber-600/40 rounded-2xl p-3.5 flex items-center justify-between">
+            <div className="bg-amber-50/80 dark:bg-[#241E15] border border-amber-200 dark:border-amber-600/40 rounded-2xl p-3.5 space-y-2">
               <div>
                 <span className="font-bold text-amber-950 dark:text-[#FFB200] block text-xs">Autor wpisu (przypisany specjalista):</span>
                 <span className="text-[11px] text-amber-800 dark:text-amber-300">Jako administrator możesz zmienić autora tej konsultacji.</span>
               </div>
-              <select
-                value={specialistId}
-                onChange={(e) => setSpecialistId(e.target.value)}
-                className="bg-white dark:bg-[#1E1C1A] border border-amber-300 dark:border-amber-600/50 rounded-xl px-3 py-1.5 font-bold text-slate-800 dark:text-white focus:outline-none cursor-pointer"
-              >
-                {specialists.map((s) => (
-                  <option key={s.id} value={s.id} className="dark:bg-[#1E1C1A]">
-                    {s.name} ({s.role})
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={specialistId}
+                  onChange={(e) => setSpecialistId(e.target.value)}
+                  className="w-full appearance-none bg-white dark:bg-[#1E1C1A] border border-amber-300 dark:border-amber-600/50 rounded-xl pl-3 pr-9 py-1.5 font-bold text-slate-800 dark:text-white focus:outline-none cursor-pointer"
+                >
+                  {specialists.map((s) => (
+                    <option key={s.id} value={s.id} className="dark:bg-[#1E1C1A]">
+                      {s.name} ({s.role})
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 text-amber-600 dark:text-amber-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
             </div>
           )}
 
