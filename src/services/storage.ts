@@ -76,7 +76,7 @@ export function loadSpecialists(): Specialist[] {
 }
 
 export function searchCallers(query: string, callers: Caller[]): Caller[] {
-  if (!query.trim()) return [];
+  if (!query || !query.trim()) return callers;
   const normQ = normalizeText(query);
   const rawQ = query.toLowerCase().trim();
 

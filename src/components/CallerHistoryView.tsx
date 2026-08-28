@@ -68,7 +68,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
     if (records.length === 1) {
       const spec = firstRec.specialistName || "Specjalista";
       const typeStr = firstRec.guidanceType || "konsultacja";
-      return `Osoba dzwoniła 1 raz do specjalisty ${spec} (${typeStr}). Porada dotyczyła: ${desc}...`;
+      return `Kontaktowano się 1 raz ze specjalistą ${spec} (${typeStr}). Porada dotyczyła: ${desc}...`;
     }
 
     const specialistsInvolved = Array.from(
@@ -82,14 +82,14 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
       ? new Date(firstRec.callDate).toLocaleDateString("pl-PL")
       : "niedawno";
 
-    return `Osoba dzwoniła łącznie ${records.length} razy. Doradzali: ${specialistsInvolved} (${typesInvolved}). Ostatnia porada udzielona ${callDateStr}: ${desc}. Uwagi: ${nts}...`;
+    return `Odnotowano łącznie ${records.length} kontaktów. Doradzali: ${specialistsInvolved} (${typesInvolved}). Ostatnia porada udzielona ${callDateStr}: ${desc}. Uwagi: ${nts}...`;
   };
 
   if (!caller) {
     return (
       <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center">
         <AlertCircle className="w-8 h-8 text-rose-500 mx-auto mb-2" />
-        <h3 className="font-bold text-slate-800">Nie odnaleziono danych dzwoniącego</h3>
+        <h3 className="font-bold text-slate-800">Nie odnaleziono danych kontaktu</h3>
         <button
           type="button"
           onClick={() => setSelectedCaller(null)}
@@ -152,7 +152,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
           className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer"
         >
           <PlusCircle className="w-4 h-4" />
-          <span>Dodaj nową poradę (Alt + N)</span>
+          <span>Dodaj nową poradę</span>
         </button>
       </div>
 
@@ -278,7 +278,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
             }`}
           >
             <FolderOpen className="w-4 h-4" />
-            <span>Dokumentacja pacjenta / dzwoniącego ({callerAttachmentsCount})</span>
+            <span>Dokumentacja kontaktu ({callerAttachmentsCount})</span>
           </button>
         </div>
 
@@ -291,7 +291,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
       {activeViewMode === "DOCS" && (
         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm animate-in fade-in space-y-4">
           <div>
-            <h3 className="font-bold text-slate-900 text-sm">Główna dokumentacja dzwoniącego</h3>
+            <h3 className="font-bold text-slate-900 text-sm">Główna dokumentacja kontaktu</h3>
             <p className="text-xs text-slate-500 mt-0.5">
               Załącz orzeczenia o niepełnosprawności, opinie poradni psychologiczno-pedagogicznych, IPET, wnioski WZON, tabele obserwacji oraz skany zaświadczeń lekarskich (PDF, JPG, PNG, Excel, DOCX, TXT).
             </p>
@@ -301,7 +301,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
             attachments={caller.attachments || []}
             onChange={handleCallerAttachmentsChange}
             specialistName={currentSpecialist.name}
-            title="Pliki przypisane bezpośrednio do profilu dzwoniącego"
+            title="Pliki przypisane bezpośrednio do profilu kontaktu"
           />
         </div>
       )}

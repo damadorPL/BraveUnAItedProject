@@ -139,7 +139,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         } else if (msg.type === "CALLER_ADDED") {
           const freshCallers = loadCallers();
           setCallers(freshCallers);
-          setLiveNotification((msg.senderName || "Inny dyżurujący") + " zarejestrował/a nowego dzwoniącego.");
+          setLiveNotification((msg.senderName || "Inny dyżurujący") + " zarejestrował/a nowy kontakt.");
         } else if (msg.type === "BULK_IMPORT") {
           setCallers(loadCallers());
           setRecords(loadRecords());
