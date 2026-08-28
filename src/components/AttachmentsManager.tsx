@@ -211,11 +211,11 @@ export const AttachmentsManager: React.FC<Props> = ({
           />
 
           <div className="flex flex-col items-center justify-center space-y-1">
-            <UploadCloud className="w-6 h-6 text-[#FFB200]" />
-            <p className="font-semibold text-slate-700 dark:text-slate-200">
+            <UploadCloud className="w-6 h-6 text-amber-600 dark:text-[#FFB200]" />
+            <p className="font-semibold text-slate-800 dark:text-slate-200">
               {isUploading ? "Wgrywanie pliku..." : "Przeciągnij pliki tutaj lub kliknij, aby wybrać"}
             </p>
-            <p className="text-[11px] text-slate-400 dark:text-slate-500">
+            <p className="text-[11px] text-slate-600 dark:text-slate-300">
               Obsługiwane formaty: <strong>PDF</strong>, <strong>Obrazy (JPG, PNG)</strong>, <strong>Excel / CSV</strong>, <strong>Dokumenty tekstowe (DOCX, TXT)</strong>
             </p>
           </div>
@@ -335,7 +335,7 @@ export const AttachmentsManager: React.FC<Props> = ({
                     >
                       <ZoomOut className="w-3.5 h-3.5" />
                     </button>
-                    <span className="text-[10px] text-slate-400 font-mono px-1">{Math.round(zoomLevel * 100)}%</span>
+                    <span className="text-[10px] text-slate-300 font-mono px-1">{Math.round(zoomLevel * 100)}%</span>
                     <button
                       type="button"
                       onClick={() => setZoomLevel((z) => Math.min(2.5, z + 0.25))}

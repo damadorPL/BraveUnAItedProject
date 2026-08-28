@@ -28,7 +28,7 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
           <h3 className="text-sm font-bold text-amber-950 dark:text-[#FFB200] flex items-center gap-2">
             Znaleziono {callers.length} osoby o pasujących danych (weryfikacja tożsamości)
           </h3>
-          <p className="text-xs text-amber-800 dark:text-amber-200 mt-0.5">
+          <p className="text-xs text-amber-900 dark:text-amber-200 mt-0.5">
             Zgodnie z procedurą bezpieczeństwa danych medycznych: <strong>zapytaj o województwo/miejscowość osoby kontaktowej</strong>, aby nie połączyć błędnie historii dwóch różnych osób.
           </p>
         </div>
@@ -61,14 +61,14 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
               <div>
                 <div className="flex items-start justify-between">
                   <div>
-                    <span className="font-extrabold text-slate-900 dark:text-white text-base group-hover:text-[#FFB200] transition-colors">
+                    <span className="font-extrabold text-slate-900 dark:text-white text-base group-hover:text-amber-600 dark:group-hover:text-[#FFB200] transition-colors">
                       {caller.firstName} {caller.lastName}
                     </span>
-                    <div className="flex items-center text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      <MapPin className="w-3.5 h-3.5 mr-1 text-slate-400 dark:text-slate-500" />
-                      <span className="font-medium text-slate-700 dark:text-slate-300">{caller.city}</span>
-                      <span className="mx-1 text-slate-300 dark:text-slate-600">•</span>
-                      <span className="">{caller.voivodeship}</span>
+                    <div className="flex items-center text-xs text-slate-600 dark:text-slate-300 mt-1">
+                      <MapPin className="w-3.5 h-3.5 mr-1 text-slate-500 dark:text-slate-400" />
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">{caller.city}</span>
+                      <span className="mx-1 text-slate-400 dark:text-slate-600">•</span>
+                      <span>{caller.voivodeship}</span>
                     </div>
                   </div>
 
@@ -78,35 +78,35 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
                 </div>
 
                 {/* Beneficiary & Certificate info */}
-                <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-[#141312] px-2.5 py-1 rounded-xl">
-                  <span className="capitalize font-medium text-slate-700 dark:text-slate-300">{beneficiaryLabel}</span>
-                  <span className="text-purple-700 dark:text-purple-300 font-semibold">
+                <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-[#141312] px-2.5 py-1 rounded-xl">
+                  <span className="capitalize font-semibold text-slate-800 dark:text-slate-200">{beneficiaryLabel}</span>
+                  <span className="text-purple-900 dark:text-purple-300 font-bold">
                     Orzeczenie: {caller.hasDisabilityCertificate === "tak" ? "Tak" : caller.hasDisabilityCertificate}
                   </span>
                 </div>
 
                 {/* Phone & Last Date */}
-                <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-[#2C2927] space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
+                <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-[#2C2927] space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
                   <div className="flex items-center">
-                    <Phone className="w-3.5 h-3.5 mr-1.5 text-slate-400 dark:text-slate-500" />
-                    <span className="font-mono font-medium text-slate-800 dark:text-slate-200">
+                    <Phone className="w-3.5 h-3.5 mr-1.5 text-slate-500 dark:text-slate-400" />
+                    <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
                       {caller.phoneNumber || "Brak numeru"}
                     </span>
                   </div>
 
-                  <div className="flex items-center text-slate-500 dark:text-slate-400">
-                    <Clock className="w-3.5 h-3.5 mr-1.5 text-slate-400 dark:text-slate-500" />
+                  <div className="flex items-center text-slate-600 dark:text-slate-300">
+                    <Clock className="w-3.5 h-3.5 mr-1.5 text-slate-500 dark:text-slate-400" />
                     <span>
-                      Ostatnia porada: <strong>{lastDateStr}</strong>
+                      Ostatnia porada: <strong className="text-slate-900 dark:text-slate-100">{lastDateStr}</strong>
                     </span>
                   </div>
 
                   {lastRecord && (
-                    <div className="mt-2 text-[11px] text-slate-600 dark:text-slate-300 bg-indigo-50/40 dark:bg-[#161514] p-2.5 rounded-xl border border-indigo-100/60 dark:border-[#2C2927]">
-                      <div className="font-bold text-slate-800 dark:text-slate-200 capitalize mb-0.5">
+                    <div className="mt-2 text-[11px] text-slate-700 dark:text-slate-300 bg-indigo-50/50 dark:bg-[#161514] p-2.5 rounded-xl border border-indigo-100 dark:border-[#2C2927]">
+                      <div className="font-bold text-slate-900 dark:text-slate-100 capitalize mb-0.5">
                         {lastRecord.guidanceType}
                       </div>
-                      <span className="line-clamp-2 text-slate-700 dark:text-slate-300 font-medium">
+                      <span className="line-clamp-2 text-slate-800 dark:text-slate-200 font-medium">
                         {lastRecord.adviceDescription}
                       </span>
                     </div>
@@ -114,7 +114,7 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
                 </div>
               </div>
 
-              <div className="mt-4 pt-2.5 flex items-center justify-between text-xs font-bold text-[#296B6E] dark:text-[#FFB200] group-hover:underline">
+              <div className="mt-4 pt-2.5 flex items-center justify-between text-xs font-bold text-[#1F5254] dark:text-[#FFB200] group-hover:underline">
                 <span>Zobacz pełną kartotekę</span>
                 <ChevronRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
               </div>

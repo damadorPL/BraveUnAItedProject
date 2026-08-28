@@ -103,7 +103,7 @@ export const ExcelMigratorModal: React.FC = () => {
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Migrator Danych z Pliku Excel / CSV</h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-300">
                 Import dotychczasowego arkusza fundacji i automatyczne zasilenie kartotek
               </p>
             </div>
@@ -124,7 +124,7 @@ export const ExcelMigratorModal: React.FC = () => {
           <div className="bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-2xl p-4 flex items-center justify-between">
             <div>
               <div className="font-bold text-slate-900 dark:text-white text-xs">Potrzebujesz wzorca kolumn?</div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
                 Pobierz oficjalny szablon Excel z poprawnymi nagłówkami i przykładowymi wpisami.
               </p>
             </div>
@@ -176,7 +176,7 @@ export const ExcelMigratorModal: React.FC = () => {
                   }}
                 />
 
-                <Upload className="w-10 h-10 text-[#FFB200] mx-auto mb-2" />
+                <Upload className="w-10 h-10 text-amber-600 dark:text-[#FFB200] mx-auto mb-2" />
                 <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
                   {parsing
                     ? "Analizowanie pliku..."
@@ -184,7 +184,7 @@ export const ExcelMigratorModal: React.FC = () => {
                       ? file.name
                       : "Przeciągnij plik Excel (.xlsx, .csv) lub kliknij, aby wybrać"}
                 </p>
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1">
                   Obsługiwane formaty: Microsoft Excel (.xlsx, .xls), CSV z separatorem średnik/przecinek. Maks. 10 MB.
                 </p>
               </div>

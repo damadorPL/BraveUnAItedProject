@@ -274,13 +274,13 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
             className={`flex items-center space-x-2 px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all cursor-pointer border-t border-x ${
               activeTab === "MERGE_CONTACTS"
                 ? "bg-white dark:bg-[#1E1C1A] text-[#2D2A28] dark:text-[#FFB200] border-slate-200 dark:border-[#383431] -mb-px shadow-xs"
-                : "bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-white"
+                : "bg-transparent text-slate-700 dark:text-slate-300 border-transparent hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <GitMerge className="w-4 h-4 text-[#296B6E] dark:text-[#FFB200]" />
             <span>Łączenie kartotek kontaktów (Merge)</span>
             {potentialDuplicates.length > 0 && (
-              <span className="bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-[10px] px-2 py-0.5 rounded-full font-extrabold border border-amber-300 dark:border-amber-700/50">
+              <span className="bg-amber-100 dark:bg-amber-950/60 text-amber-950 dark:text-amber-300 text-[10px] px-2 py-0.5 rounded-full font-extrabold border border-amber-300 dark:border-amber-700/50">
                 {potentialDuplicates.length} duplikaty
               </span>
             )}
@@ -292,10 +292,10 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
             className={`flex items-center space-x-2 px-4 py-2.5 rounded-t-xl text-xs font-bold transition-all cursor-pointer border-t border-x ${
               activeTab === "MANAGE_SPECIALISTS"
                 ? "bg-white dark:bg-[#1E1C1A] text-[#2D2A28] dark:text-[#FFB200] border-slate-200 dark:border-[#383431] -mb-px shadow-xs"
-                : "bg-transparent text-slate-600 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-white"
+                : "bg-transparent text-slate-700 dark:text-slate-300 border-transparent hover:text-slate-900 dark:hover:text-white"
             }`}
           >
-            <Users className="w-4 h-4 text-[#FFB200]" />
+            <Users className="w-4 h-4 text-amber-600 dark:text-[#FFB200]" />
             <span>Dyżurujący konsultanci ({specialists.length})</span>
           </button>
         </div>
@@ -329,7 +329,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                         <div className="font-bold text-slate-900 dark:text-white">
                           {pair.c1.firstName} {pair.c1.lastName} ↔ {pair.c2.firstName} {pair.c2.lastName}
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        <div className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
                           {pair.reason} • tel: {pair.c1.phoneNumber || pair.c2.phoneNumber}
                         </div>
                       </div>
@@ -353,15 +353,15 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
             <form onSubmit={handleMergeSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* 1. Target Contact (Keep) */}
-                <div className="bg-slate-50 dark:bg-[#141312] border-2 border-emerald-200 dark:border-emerald-700/60 rounded-2xl p-4 flex flex-col justify-between">
+                <div className="bg-slate-50 dark:bg-[#141312] border-2 border-emerald-300 dark:border-emerald-700/60 rounded-2xl p-4 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-black text-emerald-800 dark:text-emerald-400 flex items-center gap-1.5">
-                        <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <span className="text-xs font-black text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                        <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                         1. Kontakt Główny (Zostanie zachowany)
                       </span>
                       {targetCaller && (
-                        <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 font-bold px-2 py-0.5 rounded-full">
                           Wybrano
                         </span>
                       )}
@@ -371,7 +371,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                       placeholder="Szukaj kontaktu głównego..."
                       value={mergeSearchTarget}
                       onChange={(e) => setMergeSearchTarget(e.target.value)}
-                      className="w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl text-xs text-slate-800 dark:text-slate-200 mb-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border border-slate-300 dark:border-[#4A4542] rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 mb-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
                       {filteredTargetCallers.map((c) => (
@@ -380,8 +380,8 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                           onClick={() => setTargetCallerId(c.id)}
                           className={`p-2 rounded-xl text-xs transition-all cursor-pointer flex items-center justify-between border ${
                             targetCallerId === c.id
-                              ? "bg-emerald-600 text-white border-emerald-600 font-bold shadow-xs"
-                              : "bg-white dark:bg-[#1E1C1A] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#2C2927] hover:border-emerald-300"
+                              ? "bg-emerald-700 text-white border-emerald-700 font-bold shadow-xs"
+                              : "bg-white dark:bg-[#1E1C1A] text-slate-800 dark:text-slate-200 border-slate-200 dark:border-[#2C2927] hover:border-emerald-300"
                           }`}
                         >
                           <div>
@@ -392,7 +392,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                               {c.phoneNumber} • {c.city || c.voivodeship}
                             </div>
                           </div>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/10">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/10 font-bold">
                             {records.filter((r) => r.callerId === c.id).length} porad
                           </span>
                         </div>
@@ -403,14 +403,14 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                     <div className="mt-3 pt-3 border-t border-emerald-200 dark:border-emerald-800/50 text-xs text-emerald-950 dark:text-emerald-200 bg-emerald-100/60 dark:bg-emerald-950/30 p-2.5 rounded-xl flex items-center justify-between">
                       <div>
                         <strong>Wybrany:</strong> {targetCaller.firstName} {targetCaller.lastName} ({targetCaller.phoneNumber})
-                        <div className="text-[11px] text-emerald-800 dark:text-emerald-300 mt-0.5">
+                        <div className="text-[11px] text-emerald-900 dark:text-emerald-300 mt-0.5 font-medium">
                           Posiada {targetRecords.length} porad i {(targetCaller.attachments || []).length} załączników.
                         </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => setEditingCaller(targetCaller)}
-                        className="px-2.5 py-1 bg-white dark:bg-[#1E1C1A] text-emerald-800 dark:text-emerald-300 hover:bg-emerald-50 rounded-lg text-xs font-bold border border-emerald-300 dark:border-emerald-700 shadow-2xs flex items-center gap-1 cursor-pointer shrink-0 ml-2"
+                        className="px-2.5 py-1 bg-white dark:bg-[#1E1C1A] text-emerald-900 dark:text-emerald-300 hover:bg-emerald-50 rounded-lg text-xs font-bold border border-emerald-300 dark:border-emerald-700 shadow-2xs flex items-center gap-1 cursor-pointer shrink-0 ml-2"
                         title="Edytuj dane tego kontaktu"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -421,15 +421,15 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                 </div>
 
                 {/* 2. Source Contact (To be merged and removed) */}
-                <div className="bg-slate-50 dark:bg-[#141312] border-2 border-amber-200 dark:border-amber-600/50 rounded-2xl p-4 flex flex-col justify-between">
+                <div className="bg-slate-50 dark:bg-[#141312] border-2 border-amber-300 dark:border-amber-600/50 rounded-2xl p-4 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-black text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
-                        <GitMerge className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <span className="text-xs font-black text-amber-900 dark:text-amber-300 flex items-center gap-1.5">
+                        <GitMerge className="w-4 h-4 text-amber-700 dark:text-amber-400" />
                         2. Kontakt do scalenia (Zostanie wchłonięty)
                       </span>
                       {sourceCaller && (
-                        <span className="text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-950 dark:text-amber-300 font-bold px-2 py-0.5 rounded-full">
                           Wybrano
                         </span>
                       )}
@@ -439,7 +439,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                       placeholder="Szukaj zdublowanego kontaktu..."
                       value={mergeSearchSource}
                       onChange={(e) => setMergeSearchSource(e.target.value)}
-                      className="w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl text-xs text-slate-800 dark:text-slate-200 mb-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      className="w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border border-slate-300 dark:border-[#4A4542] rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 mb-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                     <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
                       {filteredSourceCallers.map((c) => (
@@ -551,7 +551,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">Zespół konsultantów i dyżurujących</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-300">
                   Konsultanci otrzymują powiadomienia e-mail o przekazanych sprawach i mogą prowadzić dyżury.
                 </p>
               </div>
@@ -580,7 +580,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
             {isAddingSpecialist && (
               <form
                 onSubmit={handleSaveSpecialist}
-                className="bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#2C2927] rounded-2xl p-4 space-y-3.5 animate-in fade-in"
+                className="bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#2C2927] rounded-2xl p-4 space-y-3.5 animate-in fade-in"
               >
                 <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#2C2927] pb-2">
                   <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -610,7 +610,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                       value={specName}
                       onChange={(e) => setSpecName(e.target.value)}
                       placeholder="Imię i nazwisko"
-                      className="w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFB200]"
+                      className="w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border border-slate-300 dark:border-[#383431] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200]"
                     />
                   </div>
 
@@ -627,10 +627,10 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                         setSpecEmailError(null);
                       }}
                       placeholder={`np. t.lewandowski@${ALLOWED_EMAIL_DOMAIN}`}
-                      className={`w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 ${
+                      className={`w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 ${
                         specEmailError
                           ? "border-red-400 dark:border-red-700 focus:ring-red-400"
-                          : "border-slate-200 dark:border-[#383431] focus:ring-[#FFB200]"
+                          : "border-slate-300 dark:border-[#383431] focus:ring-[#FFB200]"
                       }`}
                     />
                     {specEmailError ? (
@@ -656,7 +656,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                       value={specTitle}
                       onChange={(e) => setSpecTitle(e.target.value)}
                       placeholder="np. Psycholog / Prawnik"
-                      className="w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFB200]"
+                      className="w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border border-slate-300 dark:border-[#383431] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200]"
                     />
                   </div>
 
@@ -667,7 +667,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                       value={specRole}
                       onChange={(e) => setSpecRole(e.target.value)}
                       placeholder="np. Specjalista P2P"
-                      className="w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFB200]"
+                      className="w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border border-slate-300 dark:border-[#383431] rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200]"
                     />
                   </div>
 
@@ -676,7 +676,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                     <select
                       value={specGuidance}
                       onChange={(e) => setSpecGuidance(e.target.value as GuidanceType)}
-                      className="w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFB200]"
+                      className="w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border border-slate-300 dark:border-[#383431] rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFB200]"
                     >
                       {GUIDANCE_TYPES.map((gt) => (
                         <option key={gt} value={gt} className="dark:bg-[#1E1C1A]">
@@ -740,13 +740,13 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                           <div className="font-extrabold text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
                             <span>{spec.name}</span>
                             {spec.isAdmin && (
-                              <span className="text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 font-extrabold px-1.5 py-0.5 rounded border border-amber-300 dark:border-amber-700/50 flex items-center gap-0.5">
+                              <span className="text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-950 dark:text-amber-300 font-extrabold px-1.5 py-0.5 rounded border border-amber-300 dark:border-amber-700/50 flex items-center gap-0.5">
                                 <ShieldCheck className="w-2.5 h-2.5" />
                                 Admin
                               </span>
                             )}
                           </div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400">{spec.role} ({spec.title})</div>
+                          <div className="text-[11px] text-slate-600 dark:text-slate-300">{spec.role} ({spec.title})</div>
                         </div>
                       </div>
 
@@ -754,7 +754,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                         <button
                           type="button"
                           onClick={() => startEditSpecialist(spec)}
-                          className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-amber-700 dark:hover:text-[#FFB200] hover:bg-amber-50 dark:hover:bg-[#2A241A] rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-600 dark:text-slate-300 hover:text-amber-700 dark:hover:text-[#FFB200] hover:bg-amber-50 dark:hover:bg-[#2A241A] rounded-lg transition-colors cursor-pointer"
                           title="Edytuj profil konsultanta"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
@@ -775,8 +775,8 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                         <Mail className="w-3.5 h-3.5 mr-1.5 text-[#296B6E] dark:text-teal-400" />
                         <span className="font-mono text-[11px]">{spec.email}</span>
                       </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                        Domyślne poradnictwo: <strong className="text-slate-700 dark:text-slate-300">{spec.guidanceType}</strong>
+                      <div className="text-[11px] text-slate-600 dark:text-slate-300">
+                        Domyślne poradnictwo: <strong className="text-slate-800 dark:text-slate-200">{spec.guidanceType}</strong>
                       </div>
                     </div>
                   </div>

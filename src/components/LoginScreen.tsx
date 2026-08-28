@@ -77,7 +77,7 @@ export const LoginScreen: React.FC = () => {
         </div>
         <div>
           <span className="font-black text-2xl tracking-tight text-white">Baza Porad</span>
-          <p className="text-xs text-slate-400 leading-tight mt-0.5">
+          <p className="text-xs text-slate-300 leading-tight mt-0.5">
             Wspólna historia rozmów dla dyżurujących specjalistów • Linia PFRON
           </p>
         </div>
@@ -86,7 +86,7 @@ export const LoginScreen: React.FC = () => {
       {/* Login card */}
       <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-xl p-7 sm:p-8">
         <h1 className="text-lg font-black text-slate-900 tracking-tight">Zaloguj się do systemu</h1>
-        <p className="text-xs text-slate-500 mt-1 mb-5">
+        <p className="text-xs text-slate-600 mt-1 mb-5">
           System sam rozpozna Twoje konto i uprawnienia na podstawie służbowego adresu e-mail.
         </p>
 
@@ -118,7 +118,7 @@ export const LoginScreen: React.FC = () => {
                 }}
                 placeholder="np. a.nowak@fundacja-spektrum.pl"
                 aria-invalid={Boolean(error && !recognized)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
               />
 
               {/* Rozpoznane konto + wykryty typ */}
@@ -136,12 +136,12 @@ export const LoginScreen: React.FC = () => {
                   <div className="min-w-0">
                     <div className="text-xs font-bold text-slate-900 truncate">{recognized.name}</div>
                     {recognized.isAdmin ? (
-                      <div className="flex items-center gap-1 text-[11px] font-bold text-amber-700">
+                      <div className="flex items-center gap-1 text-[11px] font-bold text-amber-800">
                         <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
                         <span>Konto rozpoznane: Administrator</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1 text-[11px] font-bold text-[#296B6E]">
+                      <div className="flex items-center gap-1 text-[11px] font-bold text-[#1F5254]">
                         <UserCheck className="w-3.5 h-3.5 shrink-0" />
                         <span>Konto rozpoznane: Dyżurujący specjalista • {recognized.title}</span>
                       </div>
@@ -179,13 +179,13 @@ export const LoginScreen: React.FC = () => {
                   }}
                   placeholder="••••••••"
                   aria-invalid={Boolean(error && recognized)}
-                  className="w-full px-3.5 py-2.5 pr-11 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
+                  className="w-full px-3.5 py-2.5 pr-11 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   aria-label={showPassword ? "Ukryj hasło" : "Pokaż hasło"}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -213,10 +213,10 @@ export const LoginScreen: React.FC = () => {
         </form>
 
         {/* Demo hint */}
-        <div className="mt-6 pt-4 border-t border-slate-100 text-[11px] text-slate-400">
+        <div className="mt-6 pt-4 border-t border-slate-100 text-[11px] text-slate-600">
           <p>
             Wersja demonstracyjna — hasło dla wszystkich kont:{" "}
-            <code className="font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md">
+            <code className="font-mono font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded-md">
               {DEMO_PASSWORD}
             </code>{" "}
             (o ile nie zostało zmienione przez reset hasła)
@@ -250,15 +250,15 @@ export const LoginScreen: React.FC = () => {
                       >
                         {getSpecialistInitials(s.name)}
                       </span>
-                      <span className="font-mono text-slate-600 truncate">{s.email}</span>
+                      <span className="font-mono text-slate-700 truncate">{s.email}</span>
                     </span>
                     {s.isAdmin ? (
-                      <span className="flex items-center gap-0.5 text-amber-600 font-bold shrink-0">
+                      <span className="flex items-center gap-0.5 text-amber-800 font-bold shrink-0">
                         <ShieldCheck className="w-3 h-3" />
                         Admin
                       </span>
                     ) : (
-                      <span className="text-slate-400 shrink-0">{s.title}</span>
+                      <span className="text-slate-600 shrink-0">{s.title}</span>
                     )}
                   </button>
                 </li>
@@ -268,8 +268,8 @@ export const LoginScreen: React.FC = () => {
         </div>
       </div>
 
-      <p className="mt-6 text-[11px] text-slate-500 flex items-center gap-1.5">
-        <Lock className="w-3.5 h-3.5 text-emerald-500" />
+      <p className="mt-6 text-[11px] text-slate-300 flex items-center gap-1.5">
+        <Lock className="w-3.5 h-3.5 text-emerald-400" />
         Szyfrowanie zgodne z art. 9 RODO (dane medyczne) • Dostęp tylko dla upoważnionych specjalistów
       </p>
 

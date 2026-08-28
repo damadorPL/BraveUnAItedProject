@@ -58,14 +58,14 @@ export const CallRecordsFilter: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
         {/* Voivodeship Filter */}
         <div>
-          <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
-            <MapPin className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+          <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1">
+            <MapPin className="w-3 h-3 text-slate-500 dark:text-slate-400" />
             Województwo:
           </label>
           <select
             value={filterState.voivodeship}
             onChange={(e) => setFilterState((prev) => ({ ...prev, voivodeship: e.target.value }))}
-            className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2 text-xs text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
+            className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2 text-xs text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
           >
             <option value="">Wszystkie (cała Polska)</option>
             {VOIVODESHIPS.map((v) => (
@@ -78,14 +78,14 @@ export const CallRecordsFilter: React.FC = () => {
 
         {/* Guidance Type Filter */}
         <div>
-          <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
-            <Tag className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+          <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1">
+            <Tag className="w-3 h-3 text-slate-500 dark:text-slate-400" />
             Rodzaj poradnictwa:
           </label>
           <select
             value={filterState.guidanceType}
             onChange={(e) => setFilterState((prev) => ({ ...prev, guidanceType: e.target.value }))}
-            className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2 text-xs text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
+            className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2 text-xs text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
           >
             <option value="">Wszystkie rodzaje</option>
             {GUIDANCE_TYPES.map((t) => (
@@ -98,14 +98,14 @@ export const CallRecordsFilter: React.FC = () => {
 
         {/* Beneficiary Filter */}
         <div>
-          <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
-            <Users className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+          <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1">
+            <Users className="w-3 h-3 text-slate-500 dark:text-slate-400" />
             Kim jest beneficjent:
           </label>
           <select
             value={filterState.beneficiaryType}
             onChange={(e) => setFilterState((prev) => ({ ...prev, beneficiaryType: e.target.value }))}
-            className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2 text-xs text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
+            className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2 text-xs text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
           >
             <option value="">Wszyscy beneficjenci</option>
             {BENEFICIARY_TYPES.map((b) => (
@@ -118,14 +118,14 @@ export const CallRecordsFilter: React.FC = () => {
 
         {/* Specialist Filter */}
         <div>
-          <label className="block font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
-            <UserCheck className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+          <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1">
+            <UserCheck className="w-3 h-3 text-slate-500 dark:text-slate-400" />
             Dyżurujący specjalista:
           </label>
           <select
             value={filterState.specialistId}
             onChange={(e) => setFilterState((prev) => ({ ...prev, specialistId: e.target.value }))}
-            className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2 text-xs text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
+            className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2 text-xs text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
           >
             <option value="">Wszyscy specjaliści</option>
             {specialists.map((s) => (
@@ -154,7 +154,7 @@ export const CallRecordsFilter: React.FC = () => {
           onChange={(e) => setFilterState((prev) => ({ ...prev, searchQuery: e.target.value }))}
           placeholder="Szukaj w treści porad, zaleceń lub uwag (np. WZON, IPET, orzeczenie, szkoła)..."
           aria-label="Szukaj w treści porad"
-          className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
+          className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
         />
       </div>
     </div>

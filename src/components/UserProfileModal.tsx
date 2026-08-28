@@ -115,14 +115,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
               Imię i nazwisko / Tytuł naukowy *
             </label>
             <div className="relative">
-              <User className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+              <User className="w-4 h-4 text-slate-500 dark:text-slate-400 absolute left-3 top-3 pointer-events-none" />
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="np. mgr Joanna Mrożek"
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200]"
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200]"
               />
             </div>
           </div>
@@ -139,10 +139,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="np. j.mrozek@synapsis.org.pl"
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200]"
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200]"
               />
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1">
               Na ten adres e-mail otrzymasz powiadomienia, gdy inny dyżurujący przekaże do Ciebie sprawę kontaktu.
             </p>
           </div>
@@ -153,13 +153,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                 Tytuł zawodowy
               </label>
               <div className="relative">
-                <Award className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+                <Award className="w-4 h-4 text-slate-500 dark:text-slate-400 absolute left-3 top-3 pointer-events-none" />
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="np. Psycholog / Prawnik"
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200]"
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200]"
                 />
               </div>
             </div>
@@ -169,13 +169,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                 Rola / Specjalizacja
               </label>
               <div className="relative">
-                <Briefcase className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
+                <Briefcase className="w-4 h-4 text-slate-500 dark:text-slate-400 absolute left-3 top-3 pointer-events-none" />
                 <input
                   type="text"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                   placeholder="np. Psycholog dziecięcy"
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200]"
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200]"
                 />
               </div>
             </div>
