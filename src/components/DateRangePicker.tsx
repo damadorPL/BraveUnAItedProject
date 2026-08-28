@@ -90,7 +90,7 @@ export const DateRangePicker: React.FC<Props> = ({ dateFrom, dateTo, onChange, l
       <button
         type="button"
         onClick={() => setIsOpen((v) => !v)}
-        className="w-full flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer hover:bg-slate-100 transition-colors"
+        className="inline-flex items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer hover:bg-slate-100 transition-colors"
       >
         <span className={`truncate text-left ${!from ? "text-slate-400" : ""}`}>{displayLabel}</span>
         {(from || to) && (

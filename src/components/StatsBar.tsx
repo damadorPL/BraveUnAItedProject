@@ -103,14 +103,12 @@ export const StatsBar: React.FC = () => {
       {/* Reporting period selector */}
       <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-4 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-end gap-3 md:justify-between">
-          <div className="w-56">
-            <DateRangePicker
-              label="Okres sprawozdawczy:"
-              dateFrom={filterState.dateFrom}
-              dateTo={filterState.dateTo}
-              onChange={(from, to) => setFilterState((prev) => ({ ...prev, dateFrom: from, dateTo: to }))}
-            />
-          </div>
+          <DateRangePicker
+            label="Okres sprawozdawczy:"
+            dateFrom={filterState.dateFrom}
+            dateTo={filterState.dateTo}
+            onChange={(from, to) => setFilterState((prev) => ({ ...prev, dateFrom: from, dateTo: to }))}
+          />
 
           <div className="flex items-center gap-2 flex-wrap">
             {quarterPresets.map((preset) => {

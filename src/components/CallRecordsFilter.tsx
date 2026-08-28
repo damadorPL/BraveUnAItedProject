@@ -139,14 +139,12 @@ export const CallRecordsFilter: React.FC = () => {
 
       {/* Date range + free text search row */}
       <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-[#2C2927] grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[auto_1fr] gap-3 items-end">
-        <div className="w-full sm:w-56">
-          <DateRangePicker
-            label="Zakres dat porady:"
-            dateFrom={filterState.dateFrom}
-            dateTo={filterState.dateTo}
-            onChange={(from, to) => setFilterState((prev) => ({ ...prev, dateFrom: from, dateTo: to }))}
-          />
-        </div>
+        <DateRangePicker
+          label="Zakres dat porady:"
+          dateFrom={filterState.dateFrom}
+          dateTo={filterState.dateTo}
+          onChange={(from, to) => setFilterState((prev) => ({ ...prev, dateFrom: from, dateTo: to }))}
+        />
 
         <input
           type="text"
