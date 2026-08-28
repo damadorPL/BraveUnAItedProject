@@ -24,12 +24,13 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { AttachmentsManager } from "./AttachmentsManager";
+import { pluralizePorady, pluralizePoradyWHistorii } from "../utils/pluralization";
 
 interface Props {
   caller: Caller;
 }
 
-export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
+export const ContactHistoryView: React.FC<Props> = ({ caller }) => {
   const {
     getCallerRecords,
     setSelectedCaller,
@@ -69,13 +70,15 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
       return "Nowo zarejestrowana osoba bez wcześniejszych wpisów.";
     }
     const firstRec = records[0];
-    const desc = (firstRec.adviceDescription || "Brak opisu").substring(0, 110);
-    const nts = (firstRec.notes || "Brak uwag").substring(0, 120);
+    const rawDesc = (firstRec.adviceDescription || "Brak opisu").trim();
+    const desc = rawDesc.endsWith(".") ? rawDesc : rawDesc + ".";
+    const rawNotes = (firstRec.notes || "").trim();
+    const nts = rawNotes ? ` Uwagi: ${rawNotes}` : "";
 
     if (records.length === 1) {
       const spec = firstRec.specialistName || "Specjalista";
       const typeStr = firstRec.guidanceType || "konsultacja";
-      return `Kontaktowano się 1 raz ze specjalistą ${spec} (${typeStr}). Porada dotyczyła: ${desc}...`;
+      return `Kontaktowano się 1 raz ze specjalistą ${spec} (${typeStr}). Porada dotyczyła: ${desc}${nts}`;
     }
 
     const specialistsInvolved = Array.from(
@@ -89,7 +92,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
       ? new Date(firstRec.callDate).toLocaleDateString("pl-PL")
       : "niedawno";
 
-    return `Odnotowano łącznie ${records.length} kontaktów. Doradzali: ${specialistsInvolved} (${typesInvolved}). Ostatnia porada udzielona ${callDateStr}: ${desc}. Uwagi: ${nts}...`;
+    return `Odnotowano łącznie ${pluralizePorady(records.length)}. Doradzali: ${specialistsInvolved} (${typesInvolved}). Ostatnia porada udzielona ${callDateStr}: ${desc}${nts}`;
   };
 
   if (!caller) {
@@ -196,7 +199,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                 {caller.firstName || "Anonim"} {caller.lastName || "Dzwoniący"}
               </h1>
               <span className="bg-[#FFB200]/20 text-amber-950 dark:text-[#FFB200] text-xs font-bold px-2.5 py-1 rounded-full border border-[#FFB200]/40">
-                {records.length} {records.length === 1 ? "porada w historii" : "porady w historii"}
+                {pluralizePoradyWHistorii(records.length)}
               </span>
               <button
                 type="button"
@@ -382,6 +385,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
             onChange={handleCallerAttachmentsChange}
             specialistName={currentSpecialist.name}
             title="Pliki przypisane bezpośrednio do profilu kontaktu"
+            defaultExpanded={true}
           />
 
           {totalRecordAttachmentsCount > 0 && (
@@ -392,6 +396,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                 specialistName={currentSpecialist.name}
                 title="Załączniki dodane przy poszczególnych poradach (edycja przy wpisie na osi czasu)"
                 readOnly
+                defaultExpanded={true}
               />
             </div>
           )}
@@ -574,6 +579,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                         specialistName={currentSpecialist.name}
                         title="Załączniki do tej porady"
                         readOnly={!canEdit}
+                        defaultExpanded={false}
                       />
                     </div>
                   </div>

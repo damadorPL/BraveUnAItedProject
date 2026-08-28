@@ -9,6 +9,7 @@ import {
   ChevronRight,
   UserPlus,
 } from "lucide-react";
+import { pluralizePorady, pluralizeZnalezionoOsoby } from "../utils/pluralization";
 
 interface Props {
   callers: Caller[];
@@ -26,7 +27,7 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
         </div>
         <div>
           <h3 className="text-sm font-bold text-amber-950 dark:text-[#FFB200] flex items-center gap-2">
-            Znaleziono {callers.length} osoby o pasujących danych (weryfikacja tożsamości)
+            Znaleziono {pluralizeZnalezionoOsoby(callers.length)} o pasujących danych (weryfikacja tożsamości)
           </h3>
           <p className="text-xs text-amber-900 dark:text-amber-200 mt-0.5">
             Zgodnie z procedurą bezpieczeństwa danych medycznych: <strong>zapytaj o województwo/miejscowość osoby kontaktowej</strong>, aby nie połączyć błędnie historii dwóch różnych osób.
@@ -73,7 +74,7 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
                   </div>
 
                   <span className="bg-[#FFB200]/20 text-amber-950 dark:text-[#FFB200] text-xs font-bold px-2.5 py-0.5 rounded-full border border-[#FFB200]/40">
-                    {records.length} {records.length === 1 ? "porada" : "porady"}
+                    {pluralizePorady(records.length)}
                   </span>
                 </div>
 

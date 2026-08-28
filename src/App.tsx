@@ -5,7 +5,7 @@ import { Header } from "./components/Header";
 import { LoginScreen } from "./components/LoginScreen";
 import { SearchBar } from "./components/SearchBar";
 import { CallerDisambiguation } from "./components/CallerDisambiguation";
-import { CallerHistoryView } from "./components/CallerHistoryView";
+import { ContactHistoryView } from "./components/ContactHistoryView";
 import { NewCallRecordModal } from "./components/NewCallRecordModal";
 import { EditCallRecordModal } from "./components/EditCallRecordModal";
 import { EditCallerModal } from "./components/EditCallerModal";
@@ -18,6 +18,7 @@ import { ExportModal } from "./components/ExportModal";
 import { StatsBar } from "./components/StatsBar";
 import { LiveSyncBanner } from "./components/LiveSyncBanner";
 import { ReferredCasesModal } from "./components/ReferredCasesModal";
+import { pluralizePorady, pluralizeOczekujace, pluralizeKontakty } from "./utils/pluralization";
 import {
   Users,
   MapPin,
@@ -74,7 +75,7 @@ const MainContent: React.FC = () => {
   if (selectedCaller) {
     return (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <CallerHistoryView caller={selectedCaller} />
+        <ContactHistoryView caller={selectedCaller} />
       </main>
     );
   }
@@ -124,7 +125,7 @@ const MainContent: React.FC = () => {
                     <h2 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
                       <span>Sprawy przekazane do Twojej konsultacji (Handoff)</span>
                       <span className="text-[11px] bg-[#2D2A28] text-[#FFB200] dark:bg-[#FFB200] dark:text-[#2D2A28] font-black px-2.5 py-0.5 rounded-full shadow-2xs">
-                        {pendingCases.length} {pendingCases.length === 1 ? "oczekująca" : "oczekujące"}
+                        {pluralizeOczekujace(pendingCases.length)}
                       </span>
                     </h2>
                     <p className="text-xs text-slate-700 dark:text-slate-300 mt-0.5">
@@ -328,7 +329,7 @@ const MainContent: React.FC = () => {
                               </div>
 
                               <span className="bg-[#FFB200]/15 dark:bg-[#FFB200]/20 text-amber-950 dark:text-[#FFDF06] text-xs font-bold px-2.5 py-0.5 rounded-full border border-[#FFB200]/30">
-                                {records.length} {records.length === 1 ? "porada" : "porady"}
+                                {pluralizePorady(records.length)}
                               </span>
                             </div>
 
@@ -392,7 +393,7 @@ const MainContent: React.FC = () => {
                   {filteredCallers.length > callerPageSize && (
                     <div className="mt-6 bg-white dark:bg-[#242220] rounded-2xl border border-slate-200 dark:border-[#3E3A37] p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
                       <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        Pokazano <strong className="text-slate-800 dark:text-slate-200">{(callerPage - 1) * callerPageSize + 1} - {Math.min(callerPage * callerPageSize, filteredCallers.length)}</strong> z <strong className="text-slate-800 dark:text-slate-200">{filteredCallers.length}</strong> kontaktów
+                        Pokazano <strong className="text-slate-800 dark:text-slate-200">{(callerPage - 1) * callerPageSize + 1} - {Math.min(callerPage * callerPageSize, filteredCallers.length)}</strong> z <strong className="text-slate-800 dark:text-slate-200">{filteredCallers.length}</strong> {pluralizeKontakty(filteredCallers.length, false)}
                       </div>
 
                       <div className="flex items-center space-x-1.5">

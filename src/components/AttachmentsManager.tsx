@@ -17,6 +17,7 @@ import {
   ZoomOut,
   Maximize2,
   Table,
+  ChevronDown,
 } from "lucide-react";
 import { formatFileSize, createAttachmentFromFile } from "../utils/fileUtils";
 import * as XLSX from "xlsx";
@@ -30,6 +31,7 @@ interface Props {
   /** Czy pokazywać przycisk usuwania załącznika (domyślnie: !readOnly) */
   canRemove?: boolean;
   compact?: boolean;
+  defaultExpanded?: boolean;
 }
 
 export const AttachmentsManager: React.FC<Props> = ({
@@ -40,8 +42,10 @@ export const AttachmentsManager: React.FC<Props> = ({
   readOnly = false,
   canRemove,
   compact = false,
+  defaultExpanded,
 }) => {
   const allowRemove = canRemove ?? !readOnly;
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded ?? (attachments.length > 0));
   const [previewAttachment, setPreviewAttachment] = useState<Attachment | null>(null);
   const [excelPreviewData, setExcelPreviewData] = useState<{ headers: string[]; rows: any[][] } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -166,18 +170,52 @@ export const AttachmentsManager: React.FC<Props> = ({
   };
 
   return (
-    <div className="space-y-3 text-xs">
-      <div className="flex items-center justify-between">
-        <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-          <Paperclip className="w-4 h-4 text-[#296B6E] dark:text-[#FFB200]" />
-          <span>{title} ({attachments.length})</span>
-        </label>
+    <div className="space-y-2.5 text-xs">
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.xlsx,.xls,.csv,.doc,.docx,.txt"
+        onChange={(e) => handleFiles(e.target.files)}
+        className="hidden"
+      />
+
+      {/* Accordion Header */}
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => setIsExpanded((v) => !v)}
+          className="flex items-center space-x-2 text-left font-bold text-slate-800 dark:text-slate-200 hover:text-[#296B6E] dark:hover:text-[#FFB200] transition-colors cursor-pointer group py-1 select-none"
+          aria-expanded={isExpanded}
+        >
+          <div className="p-1 rounded-lg bg-slate-100 dark:bg-[#252321] group-hover:bg-amber-100/60 dark:group-hover:bg-[#34302E] transition-colors shrink-0">
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-[#FFB200] transition-transform duration-200 ${
+                isExpanded ? "rotate-0" : "-rotate-90"
+              }`}
+            />
+          </div>
+          <Paperclip className="w-4 h-4 text-[#296B6E] dark:text-[#FFB200] shrink-0" />
+          <span className="text-xs">{title}</span>
+          <span
+            className={`text-[11px] px-2 py-0.2 rounded-full font-bold transition-colors ${
+              attachments.length > 0
+                ? "bg-[#FFB200]/25 text-amber-950 dark:bg-[#FFB200]/20 dark:text-[#FFDF06] border border-[#FFB200]/40"
+                : "bg-slate-100 dark:bg-[#252321] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#383431]"
+            }`}
+          >
+            {attachments.length}
+          </span>
+        </button>
 
         {!readOnly && (
           <button
             type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center space-x-1 text-[#2D2A28] dark:text-[#FFB200] bg-amber-50 dark:bg-[#1E1C1A] hover:bg-amber-100 dark:hover:bg-[#2A2724] border border-amber-200 dark:border-[#383431] px-2.5 py-1 rounded-xl font-semibold transition-colors cursor-pointer"
+            onClick={() => {
+              setIsExpanded(true);
+              fileInputRef.current?.click();
+            }}
+            className="flex items-center space-x-1 text-[#2D2A28] dark:text-[#FFB200] bg-amber-50 dark:bg-[#1E1C1A] hover:bg-amber-100 dark:hover:bg-[#2A2724] border border-amber-200 dark:border-[#383431] px-2.5 py-1 rounded-xl font-semibold transition-colors cursor-pointer text-xs shrink-0"
           >
             <UploadCloud className="w-3.5 h-3.5" />
             <span>Dodaj plik</span>
@@ -185,50 +223,44 @@ export const AttachmentsManager: React.FC<Props> = ({
         )}
       </div>
 
-      {/* Upload Drag & Drop Area */}
-      {!readOnly && (
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragging(true);
-          }}
-          onDragLeave={() => setIsDragging(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setIsDragging(false);
-            handleFiles(e.dataTransfer.files);
-          }}
-          onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all ${
-            isDragging
-              ? "border-[#FFB200] bg-[#FFB200]/10 scale-[0.99]"
-              : "border-slate-200 dark:border-[#383431] hover:border-[#FFB200] bg-slate-50/50 dark:bg-[#141312] hover:bg-[#FFB200]/5"
-          }`}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.xlsx,.xls,.csv,.doc,.docx,.txt"
-            onChange={(e) => handleFiles(e.target.files)}
-            className="hidden"
-          />
+      {/* Accordion Body */}
+      {isExpanded && (
+        <div className="space-y-3 pt-1 animate-in fade-in duration-150">
+          {/* Upload Drag & Drop Area */}
+          {!readOnly && (
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                handleFiles(e.dataTransfer.files);
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all ${
+                isDragging
+                  ? "border-[#FFB200] bg-[#FFB200]/10 scale-[0.99]"
+                  : "border-slate-200 dark:border-[#383431] hover:border-[#FFB200] bg-slate-50/50 dark:bg-[#141312] hover:bg-[#FFB200]/5"
+              }`}
+            >
+              <div className="flex flex-col items-center justify-center space-y-1">
+                <UploadCloud className="w-6 h-6 text-amber-600 dark:text-[#FFB200]" />
+                <p className="font-semibold text-slate-800 dark:text-slate-200">
+                  {isUploading ? "Wgrywanie pliku..." : "Przeciągnij pliki tutaj lub kliknij, aby wybrać"}
+                </p>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                  Obsługiwane formaty: <strong>PDF</strong>, <strong>Obrazy (JPG, PNG)</strong>, <strong>Excel / CSV</strong>, <strong>Dokumenty tekstowe (DOCX, TXT)</strong>
+                </p>
+              </div>
+            </div>
+          )}
 
-          <div className="flex flex-col items-center justify-center space-y-1">
-            <UploadCloud className="w-6 h-6 text-amber-600 dark:text-[#FFB200]" />
-            <p className="font-semibold text-slate-800 dark:text-slate-200">
-              {isUploading ? "Wgrywanie pliku..." : "Przeciągnij pliki tutaj lub kliknij, aby wybrać"}
-            </p>
-            <p className="text-[11px] text-slate-600 dark:text-slate-300">
-              Obsługiwane formaty: <strong>PDF</strong>, <strong>Obrazy (JPG, PNG)</strong>, <strong>Excel / CSV</strong>, <strong>Dokumenty tekstowe (DOCX, TXT)</strong>
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Attachments List */}
-      {attachments.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          {/* Attachments List */}
+          {attachments.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {attachments.map((att) => (
             <div
               key={att.id}
@@ -301,6 +333,8 @@ export const AttachmentsManager: React.FC<Props> = ({
           ))}
         </div>
       )}
+    </div>
+  )}
 
       {/* Interactive Full Preview Modal */}
       {previewAttachment && (
