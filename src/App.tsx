@@ -90,12 +90,11 @@ const MainContent: React.FC = () => {
 
           <SearchBar />
 
-          {/* If search query entered and multiple matches -> Disambiguation */}
-          {searchQuery && filteredCallers.length > 1 && (
+          {/* If search query entered and multiple matches -> Disambiguation (replaces the list below to avoid duplicates) */}
+          {searchQuery && filteredCallers.length > 1 ? (
             <CallerDisambiguation callers={filteredCallers} />
-          )}
-
-          {/* Caller Cards List */}
+          ) : (
+          /* Caller Cards List */
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -225,6 +224,7 @@ const MainContent: React.FC = () => {
               </div>
             )}
           </div>
+          )}
         </div>
       )}
     </main>

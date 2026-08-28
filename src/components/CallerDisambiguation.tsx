@@ -8,8 +8,6 @@ import {
   Clock,
   ChevronRight,
   UserPlus,
-  Award,
-  Users,
 } from "lucide-react";
 
 interface Props {
@@ -37,7 +35,7 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
       </div>
 
       {/* Grid of Potential Matches */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {callers.map((caller) => {
           const records = getCallerRecords(caller.id);
           const lastRecord = records[0];
@@ -47,13 +45,18 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
                 month: "short",
                 year: "numeric",
               })
-            : "Brak porad";
+            : "Brak wpisów";
+
+          const beneficiaryLabel =
+            caller.beneficiaryTypes && caller.beneficiaryTypes.length > 0
+              ? caller.beneficiaryTypes.join(", ")
+              : "Rodzic";
 
           return (
             <div
               key={caller.id}
               onClick={() => setSelectedCaller(caller)}
-              className="bg-white hover:bg-indigo-50/50 border border-slate-200 hover:border-indigo-300 rounded-2xl p-4 cursor-pointer transition-all duration-150 shadow-xs hover:shadow-md flex flex-col justify-between group"
+              className="bg-white border border-slate-200 hover:border-indigo-400 rounded-3xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
             >
               <div>
                 <div className="flex items-start justify-between">
@@ -68,33 +71,51 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
                       <span className="capitalize">{caller.voivodeship}</span>
                     </div>
                   </div>
-                  <span className="bg-indigo-50 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full border border-indigo-100">
+
+                  <span className="bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-indigo-100">
                     {records.length} {records.length === 1 ? "porada" : "porady"}
                   </span>
                 </div>
 
+                {/* Beneficiary & Certificate info */}
+                <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 px-2.5 py-1 rounded-xl">
+                  <span className="capitalize font-medium text-slate-700">{beneficiaryLabel}</span>
+                  <span className="text-purple-700 font-semibold">
+                    Orzeczenie: {caller.hasDisabilityCertificate === "tak" ? "Tak" : caller.hasDisabilityCertificate}
+                  </span>
+                </div>
+
+                {/* Phone & Last Date */}
                 <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-1.5 text-xs text-slate-600">
                   <div className="flex items-center">
                     <Phone className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
-                    <span className="font-mono font-medium text-slate-800">{caller.phoneNumber || "Brak numeru"}</span>
+                    <span className="font-mono font-medium text-slate-800">
+                      {caller.phoneNumber || "Brak numeru"}
+                    </span>
                   </div>
 
                   <div className="flex items-center text-slate-500">
                     <Clock className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
-                    <span>Ostatni kontakt: <strong>{lastDateStr}</strong></span>
+                    <span>
+                      Ostatnia porada: <strong>{lastDateStr}</strong>
+                    </span>
                   </div>
 
                   {lastRecord && (
-                    <div className="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100 mt-2 line-clamp-2">
-                      <span className="font-bold text-slate-800">{lastRecord.specialistName}:</span>{" "}
-                      {lastRecord.adviceDescription}
+                    <div className="mt-2 text-[11px] text-slate-600 bg-indigo-50/40 p-2.5 rounded-xl border border-indigo-100/60">
+                      <div className="font-bold text-slate-800 capitalize mb-0.5">
+                        {lastRecord.guidanceType}
+                      </div>
+                      <span className="line-clamp-2 text-slate-700 font-medium">
+                        {lastRecord.adviceDescription}
+                      </span>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="mt-3 pt-2 flex items-center justify-between text-xs font-bold text-indigo-600 group-hover:text-indigo-700">
-                <span>Otwórz tę kartotekę</span>
+              <div className="mt-4 pt-2.5 flex items-center justify-between text-xs font-bold text-indigo-600 group-hover:text-indigo-700">
+                <span>Zobacz pełną kartotekę</span>
                 <ChevronRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
