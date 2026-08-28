@@ -115,7 +115,7 @@ export const CallRecordsTable: React.FC = () => {
                   <th className="py-3 px-3.5">Rodzaj poradnictwa i obszar</th>
                   <th className="py-3 px-3.5">Rodzaj porady (opis) i uwagi</th>
                   <th className="py-3 px-3.5">Specjalista i przekazanie</th>
-                  <th className="py-3 px-3.5 text-right">Akcja</th>
+                  <th className="py-3 px-3.5">Akcja</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
