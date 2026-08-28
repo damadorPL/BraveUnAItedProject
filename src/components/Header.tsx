@@ -46,7 +46,7 @@ export const Header: React.FC = () => {
             <div>
               <div className="flex items-center space-x-2">
                 <span className="font-bold text-lg tracking-tight text-white">
-                  Baza Porad ASD
+                  Baza porad ASD
                 </span>
                 <span className="text-xs bg-indigo-500/30 text-indigo-300 font-semibold px-2 py-0.5 rounded border border-indigo-500/40">
                   PFRON
@@ -69,7 +69,7 @@ export const Header: React.FC = () => {
               }`}
             >
               <Search className="w-3.5 h-3.5" />
-              <span>Kartoteka i Szukaj</span>
+              <span>Kartoteka i szukaj</span>
             </button>
 
             <button
@@ -81,7 +81,7 @@ export const Header: React.FC = () => {
               }`}
             >
               <ListFilter className="w-3.5 h-3.5" />
-              <span>Wszystkie Wpisy</span>
+              <span>Wszystkie wpisy</span>
             </button>
 
             <button

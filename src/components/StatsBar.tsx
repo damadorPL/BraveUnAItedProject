@@ -44,7 +44,7 @@ export const StatsBar: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
-              Udzielone Porady
+              Udzielone porady
             </span>
             <div className="bg-indigo-50 text-indigo-600 p-2.5 rounded-2xl">
               <PhoneCall className="w-4 h-4" />
@@ -60,7 +60,7 @@ export const StatsBar: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
-              Kartoteki Dzwoniących
+              Kartoteki dzwoniących
             </span>
             <div className="bg-emerald-50 text-emerald-600 p-2.5 rounded-2xl">
               <Users className="w-4 h-4" />
@@ -76,7 +76,7 @@ export const StatsBar: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
-              Posiadający Orzeczenie OzN
+              Posiadający orzeczenie OzN
             </span>
             <div className="bg-purple-50 text-purple-600 p-2.5 rounded-2xl">
               <Award className="w-4 h-4" />
@@ -94,7 +94,7 @@ export const StatsBar: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
-              Godziny Dyżurów
+              Godziny dyżurów
             </span>
             <div className="bg-blue-50 text-blue-600 p-2.5 rounded-2xl">
               <Clock className="w-4 h-4" />
@@ -113,7 +113,7 @@ export const StatsBar: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
           <h3 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-indigo-600" />
-            <span>Struktura Rodzajów Poradnictwa (Wzór Arkusza)</span>
+            <span>Struktura rodzajów poradnictwa</span>
           </h3>
 
           <div className="space-y-3.5">
@@ -195,7 +195,7 @@ export const StatsBar: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
           <h3 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
             <MapPin className="w-4 h-4 text-emerald-600" />
-            <span>Zasięg Geograficzny (Województwa)</span>
+            <span>Zasięg geograficzny (województwa)</span>
           </h3>
 
           <div className="grid grid-cols-2 gap-3">

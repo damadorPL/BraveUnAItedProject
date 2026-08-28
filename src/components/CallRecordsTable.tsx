@@ -117,12 +117,12 @@ export const CallRecordsTable: React.FC = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-900 text-white text-[11px] uppercase tracking-wider font-bold">
-                  <th className="py-3 px-3.5">Kiedy Udzielono</th>
-                  <th className="py-3 px-3.5">Osoba Dzwoniąca</th>
-                  <th className="py-3 px-3.5">Beneficjent & Orzeczenie</th>
-                  <th className="py-3 px-3.5">Rodzaj Poradnictwa & Obszar</th>
-                  <th className="py-3 px-3.5">Rodzaj Porady (Opis) & Uwagi</th>
-                  <th className="py-3 px-3.5">Specjalista & Przekazanie</th>
+                  <th className="py-3 px-3.5">Kiedy udzielono</th>
+                  <th className="py-3 px-3.5">Osoba dzwoniąca</th>
+                  <th className="py-3 px-3.5">Beneficjent i orzeczenie</th>
+                  <th className="py-3 px-3.5">Rodzaj poradnictwa i obszar</th>
+                  <th className="py-3 px-3.5">Rodzaj porady (opis) i uwagi</th>
+                  <th className="py-3 px-3.5">Specjalista i przekazanie</th>
                   <th className="py-3 px-3.5 text-right">Akcja</th>
                 </tr>
               </thead>

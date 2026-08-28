@@ -39,7 +39,7 @@ export const CallRecordsFilter: React.FC = () => {
       <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
         <div className="flex items-center space-x-2 text-slate-800 font-bold text-sm">
           <Filter className="w-4 h-4 text-indigo-600" />
-          <span>Filtrowanie Rejestru Porad (Wzorzec Fundacji)</span>
+          <span>Filtrowanie rejestru porad</span>
         </div>
 
         {hasActiveFilters && (
@@ -66,7 +66,7 @@ export const CallRecordsFilter: React.FC = () => {
             onChange={(e) => setFilterState((prev) => ({ ...prev, voivodeship: e.target.value }))}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none capitalize"
           >
-            <option value="">Wszystkie (Cała Polska)</option>
+            <option value="">Wszystkie (cała Polska)</option>
             {VOIVODESHIPS.map((v) => (
               <option key={v} value={v} className="capitalize">
                 {v}

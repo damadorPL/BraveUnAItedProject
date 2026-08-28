@@ -124,7 +124,7 @@ export const NewCallRecordModal: React.FC = () => {
           <div>
             <div className="flex items-center space-x-2">
               <span className="text-xs bg-indigo-500/30 text-indigo-300 font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-                Nowy Wpis Poradniczy (Wzór Arkusza)
+                Nowy wpis poradniczy
               </span>
               <span className="text-xs text-slate-400">
                 Dyżurujący: <strong>{currentSpecialist.name}</strong>

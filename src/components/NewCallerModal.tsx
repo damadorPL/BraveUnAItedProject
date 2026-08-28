@@ -131,7 +131,7 @@ export const NewCallerModal: React.FC = () => {
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Zarejestruj Nową Kartotekę Dzwoniącego</h2>
+              <h2 className="text-lg font-bold text-white">Zarejestruj nową kartotekę dzwoniącego</h2>
               <p className="text-xs text-slate-400">
                 Pola zgodne z oficjalnym wzorcem linii wsparcia fundacji
               </p>
@@ -290,7 +290,7 @@ export const NewCallerModal: React.FC = () => {
           {/* Tags */}
           <div>
             <label className="block font-bold text-slate-700 mb-1">
-              Tagi / Słowa kluczowe (po przecinku):
+              Tagi / słowa kluczowe (po przecinku):
             </label>
             <input
               type="text"

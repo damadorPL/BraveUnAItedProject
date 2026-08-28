@@ -28,7 +28,7 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
         </div>
         <div>
           <h3 className="text-sm font-bold text-amber-950 flex items-center gap-2">
-            Znaleziono {callers.length} osoby o pasujących danych (Weryfikacja Tożsamości)
+            Znaleziono {callers.length} osoby o pasujących danych (weryfikacja tożsamości)
           </h3>
           <p className="text-xs text-amber-800 mt-0.5">
             Zgodnie z procedurą bezpieczeństwa danych medycznych: <strong>zapytaj dzwoniącego o województwo/miejscowość</strong>, aby nie połączyć błędnie historii dwóch różnych osób.

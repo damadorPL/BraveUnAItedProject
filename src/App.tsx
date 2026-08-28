@@ -51,7 +51,7 @@ const MainContent: React.FC = () => {
         <div className="animate-in fade-in">
           <div className="mb-4">
             <h1 className="text-xl font-black text-slate-900 tracking-tight">
-              Centralny Rejestr Udzielonych Porad
+              Centralny rejestr udzielonych porad
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
               Pełne zestawienie konsultacji ze wszystkich dyżurów z polami wg oficjalnego wzorca
@@ -66,7 +66,7 @@ const MainContent: React.FC = () => {
         <div className="animate-in fade-in">
           <div className="mb-4">
             <h1 className="text-xl font-black text-slate-900 tracking-tight">
-              Pulpit Analityczny & Raporty PFRON
+              Pulpit analityczny i raporty PFRON
             </h1>
             <p className="text-xs text-slate-500 mt-0.5">
               Statystyki linii wsparcia, wskaźniki grantowe i podsumowania geograficzne
@@ -81,7 +81,7 @@ const MainContent: React.FC = () => {
           {/* Welcome & Fast Search Section */}
           <div className="text-center max-w-2xl mx-auto pt-2 pb-1">
             <h1 className="text-2xl font-black text-slate-900 tracking-tight sm:text-3xl">
-              Szybka Baza Historii Rozmów
+              Szybka baza historii rozmów
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
               Wpisz nazwisko lub numer telefonu, aby w <strong>mniej niż 5 sekund</strong> sprawdzić, czy dzwoniący kontaktował się wcześniej i jakie zalecenia otrzymał.
@@ -249,7 +249,7 @@ export default function App() {
         <footer className="mt-auto py-6 border-t border-slate-200 bg-white text-center text-xs text-slate-400">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
             <span>
-              UnAIted Hackathon &bull; <strong>Wspólna Baza Historii Rozmów dla Dyżurujących Specjalistów</strong>
+              UnAIted Hackathon &bull; <strong>Wspólna baza historii rozmów dla dyżurujących specjalistów</strong>
             </span>
             <span className="text-[11px] text-slate-400 flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />

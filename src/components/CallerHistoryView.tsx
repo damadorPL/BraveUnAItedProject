@@ -208,7 +208,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
             </div>
             <div>
               <div className="text-xs font-bold text-indigo-950 uppercase tracking-wider">
-                Szybki Skrót Kontekstu dla Dyżurującego (5 sekund):
+                Szybki skrót kontekstu dla dyżurującego (5 sekund):
               </div>
               <p className="text-xs text-slate-700 mt-1 leading-relaxed">
                 {generateSummary()}
@@ -222,7 +222,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
       <div className="flex items-center justify-between pt-2">
         <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
           <Clock className="w-4 h-4 text-indigo-600" />
-          <span>Historia Udzielonych Porad ({records.length})</span>
+          <span>Historia udzielonych porad ({records.length})</span>
         </h2>
       </div>
 
@@ -319,7 +319,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                   <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/80">
                     <div className="font-bold text-slate-700 uppercase tracking-wider text-[10px] flex items-center mb-1.5">
                       <FileText className="w-3.5 h-3.5 mr-1 text-slate-500" />
-                      Rodzaj Porady (Opis Zgłoszenia)
+                      Rodzaj porady (opis zgłoszenia)
                     </div>
                     <p className="text-slate-900 leading-relaxed whitespace-pre-wrap font-medium">
                       {rec.adviceDescription || "Brak opisu."}
@@ -330,7 +330,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                   <div className="bg-indigo-50/40 p-3.5 rounded-2xl border border-indigo-100/80">
                     <div className="font-bold text-indigo-900 uppercase tracking-wider text-[10px] flex items-center mb-1.5">
                       <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-indigo-600" />
-                      Uwagi / Udzielona Pomoc i Wskazówki
+                      Uwagi, udzielona pomoc i wskazówki
                     </div>
                     <p className="text-slate-800 leading-relaxed whitespace-pre-wrap">
                       {rec.notes || "Brak dodatkowych uwag."}

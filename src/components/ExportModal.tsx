@@ -60,7 +60,7 @@ export const ExportModal: React.FC = () => {
               <Download className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Eksport Danych i Raportów</h2>
+              <h2 className="text-lg font-bold text-white">Eksport danych i raportów</h2>
               <p className="text-xs text-slate-400">
                 Pobierz zestawienie porad do pliku arkusza kalkulacyjnego
               </p>
