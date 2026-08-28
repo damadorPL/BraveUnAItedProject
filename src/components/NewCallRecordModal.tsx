@@ -8,7 +8,10 @@ import {
   CONTACT_TYPES,
   SubjectTarget,
   SUBJECT_TARGETS,
+  Attachment,
 } from "../types";
+import { AttachmentUpload } from "./AttachmentUpload";
+import { todayDateInputValue, callDateToIso } from "../services/callDate";
 import {
   X,
   PlusCircle,
@@ -46,6 +49,8 @@ export const NewCallRecordModal: React.FC = () => {
   const [adviceDescription, setAdviceDescription] = useState("");
   const [notes, setNotes] = useState("");
   const [referredTo, setReferredTo] = useState("");
+  const [callDate, setCallDate] = useState<string>(() => todayDateInputValue());
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [durationMinutes, setDurationMinutes] = useState(45);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -87,7 +92,7 @@ export const NewCallRecordModal: React.FC = () => {
     setIsSubmitting(true);
     addNewRecord({
       callerId: selectedCaller.id,
-      callDate: new Date().toISOString(),
+      callDate: callDateToIso(callDate),
       specialistId: currentSpecialist.id,
       specialistName: currentSpecialist.name,
       specialistRole: currentSpecialist.role,
@@ -98,6 +103,7 @@ export const NewCallRecordModal: React.FC = () => {
       adviceDescription: adviceDescription.trim(),
       notes: notes.trim(),
       referredTo: referredTo.trim(),
+      attachments,
       durationMinutes,
     });
 
@@ -112,6 +118,8 @@ export const NewCallRecordModal: React.FC = () => {
     setAdviceDescription("");
     setNotes("");
     setReferredTo("");
+    setCallDate(todayDateInputValue());
+    setAttachments([]);
   };
 
   const availableAreas = GUIDANCE_AREAS_MAP[guidanceType] || [];
@@ -319,6 +327,25 @@ export const NewCallRecordModal: React.FC = () => {
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* 8. Data porady & Załączniki */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block font-bold text-slate-800 mb-1 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-slate-500" />
+                8. Kiedy udzielono porady:
+              </label>
+              <input
+                type="date"
+                value={callDate}
+                max={todayDateInputValue()}
+                onChange={(e) => setCallDate(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+            </div>
+
+            <AttachmentUpload attachments={attachments} onChange={setAttachments} />
           </div>
 
           {/* Footer Buttons */}
