@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { GuidanceType, CallRecord } from "../types";
 import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
@@ -9,14 +10,38 @@ import {
   Share2,
   Users,
   Award,
+  Edit3,
+  Lock,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
 } from "lucide-react";
 
 export const CallRecordsTable: React.FC = () => {
-  const { records, callers, filterState, setSelectedCaller, setIsExportModalOpen } = useApp();
+  const {
+    records,
+    callers,
+    filterState,
+    setSelectedCaller,
+    setIsExportModalOpen,
+    setEditingRecord,
+    canEditRecord,
+    currentSpecialist,
+  } = useApp();
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filterState]);
 
   const callersMap = buildCallersMap(callers);
 
   const filteredRecords = filterCallRecords(records, callersMap, filterState);
+
+  const totalPages = Math.ceil(filteredRecords.length / pageSize) || 1;
+  const paginatedRecords = filteredRecords.slice((page - 1) * pageSize, page * pageSize);
 
   const getGuidanceBadge = (type?: GuidanceType) => {
     switch (type) {
@@ -55,7 +80,6 @@ export const CallRecordsTable: React.FC = () => {
 
   return (
     <div className="space-y-4 text-xs">
-      {/* Action Bar & Stats */}
       <div className="flex items-center justify-between">
         <div className="text-slate-600 font-medium">
           Liczba zarejestrowanych porad: <strong className="text-slate-900">{filteredRecords.length}</strong>
@@ -71,7 +95,6 @@ export const CallRecordsTable: React.FC = () => {
         </button>
       </div>
 
-      {/* Table Container */}
       <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
         {filteredRecords.length === 0 ? (
           <div className="p-8 text-center text-slate-400">
@@ -94,74 +117,68 @@ export const CallRecordsTable: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
-                {filteredRecords.map((rec) => {
+                {paginatedRecords.map((rec) => {
                   const caller = callersMap.get(rec.callerId);
                   const dateStr = rec.callDate
                     ? new Date(rec.callDate).toLocaleDateString("pl-PL", {
-                        day: "2-digit",
-                        month: "2-digit",
+                        day: "numeric",
+                        month: "short",
                         year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
                       })
                     : "Brak daty";
+
+                  const beneficiaryStr =
+                    caller?.beneficiaryTypes?.join(", ") || "rodzic";
 
                   return (
                     <tr
                       key={rec.id}
-                      className="hover:bg-indigo-50/40 transition-colors group cursor-pointer"
                       onClick={() => handleOpenCaller(rec)}
+                      className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                     >
-                      {/* 1. Kiedy udzielono */}
-                      <td className="py-3 px-3.5 font-medium text-slate-900 whitespace-nowrap">
-                        <div>{dateStr}</div>
-                        <div className="text-[10px] text-slate-400 font-normal">{rec.durationMinutes || 30} min</div>
+                      <td className="py-3 px-3.5 whitespace-nowrap">
+                        <div className="font-bold text-slate-900 flex items-center">
+                          <Clock className="w-3.5 h-3.5 mr-1 text-slate-400" />
+                          {dateStr}
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          {rec.contactTypes?.join(", ") || "telefon"} &bull; {rec.durationMinutes || 30} min
+                        </div>
                       </td>
 
-                      {/* 2. Osoba dzwoniąca */}
                       <td className="py-3 px-3.5 whitespace-nowrap">
                         {caller ? (
-                          <div>
+                          <>
                             <div className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
                               {caller.firstName} {caller.lastName}
                             </div>
-                            <div className="text-[10px] text-slate-500 font-mono">
-                              {caller.phoneNumber || "Brak numeru"}
+                            <div className="text-[10px] text-slate-500 mt-0.5">
+                              {caller.city} ({caller.voivodeship})
                             </div>
-                            <div className="text-[10px] text-slate-400">
-                              {caller.city}, {caller.voivodeship}
-                            </div>
-                          </div>
+                          </>
                         ) : (
-                          <div>
-                            <div className="font-bold text-slate-900">Kontakt</div>
-                            <div className="text-[10px] text-slate-400">ID: {rec.callerId}</div>
-                          </div>
+                          <div className="font-bold text-slate-900">Kontakt</div>
                         )}
                       </td>
 
-                      {/* 3. Beneficjent & Orzeczenie */}
                       <td className="py-3 px-3.5 whitespace-nowrap">
-                        {caller ? (
-                          <div>
-                            <div className="font-semibold text-slate-800">
-                              {caller.beneficiaryTypes?.join(", ") || "Rodzic"}
-                            </div>
-                            <div className="text-[10px] text-purple-700 font-medium">
-                              Orzeczenie: {caller.hasDisabilityCertificate === "tak" ? (caller.disabilityDegree || "Tak") : caller.hasDisabilityCertificate}
-                            </div>
-                          </div>
-                        ) : (
-                          "—"
-                        )}
+                        <div className="flex items-center text-slate-800 font-medium">
+                          <Users className="w-3 h-3 mr-1 text-slate-400" />
+                          {beneficiaryStr}
+                        </div>
+                        <div className="text-[10px] text-purple-700 font-semibold mt-0.5 flex items-center">
+                          <Award className="w-3 h-3 mr-1 text-purple-500" />
+                          {caller?.hasDisabilityCertificate === "tak"
+                            ? "Tak (" + (caller.disabilityDegree || "posiada") + ")"
+                            : caller?.hasDisabilityCertificate === "w trakcie"
+                            ? "W trakcie"
+                            : "Brak"}
+                        </div>
                       </td>
 
-                      {/* 4. Rodzaj poradnictwa & Obszar */}
-                      <td className="py-3 px-3.5 max-w-[200px]">
+                      <td className="py-3 px-3.5 max-w-xs">
                         <span
-                          className={`px-2 py-0.5 rounded-full font-bold border text-[10px] inline-block  ${getGuidanceBadge(
-                            rec.guidanceType
-                          )}`}
+                          className={"inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border " + getGuidanceBadge(rec.guidanceType)}
                         >
                           {rec.guidanceType}
                         </span>
@@ -172,7 +189,6 @@ export const CallRecordsTable: React.FC = () => {
                         )}
                       </td>
 
-                      {/* 5. Opis & Uwagi */}
                       <td className="py-3 px-3.5 max-w-xs">
                         <div className="line-clamp-2 text-slate-900 font-medium">
                           {rec.adviceDescription || "Brak opisu."}
@@ -184,7 +200,6 @@ export const CallRecordsTable: React.FC = () => {
                         )}
                       </td>
 
-                      {/* 6. Specjalista & Przekazanie */}
                       <td className="py-3 px-3.5 whitespace-nowrap">
                         <div className="font-medium text-slate-900">{rec.specialistName}</div>
                         {rec.referredTo && (
@@ -195,25 +210,113 @@ export const CallRecordsTable: React.FC = () => {
                         )}
                       </td>
 
-                      {/* 7. Akcja */}
                       <td className="py-3 px-3.5 text-right whitespace-nowrap">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenCaller(rec);
-                          }}
-                          className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 font-bold rounded-xl transition-all flex items-center space-x-1.5 ml-auto shadow-xs border border-indigo-100 cursor-pointer"
-                        >
-                          <span>Kartoteka</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center justify-end space-x-1.5">
+                          {canEditRecord(rec) ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingRecord(rec);
+                              }}
+                              className="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl transition-all shadow-2xs cursor-pointer"
+                              title={currentSpecialist.isAdmin ? "Edytuj wpis jako administrator" : "Edytuj własną poradę"}
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </button>
+                          ) : (
+                            <span
+                              className="p-1.5 text-slate-300"
+                              title="Tylko autor lub administrator może edytować ten wpis"
+                            >
+                              <Lock className="w-3.5 h-3.5" />
+                            </span>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenCaller(rec);
+                            }}
+                            className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 font-bold rounded-xl transition-all flex items-center space-x-1 shadow-xs border border-indigo-100 cursor-pointer text-xs"
+                          >
+                            <span>Kartoteka</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {filteredRecords.length > 0 && (
+          <div className="bg-slate-50 border-t border-slate-200 p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div className="flex items-center space-x-3 text-slate-500 font-medium">
+              <span>
+                Pokazano <strong className="text-slate-800">{(page - 1) * pageSize + 1} - {Math.min(page * pageSize, filteredRecords.length)}</strong> z <strong className="text-slate-800">{filteredRecords.length}</strong> porad
+              </span>
+
+              <div className="flex items-center space-x-1.5 border-l border-slate-200 pl-3">
+                <span>Wierszy na stronę:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="bg-white border border-slate-200 rounded-lg px-2 py-1 font-semibold text-slate-800 focus:outline-none cursor-pointer"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-1.5">
+              <button
+                type="button"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="flex items-center space-x-1 px-3 py-1.5 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-white text-slate-700 rounded-xl text-xs font-semibold border border-slate-200 transition-colors cursor-pointer disabled:cursor-not-allowed shadow-2xs"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Poprzednia</span>
+              </button>
+
+              <div className="flex items-center space-x-1 px-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
+                  <button
+                    key={pg}
+                    type="button"
+                    onClick={() => setPage(pg)}
+                    className={"w-7 h-7 rounded-xl text-xs font-bold transition-all cursor-pointer " + (
+                      page === pg
+                        ? "bg-indigo-600 text-white shadow-2xs"
+                        : "text-slate-600 hover:bg-slate-200/70"
+                    )}
+                  >
+                    {pg}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                className="flex items-center space-x-1 px-3 py-1.5 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-white text-slate-700 rounded-xl text-xs font-semibold border border-slate-200 transition-colors cursor-pointer disabled:cursor-not-allowed shadow-2xs"
+              >
+                <span>Następna</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         )}
       </div>

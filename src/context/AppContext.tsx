@@ -7,7 +7,8 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import { Caller, CallRecord, Specialist, FilterState, SyncMessage, Attachment } from "../types";
+import { Caller, CallRecord, Specialist, FilterState, SyncMessage, Attachment, EmailNotification } from "../types";
+import { createReferralEmailNotification } from "../services/notificationService";
 import {
   loadCallers,
   saveCallers,
@@ -42,6 +43,22 @@ interface AppContextType {
   setIsExcelModalOpen: (open: boolean) => void;
   isExportModalOpen: boolean;
   setIsExportModalOpen: (open: boolean) => void;
+
+  sentEmails: EmailNotification[];
+  activeEmailModal: EmailNotification | null;
+  setActiveEmailModal: (email: EmailNotification | null) => void;
+  getReferredRecordsForSpecialist: (specialistId: string) => CallRecord[];
+  markReferralStatus: (recordId: string, status: "OCZEKUJĄCA" | "PRZYJĘTA" | "ZAKOŃCZONA") => void;
+
+  editingRecord: CallRecord | null;
+  setEditingRecord: (rec: CallRecord | null) => void;
+  editingCaller: Caller | null;
+  setEditingCaller: (caller: Caller | null) => void;
+  updateRecord: (record: CallRecord) => void;
+  deleteRecord: (recordId: string) => void;
+  deleteCaller: (callerId: string) => void;
+  canEditRecord: (record: CallRecord) => boolean;
+  canEditCaller: (caller: Caller) => boolean;
 
   addCallerAttachment: (callerId: string, attachment: Attachment) => void;
   removeCallerAttachment: (callerId: string, attachmentId: string) => void;
@@ -83,6 +100,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     dateFrom: "",
     dateTo: "",
   });
+
+  const [sentEmails, setSentEmails] = useState<EmailNotification[]>([]);
+  const [activeEmailModal, setActiveEmailModal] = useState<EmailNotification | null>(null);
+
+  const [editingRecord, setEditingRecord] = useState<CallRecord | null>(null);
+  const [editingCaller, setEditingCaller] = useState<Caller | null>(null);
 
   const [isNewCallerModalOpen, setIsNewCallerModalOpen] = useState(false);
   const [isNewRecordModalOpen, setIsNewRecordModalOpen] = useState(false);
@@ -191,6 +214,84 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         .sort((a, b) => new Date(b.callDate || 0).getTime() - new Date(a.callDate || 0).getTime());
     },
     [records]
+  );
+
+  const getReferredRecordsForSpecialist = useCallback(
+    (specialistId: string) => {
+      return records.filter((r) => r.referredSpecialistId === specialistId);
+    },
+    [records]
+  );
+
+  const markReferralStatus = useCallback(
+    (recordId: string, status: "OCZEKUJĄCA" | "PRZYJĘTA" | "ZAKOŃCZONA") => {
+      setRecords((prev) => {
+        const next = prev.map((r) =>
+          r.id === recordId ? { ...r, referredStatus: status } : r
+        );
+        saveRecords(next);
+        return next;
+      });
+    },
+    []
+  );
+
+  const canEditRecord = useCallback(
+    (record: CallRecord) => {
+      if (!record) return false;
+      if (currentSpecialist.isAdmin) return true;
+      return record.specialistId === currentSpecialist.id;
+    },
+    [currentSpecialist]
+  );
+
+  const canEditCaller = useCallback(
+    (caller: Caller) => {
+      if (!caller) return false;
+      return true; // Everyone can edit caller tags/details, Admin has full delete rights
+    },
+    []
+  );
+
+  const updateRecord = useCallback(
+    (updated: CallRecord) => {
+      const now = new Date().toISOString();
+      const nextRecords = records.map((r) =>
+        r.id === updated.id ? { ...updated, updatedAt: now } : r
+      );
+      setRecords(nextRecords);
+      saveRecords(nextRecords);
+
+      broadcast({
+        type: "RECORD_UPDATED",
+        payload: { recordId: updated.id, callerId: updated.callerId },
+      });
+    },
+    [records, broadcast]
+  );
+
+  const deleteRecord = useCallback(
+    (recordId: string) => {
+      const nextRecords = records.filter((r) => r.id !== recordId);
+      setRecords(nextRecords);
+      saveRecords(nextRecords);
+    },
+    [records]
+  );
+
+  const deleteCaller = useCallback(
+    (callerId: string) => {
+      const nextCallers = callers.filter((c) => c.id !== callerId);
+      const nextRecords = records.filter((r) => r.callerId !== callerId);
+      setCallers(nextCallers);
+      saveCallers(nextCallers);
+      setRecords(nextRecords);
+      saveRecords(nextRecords);
+      if (selectedCallerRef.current?.id === callerId) {
+        setSelectedCaller(null);
+      }
+    },
+    [callers, records]
   );
 
   const addCallerAttachment = useCallback(
@@ -388,6 +489,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsExcelModalOpen,
         isExportModalOpen,
         setIsExportModalOpen,
+        sentEmails,
+        activeEmailModal,
+        setActiveEmailModal,
+        getReferredRecordsForSpecialist,
+        markReferralStatus,
+        editingRecord,
+        setEditingRecord,
+        editingCaller,
+        setEditingCaller,
+        updateRecord,
+        deleteRecord,
+        deleteCaller,
+        canEditRecord,
+        canEditCaller,
         addCallerAttachment,
         removeCallerAttachment,
         addRecordAttachment,

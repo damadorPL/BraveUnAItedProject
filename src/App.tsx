@@ -1,10 +1,13 @@
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import { AppProvider, useApp } from "./context/AppContext";
 import { Header } from "./components/Header";
 import { SearchBar } from "./components/SearchBar";
 import { CallerDisambiguation } from "./components/CallerDisambiguation";
 import { CallerHistoryView } from "./components/CallerHistoryView";
 import { NewCallRecordModal } from "./components/NewCallRecordModal";
+import { EditCallRecordModal } from "./components/EditCallRecordModal";
+import { EmailNotificationModal } from "./components/EmailNotificationModal";
 import { NewCallerModal } from "./components/NewCallerModal";
 import { CallRecordsFilter } from "./components/CallRecordsFilter";
 import { CallRecordsTable } from "./components/CallRecordsTable";
@@ -17,11 +20,11 @@ import {
   MapPin,
   Phone,
   Clock,
+  ChevronLeft,
   ChevronRight,
   UserPlus,
   ShieldCheck,
   AlertCircle,
-  Award,
 } from "lucide-react";
 
 const MainContent: React.FC = () => {
@@ -36,7 +39,19 @@ const MainContent: React.FC = () => {
     setIsNewCallerModalOpen,
   } = useApp();
 
-  // If a caller is currently open, show their complete history timeline
+  const [callerPage, setCallerPage] = useState(1);
+  const [callerPageSize, setCallerPageSize] = useState(12);
+
+  useEffect(() => {
+    setCallerPage(1);
+  }, [searchQuery]);
+
+  const totalCallerPages = Math.ceil(filteredCallers.length / callerPageSize) || 1;
+  const paginatedCallers = filteredCallers.slice(
+    (callerPage - 1) * callerPageSize,
+    callerPage * callerPageSize
+  );
+
   if (selectedCaller) {
     return (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -78,152 +93,215 @@ const MainContent: React.FC = () => {
 
       {activeTab === "SEARCH" && (
         <div className="space-y-6 animate-in fade-in">
-          {/* Welcome & Fast Search Section */}
           <div className="text-center max-w-2xl mx-auto pt-2 pb-1">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight sm:text-3xl">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Szybka baza historii rozmów
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 mt-2">
               Wpisz nazwisko lub numer telefonu, aby w <strong>mniej niż 5 sekund</strong> sprawdzić, czy kontakt odbywał się wcześniej i jakie zalecenia otrzymał.
             </p>
           </div>
 
           <SearchBar />
 
-          {/* If search query entered and multiple matches -> Disambiguation (replaces the list below to avoid duplicates) */}
           {searchQuery && filteredCallers.length > 1 ? (
             <CallerDisambiguation callers={filteredCallers} />
           ) : (
-          /* Caller Cards List */
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Users className="w-4 h-4 text-indigo-600" />
-                <span>
-                  {searchQuery
-                    ? `Wyniki wyszukiwania (${filteredCallers.length})`
-                    : `Zarejestrowane kontakty (${callers.length})`}
-                </span>
-              </h2>
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-indigo-600" />
+                  <span>
+                    {searchQuery
+                      ? "Wyniki wyszukiwania (" + filteredCallers.length + ")"
+                      : "Zarejestrowane kontakty (" + callers.length + ")"}
+                  </span>
+                </h2>
 
-              <button
-                type="button"
-                onClick={() => setIsNewCallerModalOpen(true)}
-                className="flex items-center space-x-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>Zarejestruj nową osobę</span>
-              </button>
-            </div>
-
-            {filteredCallers.length === 0 ? (
-              <div className="bg-white rounded-3xl border border-slate-200 p-8 text-center shadow-xs">
-                <AlertCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                <h3 className="text-sm font-bold text-slate-800">
-                  Brak osoby o nazwisku &quot;{searchQuery}&quot; w bazie
-                </h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-                  Wygląda na to, że jest to pierwszy kontakt tej osoby z poradnią. Możesz natychmiast utworzyć dla niej nową kartotekę.
-                </p>
                 <button
                   type="button"
                   onClick={() => setIsNewCallerModalOpen(true)}
-                  className="mt-4 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors inline-flex items-center space-x-1.5 cursor-pointer"
+                  className="flex items-center space-x-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
                 >
-                  <UserPlus className="w-4 h-4" />
-                  <span>Załóż nową kartotekę dla &quot;{searchQuery}&quot;</span>
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>Zarejestruj nową osobę</span>
                 </button>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredCallers.map((caller) => {
-                  const records = getCallerRecords(caller.id);
-                  const lastRec = records[0];
-                  const lastDateFormatted = lastRec?.callDate
-                    ? new Date(lastRec.callDate).toLocaleDateString("pl-PL", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })
-                    : "Brak wpisów";
 
-                  const beneficiaryLabel =
-                    caller.beneficiaryTypes && caller.beneficiaryTypes.length > 0
-                      ? caller.beneficiaryTypes.join(", ")
-                      : "Rodzic";
-
-                  return (
-                    <div
-                      key={caller.id}
-                      onClick={() => setSelectedCaller(caller)}
-                      className="bg-white border border-slate-200 hover:border-indigo-400 rounded-3xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+              {filteredCallers.length === 0 ? (
+                searchQuery.trim() ? (
+                  <div className="bg-white rounded-3xl border border-slate-200 p-8 text-center shadow-xs">
+                    <AlertCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                    <h3 className="text-sm font-bold text-slate-800">
+                      Brak kontaktu o nazwisku &quot;{searchQuery.trim()}&quot; w bazie
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                      Wygląda na to, że jest to pierwszy kontakt tej osoby z poradnią. Możesz natychmiast utworzyć dla niej nową kartotekę.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsNewCallerModalOpen(true)}
+                      className="mt-4 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors inline-flex items-center space-x-1.5 cursor-pointer"
                     >
-                      <div>
-                        <div className="flex items-start justify-between">
+                      <UserPlus className="w-4 h-4" />
+                      <span>Załóż nową kartotekę dla &quot;{searchQuery.trim()}&quot;</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-3xl border border-slate-200 p-8 text-center shadow-xs space-y-3">
+                    <Users className="w-10 h-10 text-slate-300 mx-auto" />
+                    <h3 className="text-sm font-bold text-slate-800">
+                      Baza kontaktów jest pusta
+                    </h3>
+                    <p className="text-xs text-slate-500 max-w-md mx-auto">
+                      W systemie nie ma jeszcze zarejestrowanych kontaktów. Możesz od razu założyć pierwszą kartotekę.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsNewCallerModalOpen(true)}
+                      className="mt-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors inline-flex items-center space-x-1.5 cursor-pointer"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      <span>Załóż nową kartotekę</span>
+                    </button>
+                  </div>
+                )
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {paginatedCallers.map((caller) => {
+                      const records = getCallerRecords(caller.id);
+                      const lastRec = records[0];
+                      const lastDateFormatted = lastRec?.callDate
+                        ? new Date(lastRec.callDate).toLocaleDateString("pl-PL", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "Brak wpisów";
+
+                      const beneficiaryLabel =
+                        caller.beneficiaryTypes && caller.beneficiaryTypes.length > 0
+                          ? caller.beneficiaryTypes.join(", ")
+                          : "Rodzic";
+
+                      return (
+                        <div
+                          key={caller.id}
+                          onClick={() => setSelectedCaller(caller)}
+                          className="bg-white border border-slate-200 hover:border-indigo-400 rounded-3xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+                        >
                           <div>
-                            <span className="font-extrabold text-slate-900 text-base group-hover:text-indigo-600 transition-colors">
-                              {caller.firstName} {caller.lastName}
-                            </span>
-                            <div className="flex items-center text-xs text-slate-500 mt-1">
-                              <MapPin className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                              <span className="font-medium text-slate-700">{caller.city}</span>
-                              <span className="mx-1 text-slate-300">•</span>
-                              <span className="">{caller.voivodeship}</span>
-                            </div>
-                          </div>
-
-                          <span className="bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-indigo-100">
-                            {records.length} {records.length === 1 ? "porada" : "porady"}
-                          </span>
-                        </div>
-
-                        {/* Beneficiary & Certificate info */}
-                        <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 px-2.5 py-1 rounded-xl">
-                          <span className="font-medium text-slate-700">{beneficiaryLabel}</span>
-                          <span className="text-purple-700 font-semibold">
-                            Orzeczenie: {caller.hasDisabilityCertificate === "tak" ? "Tak" : caller.hasDisabilityCertificate}
-                          </span>
-                        </div>
-
-                        {/* Phone & Last Date */}
-                        <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-1.5 text-xs text-slate-600">
-                          <div className="flex items-center">
-                            <Phone className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
-                            <span className="font-mono font-medium text-slate-800">
-                              {caller.phoneNumber || "Brak numeru"}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center text-slate-500">
-                            <Clock className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
-                            <span>
-                              Ostatnia porada: <strong>{lastDateFormatted}</strong>
-                            </span>
-                          </div>
-
-                          {lastRec && (
-                            <div className="mt-2 text-[11px] text-slate-600 bg-indigo-50/40 p-2.5 rounded-xl border border-indigo-100/60">
-                              <div className="font-bold text-slate-800 mb-0.5">
-                                {lastRec.guidanceType}
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <span className="font-extrabold text-slate-900 text-base group-hover:text-indigo-600 transition-colors">
+                                  {caller.firstName} {caller.lastName}
+                                </span>
+                                <div className="flex items-center text-xs text-slate-500 mt-1">
+                                  <MapPin className="w-3.5 h-3.5 mr-1 text-slate-400" />
+                                  <span className="font-medium text-slate-700">{caller.city}</span>
+                                  <span className="mx-1 text-slate-300">•</span>
+                                  <span>{caller.voivodeship}</span>
+                                </div>
                               </div>
-                              <span className="line-clamp-2 text-slate-700 font-medium">
-                                {lastRec.adviceDescription}
+
+                              <span className="bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-indigo-100">
+                                {records.length} {records.length === 1 ? "porada" : "porady"}
                               </span>
                             </div>
-                          )}
+
+                            <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 px-2.5 py-1 rounded-xl">
+                              <span className="font-medium text-slate-700">{beneficiaryLabel}</span>
+                              <span className="text-purple-700 font-semibold">
+                                Orzeczenie: {caller.hasDisabilityCertificate === "tak" ? "Tak" : caller.hasDisabilityCertificate}
+                              </span>
+                            </div>
+
+                            <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-1.5 text-xs text-slate-600">
+                              <div className="flex items-center">
+                                <Phone className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
+                                <span className="font-mono font-medium text-slate-800">
+                                  {caller.phoneNumber || "Brak numeru"}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center text-slate-500">
+                                <Clock className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
+                                <span>Ostatnia porada: <strong className="text-slate-700">{lastDateFormatted}</strong></span>
+                              </div>
+                            </div>
+
+                            <div className="mt-3 flex flex-wrap gap-1">
+                              {caller.tags &&
+                                caller.tags.slice(0, 3).map((tag) => (
+                                  <span
+                                    key={tag}
+                                    className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                            </div>
+                          </div>
+
+                          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-indigo-600 font-bold group-hover:translate-x-0.5 transition-transform">
+                            <span>Otwórz kartotekę</span>
+                            <ChevronRight className="w-4 h-4" />
+                          </div>
                         </div>
+                      );
+                    })}
+                  </div>
+
+                  {filteredCallers.length > callerPageSize && (
+                    <div className="mt-6 bg-white rounded-2xl border border-slate-200 p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
+                      <div className="text-xs text-slate-500 font-medium">
+                        Pokazano <strong className="text-slate-800">{(callerPage - 1) * callerPageSize + 1} - {Math.min(callerPage * callerPageSize, filteredCallers.length)}</strong> z <strong className="text-slate-800">{filteredCallers.length}</strong> kontaktów
                       </div>
 
-                      <div className="mt-4 pt-2.5 flex items-center justify-between text-xs font-bold text-indigo-600 group-hover:text-indigo-700">
-                        <span>Zobacz pełną kartotekę</span>
-                        <ChevronRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                      <div className="flex items-center space-x-1.5">
+                        <button
+                          type="button"
+                          disabled={callerPage <= 1}
+                          onClick={() => setCallerPage((p) => Math.max(1, p - 1))}
+                          className="flex items-center space-x-1 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                        >
+                          <ChevronLeft className="w-3.5 h-3.5" />
+                          <span>Poprzednia</span>
+                        </button>
+
+                        <div className="flex items-center space-x-1 px-1">
+                          {Array.from({ length: totalCallerPages }, (_, i) => i + 1).map((pg) => (
+                            <button
+                              key={pg}
+                              type="button"
+                              onClick={() => setCallerPage(pg)}
+                              className={"w-7 h-7 rounded-xl text-xs font-bold transition-all cursor-pointer " + (
+                                callerPage === pg
+                                  ? "bg-indigo-600 text-white shadow-2xs"
+                                  : "text-slate-600 hover:bg-slate-100"
+                              )}
+                            >
+                              {pg}
+                            </button>
+                          ))}
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={callerPage >= totalCallerPages}
+                          onClick={() => setCallerPage((p) => Math.min(totalCallerPages, p + 1))}
+                          className="flex items-center space-x-1 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                        >
+                          <span>Następna</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                  )}
+                </>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -238,14 +316,14 @@ export default function App() {
         <Header />
         <MainContent />
 
-        {/* Global Modals & Notifications */}
         <NewCallRecordModal />
+        <EditCallRecordModal />
         <NewCallerModal />
         <ExcelMigratorModal />
         <ExportModal />
         <LiveSyncBanner />
+        <EmailNotificationModal />
 
-        {/* Footer info */}
         <footer className="mt-auto py-6 border-t border-slate-200 bg-white text-center text-xs text-slate-400">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
             <span>

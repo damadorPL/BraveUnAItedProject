@@ -174,10 +174,28 @@ export interface CallRecord {
   adviceDescription: string; // Rodzaj porady (krótki opis, czego dotyczyła)
   notes?: string; // Uwagi
   referredTo?: string; // Przekazane do innego specjalisty
+  referredSpecialistId?: string; // ID wybranego dyżurującego
+  referredSpecialistEmail?: string; // E-mail dyżurującego
+  referredNote?: string; // Notatka dla przekazanego specjalisty
+  referredStatus?: "OCZEKUJĄCA" | "PRZYJĘTA" | "ZAKOŃCZONA";
   attachments?: Attachment[]; // Załączniki (pdf/jpg)
   durationMinutes: number;
   createdAt: string;
   updatedAt?: string;
+}
+
+export interface EmailNotification {
+  id: string;
+  recipientEmail: string;
+  recipientName: string;
+  senderName: string;
+  callerName: string;
+  callerPhone: string;
+  subject: string;
+  message: string;
+  sentAt: string;
+  recordId: string;
+  callerId: string;
 }
 
 export interface Specialist {
@@ -188,6 +206,7 @@ export interface Specialist {
   guidanceType: GuidanceType;
   avatarBg: string;
   email: string;
+  isAdmin?: boolean;
 }
 
 export interface SyncMessage {
