@@ -3,13 +3,33 @@ import { useApp } from "../context/AppContext";
 import {
   VOIVODESHIPS,
   GUIDANCE_TYPES,
+  GUIDANCE_AREAS_MAP,
   BENEFICIARY_TYPES,
+  GuidanceType,
 } from "../types";
-import { Filter, RotateCcw, MapPin, UserCheck, Tag, Users } from "lucide-react";
+import { Filter, RotateCcw, MapPin, UserCheck, Tag, Users, Crosshair } from "lucide-react";
 import { DateRangePicker } from "./DateRangePicker";
 
 export const CallRecordsFilter: React.FC = () => {
   const { filterState, setFilterState, specialists } = useApp();
+
+  const selectedGuidanceType = filterState.guidanceType as GuidanceType | "";
+  const availableAreas = selectedGuidanceType
+    ? GUIDANCE_AREAS_MAP[selectedGuidanceType] || []
+    : [];
+
+  const handleGuidanceTypeChange = (value: string) => {
+    setFilterState((prev) => {
+      const areasForType = value ? GUIDANCE_AREAS_MAP[value as GuidanceType] || [] : [];
+      // Obszar zostaje tylko, gdy istnieje w nowo wybranym rodzaju poradnictwa
+      const keepArea = value === "" || areasForType.includes(prev.guidanceArea);
+      return {
+        ...prev,
+        guidanceType: value,
+        guidanceArea: keepArea ? prev.guidanceArea : "",
+      };
+    });
+  };
 
   const handleReset = () => {
     setFilterState({
@@ -55,7 +75,7 @@ export const CallRecordsFilter: React.FC = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
         {/* Voivodeship Filter */}
         <div>
           <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1">
@@ -84,7 +104,7 @@ export const CallRecordsFilter: React.FC = () => {
           </label>
           <select
             value={filterState.guidanceType}
-            onChange={(e) => setFilterState((prev) => ({ ...prev, guidanceType: e.target.value }))}
+            onChange={(e) => handleGuidanceTypeChange(e.target.value)}
             className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2 text-xs text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
           >
             <option value="">Wszystkie rodzaje</option>
@@ -93,6 +113,38 @@ export const CallRecordsFilter: React.FC = () => {
                 {t}
               </option>
             ))}
+          </select>
+        </div>
+
+        {/* Guidance Area Filter (correlated with Guidance Type) */}
+        <div>
+          <label className="block font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1">
+            <Crosshair className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+            Obszar porady:
+          </label>
+          <select
+            value={filterState.guidanceArea}
+            onChange={(e) => setFilterState((prev) => ({ ...prev, guidanceArea: e.target.value }))}
+            className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2 text-xs text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
+          >
+            <option value="">
+              {selectedGuidanceType ? "Wszystkie obszary" : "Wszystkie obszary (każdy rodzaj)"}
+            </option>
+            {selectedGuidanceType
+              ? availableAreas.map((area) => (
+                  <option key={area} value={area} className="dark:bg-[#1E1C1A]">
+                    {area}
+                  </option>
+                ))
+              : GUIDANCE_TYPES.map((t) => (
+                  <optgroup key={t} label={t}>
+                    {GUIDANCE_AREAS_MAP[t].map((area) => (
+                      <option key={`${t}-${area}`} value={area} className="dark:bg-[#1E1C1A]">
+                        {area}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
           </select>
         </div>
 
