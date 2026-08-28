@@ -182,6 +182,25 @@ export interface CallRecord {
   durationMinutes: number;
   createdAt: string;
   updatedAt?: string;
+  editLogs?: RecordEditLog[]; // Rejestr historii edycji i wprowadzonych zmian
+}
+
+export interface RecordFieldChange {
+  field: string;
+  label: string;
+  oldValue: string;
+  newValue: string;
+}
+
+export interface RecordEditLog {
+  id: string;
+  recordId: string;
+  editedAt: string; // ISO String
+  editorId: string;
+  editorName: string;
+  editorRole: string;
+  summary: string;
+  changes: RecordFieldChange[];
 }
 
 export interface EmailNotification {

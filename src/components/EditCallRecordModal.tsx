@@ -18,6 +18,7 @@ import {
   Trash2,
   ShieldCheck,
   Edit3,
+  History,
   ChevronDown,
 } from "lucide-react";
 import { AttachmentsManager } from "./AttachmentsManager";
@@ -48,6 +49,7 @@ export const EditCallRecordModal: React.FC = () => {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [durationMinutes, setDurationMinutes] = useState(45);
   const [specialistId, setSpecialistId] = useState("");
+  const [showEditLogs, setShowEditLogs] = useState(false);
 
   useEffect(() => {
     if (editingRecord) {
@@ -396,6 +398,65 @@ export const EditCallRecordModal: React.FC = () => {
               title="Załączniki do tej porady (PDF, obrazy, Excel, dokumenty)"
             />
           </div>
+
+          {/* 10. Rejestr historii poprzednich edycji */}
+          {editingRecord.editLogs && editingRecord.editLogs.length > 0 && (
+            <div className="pt-2 border-t border-slate-100 dark:border-[#2C2927]">
+              <button
+                type="button"
+                onClick={() => setShowEditLogs((v) => !v)}
+                className="w-full flex items-center justify-between p-2.5 bg-amber-50/70 dark:bg-[#1C1814] hover:bg-amber-100/60 dark:hover:bg-[#262018] border border-amber-200 dark:border-amber-700/40 rounded-2xl transition-colors cursor-pointer text-xs"
+              >
+                <div className="flex items-center space-x-2 font-bold text-amber-950 dark:text-[#FFDF06]">
+                  <History className="w-4 h-4 text-amber-700 dark:text-[#FFB200]" />
+                  <span>Historia poprzednich edycji ({editingRecord.editLogs.length})</span>
+                </div>
+                <div className="flex items-center space-x-1.5 text-[11px] text-amber-900 dark:text-amber-300 font-semibold">
+                  <span>{showEditLogs ? "Zwiń" : "Rozwiń historię"}</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showEditLogs ? "rotate-180" : "rotate-0"}`} />
+                </div>
+              </button>
+
+              {showEditLogs && (
+                <div className="mt-2.5 space-y-2.5 max-h-56 overflow-y-auto pr-1 animate-in fade-in">
+                  {editingRecord.editLogs.map((log) => (
+                    <div
+                      key={log.id}
+                      className="bg-white dark:bg-[#141312] border border-slate-200 dark:border-[#2C2927] rounded-xl p-3 text-xs space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between text-[11px] border-b border-slate-100 dark:border-[#24211E] pb-1.5">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          {log.editorName} ({log.editorRole})
+                        </span>
+                        <span className="text-slate-500 dark:text-slate-400">
+                          {new Date(log.editedAt).toLocaleString("pl-PL", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                      <div className="text-amber-900 dark:text-amber-300 font-semibold text-[11px]">
+                        {log.summary}
+                      </div>
+                      <div className="space-y-1 pt-0.5">
+                        {log.changes.map((c, i) => (
+                          <div key={i} className="text-[10px] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-[#1B1917] p-1.5 rounded-lg">
+                            <span className="font-bold text-slate-800 dark:text-slate-200">{c.label}:</span>{" "}
+                            <span className="text-rose-600 dark:text-rose-400 line-through mr-1">{c.oldValue}</span>
+                            <span>➔</span>
+                            <span className="text-emerald-700 dark:text-emerald-400 font-semibold ml-1">{c.newValue}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Footer Buttons */}
           <div className="pt-4 border-t border-slate-200 dark:border-[#2C2927] flex items-center justify-between">

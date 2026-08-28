@@ -23,9 +23,12 @@ import {
   Inbox,
   MessageSquare,
   User,
+  History,
 } from "lucide-react";
 import { AttachmentsManager } from "./AttachmentsManager";
+import { RecordAuditLogModal } from "./RecordAuditLogModal";
 import { pluralizePorady, pluralizePoradyWHistorii } from "../utils/pluralization";
+import { CallRecord } from "../types";
 
 interface Props {
   caller: Caller;
@@ -47,6 +50,7 @@ export const ContactHistoryView: React.FC<Props> = ({ caller }) => {
   const currentSpecialist = useCurrentSpecialist();
 
   const [activeViewMode, setActiveViewMode] = useState<"TIMELINE" | "DOCS">("TIMELINE");
+  const [auditLogRecord, setAuditLogRecord] = useState<CallRecord | null>(null);
 
   const records = getCallerRecords(caller?.id || "");
 
@@ -65,36 +69,20 @@ export const ContactHistoryView: React.FC<Props> = ({ caller }) => {
     }
   };
 
-  // Safe 5-second Smart Summary
-  const generateSummary = () => {
-    if (!records || records.length === 0) {
-      return "Nowo zarejestrowana osoba bez wcześniejszych wpisów.";
-    }
-    const firstRec = records[0];
-    const rawDesc = (firstRec.adviceDescription || "Brak opisu").trim();
-    const desc = rawDesc.endsWith(".") ? rawDesc : rawDesc + ".";
-    const rawNotes = (firstRec.notes || "").trim();
-    const nts = rawNotes ? ` Uwagi: ${rawNotes}` : "";
-
-    if (records.length === 1) {
-      const spec = firstRec.specialistName || "Specjalista";
-      const typeStr = firstRec.guidanceType || "konsultacja";
-      return `Kontaktowano się 1 raz ze specjalistą ${spec} (${typeStr}). Porada dotyczyła: ${desc}${nts}`;
-    }
-
-    const specialistsInvolved = Array.from(
-      new Set(records.map((r) => r.specialistName || "Specjalista"))
-    ).join(", ");
-    const typesInvolved = Array.from(
-      new Set(records.map((r) => r.guidanceType || "Inna"))
-    ).join(", ");
-
-    const callDateStr = firstRec.callDate
-      ? new Date(firstRec.callDate).toLocaleDateString("pl-PL")
-      : "niedawno";
-
-    return `Odnotowano łącznie ${pluralizePorady(records.length)}. Doradzali: ${specialistsInvolved} (${typesInvolved}). Ostatnia porada udzielona ${callDateStr}: ${desc}${nts}`;
-  };
+  const firstRec = records[0];
+  const specialistsInvolved = Array.from(
+    new Set(records.map((r) => r.specialistName || "Specjalista"))
+  ).join(", ");
+  const typesInvolved = Array.from(
+    new Set(records.map((r) => r.guidanceType || "Inna"))
+  ).join(", ");
+  const lastCallDateFormatted = firstRec?.callDate
+    ? new Date(firstRec.callDate).toLocaleDateString("pl-PL", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "niedawno";
 
   if (!caller) {
     return (
@@ -320,17 +308,66 @@ export const ContactHistoryView: React.FC<Props> = ({ caller }) => {
 
         {/* 5-Second AI Briefing Box */}
         <div className="mt-5 bg-gradient-to-r from-amber-50/90 via-slate-50 to-teal-50/60 dark:from-[#262015] dark:via-[#1D1B19] dark:to-[#162728] border border-amber-200/80 dark:border-amber-500/30 rounded-2xl p-4">
-          <div className="flex items-start space-x-2.5">
-            <div className="bg-[#296B6E] text-white p-1.5 rounded-xl shadow-sm shrink-0">
+          <div className="flex items-start space-x-3">
+            <div className="bg-[#296B6E] text-white p-1.5 rounded-xl shadow-sm shrink-0 mt-0.5">
               <Sparkles className="w-4 h-4 text-[#FFB200]" />
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <div className="text-xs font-bold text-[#2D2A28] dark:text-[#FFB200]">
                 Szybki skrót kontekstu dla dyżurującego (5 sekund):
               </div>
-              <p className="text-xs text-slate-700 dark:text-slate-200 mt-1 leading-relaxed">
-                {generateSummary()}
-              </p>
+
+              {records.length === 0 ? (
+                <p className="text-xs text-slate-700 dark:text-slate-300 mt-1">
+                  Nowo zarejestrowana osoba bez wcześniejszych wpisów.
+                </p>
+              ) : (
+                <ul className="mt-2 space-y-1.5 text-xs text-slate-800 dark:text-slate-200">
+                  {/* Punkt 1: Historia i konsultanci */}
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#296B6E] dark:bg-[#FFB200] shrink-0 mt-1.5" />
+                    <div className="leading-relaxed">
+                      <strong className="text-slate-900 dark:text-white font-bold">Historia kontaktu: </strong>
+                      <span>
+                        Łącznie <strong className="text-amber-950 dark:text-[#FFDF06] font-bold">{pluralizePorady(records.length)}</strong>
+                        {specialistsInvolved ? (
+                          <>
+                            {" "}• Doradzali: <strong className="text-slate-900 dark:text-slate-100">{specialistsInvolved}</strong>
+                            {typesInvolved ? <span className="text-slate-600 dark:text-slate-300"> ({typesInvolved})</span> : null}
+                          </>
+                        ) : null}
+                        .
+                      </span>
+                    </div>
+                  </li>
+
+                  {/* Punkt 2: Ostatnia porada */}
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#296B6E] dark:bg-[#FFB200] shrink-0 mt-1.5" />
+                    <div className="leading-relaxed">
+                      <strong className="text-slate-900 dark:text-white font-bold">
+                        Ostatnia porada ({lastCallDateFormatted}):{" "}
+                      </strong>
+                      <span className="text-slate-900 dark:text-slate-100 font-medium">
+                        {firstRec?.adviceDescription || "Brak opisu zgłoszenia."}
+                      </span>
+                    </div>
+                  </li>
+
+                  {/* Punkt 3: Uwagi i zalecenia (jeśli istnieją) */}
+                  {firstRec?.notes && (
+                    <li className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#296B6E] dark:bg-[#FFB200] shrink-0 mt-1.5" />
+                      <div className="leading-relaxed">
+                        <strong className="text-slate-900 dark:text-white font-bold">Uwagi i pomoc: </strong>
+                        <span className="text-slate-800 dark:text-slate-200">
+                          {firstRec.notes}
+                        </span>
+                      </div>
+                    </li>
+                  )}
+                </ul>
+              )}
             </div>
           </div>
         </div>
@@ -473,6 +510,18 @@ export const ContactHistoryView: React.FC<Props> = ({ caller }) => {
                           <span>{rec.specialistName || "Nieznany"}</span>
                         </span>
 
+                        {rec.editLogs && rec.editLogs.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setAuditLogRecord(rec)}
+                            className="flex items-center space-x-1 px-2.5 py-1 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-950 dark:text-[#FFDF06] border border-amber-300 dark:border-amber-600/50 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                            title={`Zobacz historię ${rec.editLogs.length} edycji tego wpisu`}
+                          >
+                            <History className="w-3.5 h-3.5 text-amber-700 dark:text-[#FFB200]" />
+                            <span>Historia zmian ({rec.editLogs.length})</span>
+                          </button>
+                        )}
+
                         {canEdit ? (
                           <button
                             type="button"
@@ -607,6 +656,12 @@ export const ContactHistoryView: React.FC<Props> = ({ caller }) => {
           )}
         </>
       )}
+
+      {/* Audit Log Modal */}
+      <RecordAuditLogModal
+        record={auditLogRecord}
+        onClose={() => setAuditLogRecord(null)}
+      />
     </div>
   );
 };

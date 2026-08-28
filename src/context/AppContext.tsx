@@ -22,6 +22,7 @@ import {
   resetToSampleData,
   searchCallers,
 } from "../services/storage";
+import { computeRecordChanges } from "../utils/auditLogger";
 
 // Jedno źródło prawdy dla "czy ten wpis jest przekazany do tego specjalisty" —
 // dopasowanie po referredSpecialistId, a gdy go brak (starsze/ręczne przekazania),
@@ -342,8 +343,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateRecord = useCallback(
     (updated: CallRecord) => {
       const now = new Date().toISOString();
+      const existing = records.find((r) => r.id === updated.id);
+      let editLogs = existing?.editLogs ? [...existing.editLogs] : [];
+
+      if (existing) {
+        const changeLog = computeRecordChanges(existing, updated, currentSpecialist);
+        if (changeLog) {
+          editLogs = [changeLog, ...editLogs];
+        }
+      }
+
       const nextRecords = records.map((r) =>
-        r.id === updated.id ? { ...updated, updatedAt: now } : r
+        r.id === updated.id ? { ...updated, updatedAt: now, editLogs } : r
       );
       setRecords(nextRecords);
       saveRecords(nextRecords);
@@ -353,7 +364,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         payload: { recordId: updated.id, callerId: updated.callerId },
       });
     },
-    [records, broadcast]
+    [records, currentSpecialist, broadcast]
   );
 
   const deleteRecord = useCallback(
