@@ -196,19 +196,19 @@ export const EditCallRecordModal: React.FC = () => {
             <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5">
               1. Rodzaj poradnictwa (wybór jednokrotny):
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="flex flex-wrap gap-2">
               {GUIDANCE_TYPES.map((type) => (
                 <button
                   type="button"
                   key={type}
                   onClick={() => setGuidanceType(type)}
-                  className={`py-2 px-3 rounded-xl font-bold text-xs border text-left transition-all cursor-pointer ${
+                  className={`py-2 px-3 rounded-xl font-bold text-xs border whitespace-nowrap transition-all cursor-pointer ${
                     guidanceType === type
                       ? "bg-[#2D2A28] dark:bg-[#FFB200] text-[#FFB200] dark:text-[#2D2A28] border-[#2D2A28] dark:border-[#FFB200] shadow-sm"
                       : "bg-slate-50 dark:bg-[#141312] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#383431] hover:bg-slate-100 dark:hover:bg-[#2A2724]"
                   }`}
                 >
-                  <div className="capitalize-first">{type.charAt(0).toUpperCase() + type.slice(1)}</div>
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
                 </button>
               ))}
             </div>
