@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import {
   Inbox,
@@ -31,7 +31,11 @@ export const ReferredCasesModal: React.FC<Props> = ({ isOpen, onClose }) => {
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
 
-  const [activeFilter, setActiveFilter] = useState<"ALL" | "OCZEKUJĄCA" | "ZAKOŃCZONA">("ALL");
+  const [activeFilter, setActiveFilter] = useState<"ALL" | "OCZEKUJĄCA" | "ZAKOŃCZONA">("OCZEKUJĄCA");
+
+  useEffect(() => {
+    if (isOpen) setActiveFilter("OCZEKUJĄCA");
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

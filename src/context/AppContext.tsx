@@ -23,6 +23,24 @@ import {
   searchCallers,
 } from "../services/storage";
 
+// Jedno źródło prawdy dla "czy ten wpis jest przekazany do tego specjalisty" —
+// dopasowanie po referredSpecialistId, a gdy go brak (starsze/ręczne przekazania),
+// fallback po nazwisku w polu referredTo. Używane zarówno przy pokazywaniu listy
+// przekazanych spraw, jak i przy automatycznym oznaczaniu ich jako załatwione.
+const isReferredToSpecialist = (
+  rec: CallRecord,
+  specialistId: string,
+  specialistsList: Specialist[]
+): boolean => {
+  if (rec.referredSpecialistId === specialistId) return true;
+  if (!rec.referredSpecialistId && rec.referredTo) {
+    const spec = specialistsList.find((s) => s.id === specialistId);
+    const specLastName = spec ? spec.name.split(" ").pop()?.toLowerCase() : null;
+    if (specLastName) return rec.referredTo.toLowerCase().includes(specLastName);
+  }
+  return false;
+};
+
 interface AppContextType {
   callers: Caller[];
   records: CallRecord[];
@@ -280,17 +298,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const getReferredRecordsForSpecialist = useCallback(
     (specialistId: string) => {
-      const spec = specialists.find((s) => s.id === specialistId);
-      const specLastName = spec ? spec.name.split(" ").pop()?.toLowerCase() : null;
-
-      return records.filter((r) => {
-        if (r.referredSpecialistId === specialistId) return true;
-        if (!r.referredSpecialistId && r.referredTo && specLastName) {
-          const refToNorm = r.referredTo.toLowerCase();
-          return refToNorm.includes(specLastName);
-        }
-        return false;
-      });
+      return records.filter((r) => isReferredToSpecialist(r, specialistId, specialists));
     },
     [records, specialists]
   );
@@ -497,8 +505,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         ...records.map((r) => {
           if (
             r.callerId === data.callerId &&
-            r.referredSpecialistId === data.specialistId &&
-            (r.referredStatus === "OCZEKUJĄCA" || !r.referredStatus)
+            (r.referredStatus === "OCZEKUJĄCA" || !r.referredStatus) &&
+            isReferredToSpecialist(r, data.specialistId, specialists)
           ) {
             return { ...r, referredStatus: "ZAKOŃCZONA" as const };
           }
@@ -521,7 +529,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       return newRec;
     },
-    [records, broadcast]
+    [records, specialists, broadcast]
   );
 
   const updateCaller = useCallback(
