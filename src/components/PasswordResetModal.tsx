@@ -2,12 +2,12 @@ import React, { useMemo, useState } from "react";
 import { Specialist } from "../types";
 import {
   findSpecialistByEmail,
-  getSpecialistInitials,
   generateResetCode,
   hashPassword,
   MIN_PASSWORD_LENGTH,
 } from "../services/auth";
 import { savePasswordOverride } from "../services/storage";
+import { SpecialistAvatar } from "./SpecialistAvatar";
 import {
   X,
   Mail,
@@ -153,12 +153,12 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
                 className="mt-2 flex items-center space-x-3 bg-[#E6F3F3] border border-[#296B6E]/25 rounded-xl px-3 py-2 animate-in fade-in"
                 role="status"
               >
-                <div
-                  className={`w-8 h-8 ${recognized.avatarBg} rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0`}
-                  aria-hidden="true"
-                >
-                  {getSpecialistInitials(recognized.name)}
-                </div>
+                <SpecialistAvatar
+                  name={recognized.name}
+                  avatarBg={recognized.avatarBg}
+                  avatarUrl={recognized.avatarUrl}
+                  className="w-8 h-8 rounded-full text-[10px] font-black shrink-0"
+                />
                 <div className="min-w-0">
                   <div className="text-xs font-bold text-slate-900 truncate">{recognized.name}</div>
                   {recognized.isAdmin ? (

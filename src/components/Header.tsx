@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
-import { getSpecialistInitials } from "../services/auth";
+import { SpecialistAvatar } from "./SpecialistAvatar";
 import {
   FileSpreadsheet,
   UserPlus,
@@ -220,12 +220,12 @@ export const Header: React.FC = () => {
             <div className="border-l border-[#3E3A37] pl-2 ml-0.5 flex items-center space-x-1.5">
               <div className="flex items-center space-x-2 bg-[#242220] py-1 px-2.5 rounded-xl border border-[#3E3A37]">
                 <div className="relative shrink-0">
-                  <div
-                    className={`w-7 h-7 ${currentSpecialist.avatarBg} rounded-lg flex items-center justify-center text-white text-[10px] font-black`}
-                    aria-hidden="true"
-                  >
-                    {getSpecialistInitials(currentSpecialist.name)}
-                  </div>
+                  <SpecialistAvatar
+                    name={currentSpecialist.name}
+                    avatarBg={currentSpecialist.avatarBg}
+                    avatarUrl={currentSpecialist.avatarUrl}
+                    className="w-7 h-7 rounded-lg text-[10px] font-black"
+                  />
                   <span className="absolute -bottom-0.5 -right-0.5 flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 border border-[#242220]"></span>
@@ -342,11 +342,12 @@ export const Header: React.FC = () => {
               className="flex items-center space-x-1.5 bg-[#242220] border border-[#3E3A37] hover:border-[#FFB200] py-1 px-1.5 rounded-xl cursor-pointer transition-colors"
               title={`Zalogowano: ${currentSpecialist.name} (kliknij, aby edytować profil)`}
             >
-              <div
-                className={`w-6 h-6 sm:w-7 sm:h-7 ${currentSpecialist.avatarBg} rounded-lg flex items-center justify-center text-white text-[10px] font-black shrink-0`}
-              >
-                {getSpecialistInitials(currentSpecialist.name)}
-              </div>
+              <SpecialistAvatar
+                name={currentSpecialist.name}
+                avatarBg={currentSpecialist.avatarBg}
+                avatarUrl={currentSpecialist.avatarUrl}
+                className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg text-[10px] font-black shrink-0"
+              />
               <span className="hidden md:inline text-xs font-bold text-white max-w-[160px] truncate pr-1">
                 {currentSpecialist.name}
               </span>
@@ -376,11 +377,12 @@ export const Header: React.FC = () => {
           {/* User Profile Card in Mobile Menu */}
           <div className="bg-[#1A1918] border border-[#3E3A37] rounded-2xl p-3.5 flex items-center justify-between">
             <div className="flex items-center space-x-3 min-w-0">
-              <div
-                className={`w-9 h-9 ${currentSpecialist.avatarBg} rounded-xl flex items-center justify-center text-white text-xs font-black shrink-0 shadow-xs`}
-              >
-                {getSpecialistInitials(currentSpecialist.name)}
-              </div>
+              <SpecialistAvatar
+                name={currentSpecialist.name}
+                avatarBg={currentSpecialist.avatarBg}
+                avatarUrl={currentSpecialist.avatarUrl}
+                className="w-9 h-9 rounded-xl text-xs font-black shrink-0 shadow-xs"
+              />
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-white text-xs truncate">{currentSpecialist.name}</span>

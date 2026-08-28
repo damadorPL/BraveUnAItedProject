@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { detectAttachmentType, formatFileSize } from "./fileUtils";
+import {
+  detectAttachmentType,
+  formatFileSize,
+  validateAvatarFile,
+  AVATAR_MAX_FILE_SIZE,
+} from "./fileUtils";
 
 describe("File Utilities", () => {
   describe("detectAttachmentType", () => {
@@ -60,6 +65,27 @@ describe("File Utilities", () => {
 
     it("should format gigabytes correctly", () => {
       expect(formatFileSize(1024 * 1024 * 1024)).toBe("1 GB");
+    });
+  });
+
+  describe("validateAvatarFile", () => {
+    it("should accept image files within the size limit", () => {
+      expect(validateAvatarFile({ type: "image/jpeg", size: 500 * 1024 })).toBeNull();
+      expect(validateAvatarFile({ type: "image/png", size: AVATAR_MAX_FILE_SIZE })).toBeNull();
+      expect(validateAvatarFile({ type: "IMAGE/WEBP", size: 1024 })).toBeNull();
+    });
+
+    it("should reject non-image files", () => {
+      expect(validateAvatarFile({ type: "application/pdf", size: 1024 })).toMatch(
+        /nie jest obrazem/
+      );
+      expect(validateAvatarFile({ type: "", size: 1024 })).toMatch(/nie jest obrazem/);
+    });
+
+    it("should reject images above the size limit", () => {
+      expect(validateAvatarFile({ type: "image/jpeg", size: AVATAR_MAX_FILE_SIZE + 1 })).toMatch(
+        /za duży/
+      );
     });
   });
 });

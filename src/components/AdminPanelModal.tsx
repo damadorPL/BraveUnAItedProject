@@ -21,6 +21,7 @@ import {
   Info,
 } from "lucide-react";
 import { pluralizePorady, pluralizeZalaczniki } from "../utils/pluralization";
+import { SpecialistAvatar } from "./SpecialistAvatar";
 
 interface AdminPanelModalProps {
   isOpen: boolean;
@@ -732,11 +733,12 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                   <div>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-2.5">
-                        <div
-                          className={`w-9 h-9 rounded-xl ${spec.avatarBg || "bg-blue-600"} text-white flex items-center justify-center font-bold text-xs shadow-xs`}
-                        >
-                          {spec.name.slice(0, 2).toUpperCase()}
-                        </div>
+                        <SpecialistAvatar
+                          name={spec.name}
+                          avatarBg={spec.avatarBg}
+                          avatarUrl={spec.avatarUrl}
+                          className="w-9 h-9 rounded-xl font-bold text-xs shrink-0 shadow-xs"
+                        />
                         <div>
                           <div className="font-extrabold text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
                             <span>{spec.name}</span>

@@ -47,6 +47,65 @@ export function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
+export const AVATAR_MAX_FILE_SIZE = 5 * 1024 * 1024;
+export const AVATAR_DIMENSION = 256;
+
+// Zwraca komunikat błędu albo null, gdy plik nadaje się na awatar.
+export function validateAvatarFile(file: { type: string; size: number }): string | null {
+  if (!file.type.toLowerCase().startsWith("image/")) {
+    return "Wybrany plik nie jest obrazem. Dozwolone formaty: JPG, PNG, WEBP.";
+  }
+  if (file.size > AVATAR_MAX_FILE_SIZE) {
+    return `Plik jest za duży (maksymalnie ${formatFileSize(AVATAR_MAX_FILE_SIZE)}).`;
+  }
+  return null;
+}
+
+// Kadruje obraz do kwadratu (środek) i skaluje do AVATAR_DIMENSION,
+// zwracając data URL JPEG — na tyle mały, by zmieścić się w localStorage.
+export function processAvatarImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const side = Math.min(img.naturalWidth, img.naturalHeight);
+      if (!side) {
+        reject(new Error("Obraz ma zerowe wymiary"));
+        return;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = AVATAR_DIMENSION;
+      canvas.height = AVATAR_DIMENSION;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Canvas 2D jest niedostępny w tej przeglądarce"));
+        return;
+      }
+      // JPEG nie obsługuje przezroczystości — białe tło pod np. PNG z alfą.
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, AVATAR_DIMENSION, AVATAR_DIMENSION);
+      ctx.drawImage(
+        img,
+        (img.naturalWidth - side) / 2,
+        (img.naturalHeight - side) / 2,
+        side,
+        side,
+        0,
+        0,
+        AVATAR_DIMENSION,
+        AVATAR_DIMENSION
+      );
+      resolve(canvas.toDataURL("image/jpeg", 0.85));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Nie udało się wczytać obrazu"));
+    };
+    img.src = objectUrl;
+  });
+}
+
 export async function createAttachmentFromFile(
   file: File,
   specialistName: string,

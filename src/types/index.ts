@@ -224,6 +224,9 @@ export interface Specialist {
   title: string;
   guidanceType: GuidanceType;
   avatarBg: string;
+  // Zdjęcie profilowe jako data URL (przeskalowane do kwadratu przy zapisie);
+  // brak wartości = inicjały na kolorowym tle avatarBg.
+  avatarUrl?: string;
   email: string;
   isAdmin?: boolean;
 }

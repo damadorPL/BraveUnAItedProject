@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Specialist } from "../types";
 import { normalizeText } from "../services/storage";
+import { SpecialistAvatar } from "./SpecialistAvatar";
 import {
   Share2,
   Mail,
@@ -159,13 +160,12 @@ export const ReferralSelector: React.FC<Props> = ({
                       className="p-2.5 rounded-xl hover:bg-amber-50/80 dark:hover:bg-[#2A2724] border border-transparent hover:border-amber-200/80 dark:hover:border-[#FFB200]/30 transition-all cursor-pointer flex items-center justify-between group"
                     >
                       <div className="flex items-center space-x-2.5 min-w-0">
-                        <div
-                          className={`w-7 h-7 rounded-xl ${
-                            spec.avatarBg || "bg-amber-600"
-                          } text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs`}
-                        >
-                          {spec.name.charAt(0)}
-                        </div>
+                        <SpecialistAvatar
+                          name={spec.name}
+                          avatarBg={spec.avatarBg || "bg-amber-600"}
+                          avatarUrl={spec.avatarUrl}
+                          className="w-7 h-7 rounded-xl font-bold text-xs shrink-0 shadow-2xs"
+                        />
 
                         <div className="min-w-0">
                           <div className="flex items-center space-x-1.5">
@@ -203,13 +203,12 @@ export const ReferralSelector: React.FC<Props> = ({
         /* When a Specialist IS SELECTED -> Clean Card Preview */
         <div className="bg-amber-50/90 dark:bg-amber-950/40 border border-[#FFB200] ring-2 ring-[#FFB200]/20 rounded-2xl p-3.5 flex items-center justify-between animate-in fade-in">
           <div className="flex items-center space-x-3 min-w-0">
-            <div
-              className={`w-9 h-9 rounded-xl ${
-                selectedSpec.avatarBg || "bg-amber-600"
-              } text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs`}
-            >
-              {selectedSpec.name.charAt(0)}
-            </div>
+            <SpecialistAvatar
+              name={selectedSpec.name}
+              avatarBg={selectedSpec.avatarBg || "bg-amber-600"}
+              avatarUrl={selectedSpec.avatarUrl}
+              className="w-9 h-9 rounded-xl font-black text-sm shrink-0 shadow-xs"
+            />
 
             <div className="min-w-0">
               <div className="flex items-center space-x-1.5">

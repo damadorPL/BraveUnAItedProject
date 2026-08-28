@@ -3,11 +3,11 @@ import { useApp } from "../context/AppContext";
 import {
   findSpecialistByEmail,
   verifySpecialistPassword,
-  getSpecialistInitials,
   DEMO_PASSWORD,
 } from "../services/auth";
 import { loadPasswordOverrides } from "../services/storage";
 import { PasswordResetModal } from "./PasswordResetModal";
+import { SpecialistAvatar } from "./SpecialistAvatar";
 import {
   Eye,
   EyeOff,
@@ -128,12 +128,12 @@ export const LoginScreen: React.FC = () => {
                   className="mt-2 flex items-center space-x-3 bg-[#E6F3F3] border border-[#296B6E]/25 rounded-xl px-3 py-2 animate-in fade-in"
                   role="status"
                 >
-                  <div
-                    className={`w-9 h-9 ${recognized.avatarBg} rounded-full flex items-center justify-center text-white text-xs font-black shrink-0`}
-                    aria-hidden="true"
-                  >
-                    {getSpecialistInitials(recognized.name)}
-                  </div>
+                  <SpecialistAvatar
+                    name={recognized.name}
+                    avatarBg={recognized.avatarBg}
+                    avatarUrl={recognized.avatarUrl}
+                    className="w-9 h-9 rounded-full text-xs font-black shrink-0"
+                  />
                   <div className="min-w-0">
                     <div className="text-xs font-bold text-slate-900 truncate">{recognized.name}</div>
                     {recognized.isAdmin ? (
@@ -245,12 +245,12 @@ export const LoginScreen: React.FC = () => {
                     className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-50 text-left transition-colors cursor-pointer"
                   >
                     <span className="flex items-center gap-2 min-w-0">
-                      <span
-                        className={`w-5 h-5 ${s.avatarBg} rounded-full flex items-center justify-center text-white text-[9px] font-black shrink-0`}
-                        aria-hidden="true"
-                      >
-                        {getSpecialistInitials(s.name)}
-                      </span>
+                      <SpecialistAvatar
+                        name={s.name}
+                        avatarBg={s.avatarBg}
+                        avatarUrl={s.avatarUrl}
+                        className="w-5 h-5 rounded-full text-[9px] font-black shrink-0"
+                      />
                       <span className="font-mono text-slate-700 truncate">{s.email}</span>
                     </span>
                     {s.isAdmin ? (
