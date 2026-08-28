@@ -3,6 +3,7 @@ import { useApp } from "../context/AppContext";
 import { GuidanceType } from "../types";
 import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
 import { computeReportStats } from "../utils/reportStats";
+import { DateRangePicker } from "./DateRangePicker";
 import {
   BarChart3,
   PhoneCall,
@@ -14,7 +15,6 @@ import {
   Award,
   HeartHandshake,
   Tag,
-  CalendarDays,
   RotateCcw,
 } from "lucide-react";
 
@@ -103,41 +103,13 @@ export const StatsBar: React.FC = () => {
       {/* Reporting period selector */}
       <div className="bg-white border border-slate-200 rounded-3xl p-4 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-end gap-3 md:justify-between">
-          <div className="flex items-end gap-3 flex-wrap">
-            <div>
-              <label
-                htmlFor="stats-date-from"
-                className="block font-semibold text-slate-600 mb-1 flex items-center gap-1"
-              >
-                <CalendarDays className="w-3 h-3 text-slate-400" />
-                Okres sprawozdawczy od:
-              </label>
-              <input
-                id="stats-date-from"
-                type="date"
-                value={filterState.dateFrom}
-                max={filterState.dateTo || undefined}
-                onChange={(e) => setFilterState((prev) => ({ ...prev, dateFrom: e.target.value }))}
-                className="bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="stats-date-to"
-                className="block font-semibold text-slate-600 mb-1 flex items-center gap-1"
-              >
-                <CalendarDays className="w-3 h-3 text-slate-400" />
-                do:
-              </label>
-              <input
-                id="stats-date-to"
-                type="date"
-                value={filterState.dateTo}
-                min={filterState.dateFrom || undefined}
-                onChange={(e) => setFilterState((prev) => ({ ...prev, dateTo: e.target.value }))}
-                className="bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              />
-            </div>
+          <div className="w-56">
+            <DateRangePicker
+              label="Okres sprawozdawczy:"
+              dateFrom={filterState.dateFrom}
+              dateTo={filterState.dateTo}
+              onChange={(from, to) => setFilterState((prev) => ({ ...prev, dateFrom: from, dateTo: to }))}
+            />
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
