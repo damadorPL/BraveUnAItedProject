@@ -1,9 +1,9 @@
 import React from 'react';
-import { MessageSquare, ArrowUpRight, X, Wifi, Battery, Signal } from 'lucide-react';
+import { MessageSquare, ArrowUpRight, X, Wifi, Battery, Signal, Zap } from 'lucide-react';
 import { useBookingStore } from '../store/bookingStore';
 
 export const PhoneNotification: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
-  const { simulatedSmsList, setView, setActiveOfferToken, setActiveBookingToken } = useBookingStore();
+  const { simulatedSmsList, setView, setRole, setActiveOfferToken, setActiveBookingToken } = useBookingStore();
 
   if (!isOpen) return null;
 
@@ -11,6 +11,7 @@ export const PhoneNotification: React.FC<{ isOpen: boolean; onClose: () => void 
 
   const handleSmsClick = (sms: typeof latestSms) => {
     if (!sms?.token) return;
+    setRole('patient');
     if (sms.type === 'waitlist_offer') {
       setActiveOfferToken(sms.token);
       setView('waitlist_offer');
@@ -47,7 +48,7 @@ export const PhoneNotification: React.FC<{ isOpen: boolean; onClose: () => void 
           <div className="flex items-center gap-1.5">
             <Signal className="w-3 h-3" />
             <Wifi className="w-3 h-3" />
-            <Battery className="w-4 h-4 fill-current" />
+            <Battery className="w-4 h-4 fill-current text-brand-green" />
           </div>
         </div>
 
@@ -68,7 +69,7 @@ export const PhoneNotification: React.FC<{ isOpen: boolean; onClose: () => void 
               onClick={() => handleSmsClick(latestSms)}
               className={`p-3.5 rounded-2xl backdrop-blur-xl border cursor-pointer transition-all transform hover:scale-102 ${
                 latestSms.type === 'waitlist_offer'
-                  ? 'bg-gray-900/90 border-brand-green/60 text-white shadow-lg ring-1 ring-brand-green/40'
+                  ? 'bg-gray-900/95 border-brand-green text-white shadow-2xl ring-2 ring-brand-green/60 animate-pulse-subtle'
                   : 'bg-gray-900/85 border-gray-700/60 text-gray-100'
               }`}
             >
@@ -82,7 +83,7 @@ export const PhoneNotification: React.FC<{ isOpen: boolean; onClose: () => void 
                   </div>
                   <span className="text-gray-200">WIADOMOŚCI</span>
                 </div>
-                <span>{latestSms.timestamp}</span>
+                <span className="text-brand-green font-mono font-bold">TERAZ</span>
               </div>
 
               {/* Discreet SMS Content */}
@@ -90,10 +91,13 @@ export const PhoneNotification: React.FC<{ isOpen: boolean; onClose: () => void 
                 {latestSms.message}
               </p>
 
-              {/* Click Callout */}
-              <div className="mt-2 pt-1.5 border-t border-white/10 flex justify-between items-center text-[10px] text-brand-green font-semibold">
-                <span>Kliknij, aby otworzyć link</span>
-                <ArrowUpRight className="w-3 h-3" />
+              {/* Interactive Callout Button inside SMS */}
+              <div className="mt-2.5 pt-2 border-t border-white/10 flex justify-between items-center text-[11px] text-brand-green font-bold bg-brand-green/10 px-2.5 py-1.5 rounded-xl">
+                <span className="flex items-center gap-1">
+                  <Zap className="w-3 h-3 fill-current" />
+                  <span>Kliknij, aby przejąć termin</span>
+                </span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
               </div>
             </div>
           ) : (
@@ -104,8 +108,8 @@ export const PhoneNotification: React.FC<{ isOpen: boolean; onClose: () => void 
         </div>
 
         {/* Lock Screen Bottom Bar */}
-        <div className="text-center text-[10px] text-gray-500 font-mono pt-2 border-t border-gray-800/80">
-          Symulator telefonu pacjenta (Moment WOW)
+        <div className="text-center text-[10px] text-gray-400 font-mono pt-2 border-t border-gray-800/80 flex items-center justify-center gap-1">
+          <span>📱 Telefon pacjenta · Kaskada FIFO</span>
         </div>
         <div className="w-24 h-1 bg-gray-600 rounded-full mx-auto mt-2" />
 

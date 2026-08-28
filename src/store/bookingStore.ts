@@ -22,6 +22,7 @@ import {
   INITIAL_QUESTIONNAIRES,
   INITIAL_EMAILS
 } from '../data/mockData';
+import { playNotificationSound } from '../utils/audio';
 
 interface BookingStore {
   currentRole: UserRole;
@@ -40,6 +41,7 @@ interface BookingStore {
   activeBookingToken: string;
   activeOfferToken: string;
   demoModeHoursBeforeVisit: number; // np. 72h (>24h) lub 4h (<24h)
+  lastCancelledSlot: Slot | null;
 
   // Role & View Actions
   setRole: (role: UserRole) => void;
@@ -69,6 +71,9 @@ interface BookingStore {
   processRefund: (refundId: string) => void;
   submitQuestionnaire: (data: Omit<FirstContactQuestionnaire, 'id' | 'submittedAt'>) => void;
   markEmailRead: (emailId: string) => void;
+
+  // MOMENT WOW Trigger
+  triggerWowCascade: () => { success: boolean; offerToken: string };
 
   // Demo Control
   resetDemoData: () => void;
@@ -105,6 +110,7 @@ export const useBookingStore = create<BookingStore>()(
       activeBookingToken: 'token_nowak_2908',
       activeOfferToken: 'token_offer_wlodarczyk',
       demoModeHoursBeforeVisit: 72,
+      lastCancelledSlot: null,
 
       setRole: (role) => {
         let view: BookingStore['currentView'] = 'search';
@@ -254,15 +260,18 @@ export const useBookingStore = create<BookingStore>()(
           id: generateId('log'),
           timestamp: new Date().toLocaleTimeString('pl-PL'),
           action: 'BOOKING_CONFIRMED',
-          details: `Opłacono i potwierdzono rezerwację slotu #${slotId} (${slot.specialistName}). Płatność: ${paymentMethod} ${slot.price} zł. Pacjent: ${patientName} (email: ${patientEmail}).`,
+          details: `Opłacono i potwierdzono rezerwację slotu #${slotId} (${slot.specialistName}). Płatność: ${paymentMethod} ${slot.price} zł. Pacjent: ${patientName}.`,
           slotId,
           actor: 'Pacjent (BLIK)'
         };
+
+        playNotificationSound();
 
         set({
           slots: updatedSlots,
           activeHoldSlotId: null,
           activeBookingToken: token,
+          lastCancelledSlot: null,
           coordinatorLogs: [newLog, ...coordinatorLogs],
           simulatedSmsList: [newSms, ...simulatedSmsList],
           simulatedEmails: [newEmail, ...simulatedEmails]
@@ -394,11 +403,14 @@ export const useBookingStore = create<BookingStore>()(
             actor: 'System (Kaskada FIFO)'
           };
 
+          playNotificationSound();
+
           set({
             slots: updatedSlots,
             waitlist: updatedWaitlist,
             refunds: [newRefund, ...refunds],
             activeOfferToken: offerToken,
+            lastCancelledSlot: slot,
             coordinatorLogs: [waitlistLog, cancelLog, ...coordinatorLogs],
             simulatedSmsList: [newSms, ...simulatedSmsList],
             simulatedEmails: [waitlistEmail, cancelEmail, ...simulatedEmails]
@@ -406,7 +418,7 @@ export const useBookingStore = create<BookingStore>()(
 
           return { 
             success: true, 
-            message: `Wizyta odwołana pomyślnie. Zwrot ${refundedAmount} zł trafił do panelu Stripe. Termin automatycznie przekazano osobie z listy rezerwowej!`, 
+            message: `Wizyta odwołana pomyślnie. Zwrot ${refundedAmount} zł trafił do panelu Stripe. Termin automatycznie przekazano osobie z listy rezerwowej (${candidate.patientName})!`, 
             refundedAmount, 
             waitlistTriggered: true 
           };
@@ -417,6 +429,7 @@ export const useBookingStore = create<BookingStore>()(
           set({
             slots: updatedSlots,
             refunds: [newRefund, ...refunds],
+            lastCancelledSlot: slot,
             coordinatorLogs: [cancelLog, ...coordinatorLogs],
             simulatedEmails: [cancelEmail, ...simulatedEmails]
           });
@@ -432,7 +445,8 @@ export const useBookingStore = create<BookingStore>()(
 
       acceptWaitlistOffer: (token, paymentMethod = 'BLIK') => {
         const { slots, waitlist, coordinatorLogs, simulatedSmsList, simulatedEmails } = get();
-        const slot = slots.find(s => s.offer?.token === token && s.status === 'offered');
+        const slot = slots.find(s => s.offer?.token === token && s.status === 'offered') 
+          || slots.find(s => s.status === 'offered');
         if (!slot || !slot.offer) return false;
 
         const candidateName = slot.offer.offeredToName;
@@ -495,10 +509,13 @@ export const useBookingStore = create<BookingStore>()(
           actor: 'Pacjent z Waitlisty'
         };
 
+        playNotificationSound();
+
         set({
           slots: updatedSlots,
           waitlist: updatedWaitlist,
           activeBookingToken: newBookingToken,
+          lastCancelledSlot: null,
           coordinatorLogs: [newLog, ...coordinatorLogs],
           simulatedSmsList: [newSms, ...simulatedSmsList],
           simulatedEmails: [newEmail, ...simulatedEmails]
@@ -680,6 +697,8 @@ export const useBookingStore = create<BookingStore>()(
             read: false
           };
 
+          playNotificationSound();
+
           set({
             simulatedSmsList: [newSms, ...simulatedSmsList],
             simulatedEmails: [newEmail, ...simulatedEmails]
@@ -704,13 +723,12 @@ export const useBookingStore = create<BookingStore>()(
       },
 
       cancelSlotBySpecialist: (slotId, reason) => {
-        const { slots, waitlist, coordinatorLogs, simulatedSmsList, simulatedEmails, refunds } = get();
+        const { slots, waitlist, coordinatorLogs, simulatedSmsList, refunds } = get();
         const slot = slots.find(s => s.id === slotId);
         if (!slot) return { success: false, message: 'Nie znaleziono terminu' };
 
         const patientName = slot.bookedBy?.patientName || 'Brak pacjenta';
         const patientPhone = slot.bookedBy?.patientPhone || '';
-        const patientEmail = slot.bookedBy?.patientEmail || '';
 
         let newRefunds = refunds;
         if (slot.bookedBy && slot.price > 0) {
@@ -726,7 +744,6 @@ export const useBookingStore = create<BookingStore>()(
           newRefunds = [refund, ...refunds];
         }
 
-        // Kaskada do waitlisty
         const candidateIndex = waitlist.findIndex(w => 
           w.status === 'waiting' && 
           (w.preferredSpecialistId === slot.specialistId || !w.preferredSpecialistId) &&
@@ -781,6 +798,8 @@ export const useBookingStore = create<BookingStore>()(
             slotId,
             actor: slot.specialistName
           };
+
+          playNotificationSound();
 
           set({
             slots: updatedSlots,
@@ -903,6 +922,56 @@ export const useBookingStore = create<BookingStore>()(
         });
       },
 
+      // GUARANTEED MOMENT WOW TRIGGER
+      triggerWowCascade: () => {
+        const { slots } = get();
+        
+        // 1. Zapewnij, że slot_102 jest zarezerwowany przez Katarzynę Nowak
+        let targetSlot = slots.find(s => s.id === 'slot_102');
+        let currentSlots = slots;
+
+        if (!targetSlot || targetSlot.status !== 'booked') {
+          currentSlots = slots.map(s => {
+            if (s.id === 'slot_102') {
+              return {
+                ...s,
+                status: 'booked' as const,
+                attendanceStatus: 'scheduled' as const,
+                bookedBy: {
+                  patientName: 'Katarzyna Nowak',
+                  patientPhone: '+48 501 412 889',
+                  patientEmail: 'katarzyna.nowak@poczta.pl',
+                  bookingToken: 'token_nowak_2908',
+                  bookedAt: '2026-08-28 08:30',
+                  paymentMethod: 'BLIK'
+                }
+              };
+            }
+            return s;
+          });
+          set({ slots: currentSlots });
+        }
+
+        // 2. Ustaw stan dema na >24h
+        set({
+          demoModeHoursBeforeVisit: 72,
+          currentRole: 'patient',
+          activeBookingToken: 'token_nowak_2908'
+        });
+
+        // 3. Wykonaj odwołanie i kaskadę
+        const res = get().cancelBooking('slot_102');
+        const offerToken = get().activeOfferToken;
+
+        // 4. Przejdź do widoku zarządzania wizytą (gdzie widać odwołanie i powiadomienie SMS na telefonie)
+        set({ currentView: 'manage_visit' });
+
+        return {
+          success: res.success,
+          offerToken
+        };
+      },
+
       resetDemoData: () => {
         set({
           currentRole: 'patient',
@@ -929,14 +998,15 @@ export const useBookingStore = create<BookingStore>()(
           currentView: 'search',
           activeBookingToken: 'token_nowak_2908',
           activeOfferToken: 'token_offer_wlodarczyk',
-          demoModeHoursBeforeVisit: 72
+          demoModeHoursBeforeVisit: 72,
+          lastCancelledSlot: null
         });
       },
 
       clearSmsHistory: () => set({ simulatedSmsList: [], simulatedEmails: [] })
     }),
     {
-      name: 'niepodzielni-booking-storage-v2',
+      name: 'niepodzielni-booking-storage-v3',
       partialize: (state) => ({
         currentRole: state.currentRole,
         activeSpecialistId: state.activeSpecialistId,
