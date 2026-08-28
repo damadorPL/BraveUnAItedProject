@@ -15,6 +15,9 @@ import {
   loadRecords,
   saveRecords,
   loadSpecialists,
+  loadSessionSpecialistId,
+  saveSessionSpecialistId,
+  clearSession,
   resetToSampleData,
   searchCallers,
 } from "../services/storage";
@@ -23,8 +26,9 @@ interface AppContextType {
   callers: Caller[];
   records: CallRecord[];
   specialists: Specialist[];
-  currentSpecialist: Specialist;
-  setCurrentSpecialist: (s: Specialist) => void;
+  currentSpecialist: Specialist | null;
+  login: (specialist: Specialist) => void;
+  logout: () => void;
   selectedCaller: Caller | null;
   setSelectedCaller: (c: Caller | null) => void;
   searchQuery: string;
@@ -84,7 +88,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [callers, setCallers] = useState<Caller[]>(() => loadCallers());
   const [records, setRecords] = useState<CallRecord[]>(() => loadRecords());
   const [specialists] = useState<Specialist[]>(() => loadSpecialists());
-  const [currentSpecialist, setCurrentSpecialist] = useState<Specialist>(() => specialists[0]);
+  const [currentSpecialist, setCurrentSpecialist] = useState<Specialist | null>(() => {
+    const sessionId = loadSessionSpecialistId();
+    if (!sessionId) return null;
+    return specialists.find((s) => s.id === sessionId) ?? null;
+  });
 
   const [selectedCaller, setSelectedCaller] = useState<Caller | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -131,11 +139,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Safe Broadcast sender helper
   const broadcast = useCallback((msg: Omit<SyncMessage, "senderId" | "senderName" | "timestamp">) => {
     try {
-      if (channelRef.current) {
+      const me = currentSpecialistRef.current;
+      if (channelRef.current && me) {
         const fullMsg: SyncMessage = {
           ...msg,
-          senderId: currentSpecialistRef.current.id,
-          senderName: currentSpecialistRef.current.name,
+          senderId: me.id,
+          senderName: me.name,
           timestamp: Date.now(),
         };
         channelRef.current.postMessage(fullMsg);
@@ -153,7 +162,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       bc.onmessage = (event: MessageEvent<SyncMessage>) => {
         const msg = event.data;
-        if (!msg || msg.senderId === currentSpecialistRef.current.id) return;
+        if (!msg || msg.senderId === currentSpecialistRef.current?.id) return;
 
         if (msg.type === "RECORD_ADDED") {
           const freshRecords = loadRecords();
@@ -202,6 +211,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setLiveNotification(null);
   }, []);
 
+  const login = useCallback((specialist: Specialist) => {
+    setCurrentSpecialist(specialist);
+    saveSessionSpecialistId(specialist.id);
+  }, []);
+
+  const logout = useCallback(() => {
+    setCurrentSpecialist(null);
+    clearSession();
+    setSelectedCaller(null);
+    setSearchQuery("");
+    setActiveTab("SEARCH");
+  }, []);
+
   const filteredCallers = useMemo(() => {
     return searchCallers(searchQuery, callers);
   }, [searchQuery, callers]);
@@ -238,7 +260,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const canEditRecord = useCallback(
     (record: CallRecord) => {
-      if (!record) return false;
+      if (!record || !currentSpecialist) return false;
       if (
         Boolean(currentSpecialist.isAdmin) ||
         currentSpecialist.id === "spec-admin" ||
@@ -477,7 +499,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         records,
         specialists,
         currentSpecialist,
-        setCurrentSpecialist,
+        login,
+        logout,
         selectedCaller,
         setSelectedCaller,
         searchQuery,
@@ -535,4 +558,13 @@ export const useApp = (): AppContextType => {
     throw new Error("useApp must be used within an AppProvider");
   }
   return context;
+};
+
+// Dla komponentów renderowanych wyłącznie za bramką logowania (AuthGate w App.tsx).
+export const useCurrentSpecialist = (): Specialist => {
+  const { currentSpecialist } = useApp();
+  if (!currentSpecialist) {
+    throw new Error("useCurrentSpecialist wymaga zalogowanego użytkownika (za AuthGate)");
+  }
+  return currentSpecialist;
 };

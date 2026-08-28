@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useApp } from "../context/AppContext";
+import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { GuidanceType, CallRecord } from "../types";
 import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
 import {
@@ -26,8 +26,8 @@ export const CallRecordsTable: React.FC = () => {
     setIsExportModalOpen,
     setEditingRecord,
     canEditRecord,
-    currentSpecialist,
   } = useApp();
+  const currentSpecialist = useCurrentSpecialist();
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Caller, GuidanceType, Attachment } from "../types";
-import { useApp } from "../context/AppContext";
+import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import {
   Phone,
   MapPin,
@@ -33,13 +33,13 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
     setSelectedCaller,
     setIsNewRecordModalOpen,
     livePresenceSpecialist,
-    currentSpecialist,
     updateCaller,
     addRecordAttachment,
     removeRecordAttachment,
     setEditingRecord,
     canEditRecord,
   } = useApp();
+  const currentSpecialist = useCurrentSpecialist();
 
   const [activeViewMode, setActiveViewMode] = useState<"TIMELINE" | "DOCS">("TIMELINE");
 

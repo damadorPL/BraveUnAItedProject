@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { AppProvider, useApp } from "./context/AppContext";
 import { Header } from "./components/Header";
+import { LoginScreen } from "./components/LoginScreen";
 import { SearchBar } from "./components/SearchBar";
 import { CallerDisambiguation } from "./components/CallerDisambiguation";
 import { CallerHistoryView } from "./components/CallerHistoryView";
@@ -309,10 +310,15 @@ const MainContent: React.FC = () => {
   );
 };
 
-export default function App() {
+const AuthGate: React.FC = () => {
+  const { currentSpecialist } = useApp();
+
+  if (!currentSpecialist) {
+    return <LoginScreen />;
+  }
+
   return (
-    <AppProvider>
-      <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col selection:bg-indigo-100 selection:text-indigo-900">
         <Header />
         <MainContent />
 
@@ -336,6 +342,13 @@ export default function App() {
           </div>
         </footer>
       </div>
+  );
+};
+
+export default function App() {
+  return (
+    <AppProvider>
+      <AuthGate />
     </AppProvider>
   );
 }

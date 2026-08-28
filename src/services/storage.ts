@@ -4,6 +4,7 @@ import { INITIAL_CALLERS, INITIAL_RECORDS, INITIAL_SPECIALISTS } from "../data/s
 const CALLERS_KEY = "unaited_pfron_callers_v1";
 const RECORDS_KEY = "unaited_pfron_records_v1";
 const SPECIALISTS_KEY = "unaited_pfron_specialists_v1";
+const SESSION_KEY = "unaited_pfron_session_v1";
 
 // Remove Polish diacritics including ł/Ł for ultra-tolerant fuzzy search
 export function normalizeText(str: string): string {
@@ -80,6 +81,31 @@ export function loadSpecialists(): Specialist[] {
     return parsed;
   } catch (err) {
     return INITIAL_SPECIALISTS;
+  }
+}
+
+export function loadSessionSpecialistId(): string | null {
+  try {
+    return localStorage.getItem(SESSION_KEY);
+  } catch (err) {
+    console.error("Failed to load session:", err);
+    return null;
+  }
+}
+
+export function saveSessionSpecialistId(specialistId: string): void {
+  try {
+    localStorage.setItem(SESSION_KEY, specialistId);
+  } catch (err) {
+    console.error("Failed to save session:", err);
+  }
+}
+
+export function clearSession(): void {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+  } catch (err) {
+    console.error("Failed to clear session:", err);
   }
 }
 

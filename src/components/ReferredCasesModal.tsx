@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useApp } from "../context/AppContext";
+import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import {
   Inbox,
   X,
@@ -23,13 +23,13 @@ interface Props {
 
 export const ReferredCasesModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const {
-    currentSpecialist,
     getReferredRecordsForSpecialist,
     callers,
     setSelectedCaller,
     setIsNewRecordModalOpen,
     markReferralStatus,
   } = useApp();
+  const currentSpecialist = useCurrentSpecialist();
 
   const [activeFilter, setActiveFilter] = useState<"ALL" | "OCZEKUJĄCA" | "ZAKOŃCZONA">("ALL");
 

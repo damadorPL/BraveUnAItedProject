@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useApp } from "../context/AppContext";
+import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import {
   GuidanceType,
   GUIDANCE_TYPES,
@@ -29,10 +29,10 @@ export const EditCallRecordModal: React.FC = () => {
     setEditingRecord,
     updateRecord,
     deleteRecord,
-    currentSpecialist,
     specialists,
     callers,
   } = useApp();
+  const currentSpecialist = useCurrentSpecialist();
 
   const [guidanceType, setGuidanceType] = useState<GuidanceType>("w zakresie psychologii i rehabilitacji społecznej");
   const [guidanceAreas, setGuidanceAreas] = useState<string[]>([]);

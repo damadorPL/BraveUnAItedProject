@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useApp } from "../context/AppContext";
+import { useApp, useCurrentSpecialist } from "../context/AppContext";
+import { getSpecialistInitials } from "../services/auth";
 import {
   PhoneCall,
   FileSpreadsheet,
@@ -9,18 +10,14 @@ import {
   Search,
   ListFilter,
   BarChart3,
-  ChevronDown,
-  Inbox,
-  Mail,
   ShieldCheck,
+  LogOut,
 } from "lucide-react";
 import { ReferredCasesModal } from "./ReferredCasesModal";
 
 export const Header: React.FC = () => {
   const {
-    currentSpecialist,
-    setCurrentSpecialist,
-    specialists,
+    logout,
     activeTab,
     setActiveTab,
     selectedCaller,
@@ -31,6 +28,7 @@ export const Header: React.FC = () => {
     resetDatabase,
     getReferredRecordsForSpecialist,
   } = useApp();
+  const currentSpecialist = useCurrentSpecialist();
 
   const [isReferredModalOpen, setIsReferredModalOpen] = useState(false);
 
@@ -159,39 +157,45 @@ export const Header: React.FC = () => {
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
 
-            {/* Specialist Profile Selector */}
+            {/* Logged-in Specialist Profile */}
             <div className="border-l border-[#3E3A37] pl-2 ml-0.5">
               <div className="flex items-center space-x-2 bg-[#242220] py-1 px-2.5 rounded-xl border border-[#3E3A37]">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
+                <div className="relative shrink-0">
+                  <div
+                    className={`w-7 h-7 ${currentSpecialist.avatarBg} rounded-full flex items-center justify-center text-white text-[10px] font-black`}
+                    aria-hidden="true"
+                  >
+                    {getSpecialistInitials(currentSpecialist.name)}
+                  </div>
+                  <span className="absolute -bottom-0.5 -right-0.5 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 border border-[#242220]"></span>
+                  </span>
+                </div>
                 <div className="text-left">
                   <div className="text-[9px] font-bold leading-none flex items-center gap-1">
                     {currentSpecialist.isAdmin ? (
                       <span className="text-amber-400 flex items-center gap-0.5">
                         <ShieldCheck className="w-2.5 h-2.5" />
-                        <span>Administrator:</span>
+                        <span>Administrator</span>
                       </span>
                     ) : (
-                      <span className="text-slate-400">Dyżurujący:</span>
+                      <span className="text-slate-400">Dyżurujący</span>
                     )}
                   </div>
-                  <select
-                    value={currentSpecialist.id}
-                    onChange={(e) => {
-                      const found = specialists.find((s) => s.id === e.target.value);
-                      if (found) setCurrentSpecialist(found);
-                    }}
-                    className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer pr-1 max-w-[170px] sm:max-w-[220px] truncate"
-                  >
-                    {specialists.map((s) => (
-                      <option key={s.id} value={s.id} className="bg-slate-900 text-white font-medium">
-                        {s.isAdmin ? `🛡️ ${s.name}` : `🟢 ${s.name}`}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="text-xs font-bold text-white max-w-[150px] sm:max-w-[200px] truncate">
+                    {currentSpecialist.name}
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={logout}
+                  title="Wyloguj się"
+                  aria-label="Wyloguj się"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-[#34302E] transition-colors cursor-pointer shrink-0"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
           </div>

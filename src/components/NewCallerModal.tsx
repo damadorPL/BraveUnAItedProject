@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useApp } from "../context/AppContext";
+import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import {
   Voivodeship,
   VOIVODESHIPS,
@@ -40,8 +40,8 @@ export const NewCallerModal: React.FC = () => {
     addNewRecord,
     setSelectedCaller,
     searchQuery,
-    currentSpecialist,
   } = useApp();
+  const currentSpecialist = useCurrentSpecialist();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState(() => searchQuery || "");
