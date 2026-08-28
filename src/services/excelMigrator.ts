@@ -459,6 +459,10 @@ export async function parseExcelFile(
     return out.length > 0 ? out : [fallback];
   };
 
+  // The name-keyed map is only for lookups; the full list must be kept
+  // separately because the database can legally hold two different people
+  // with the same name (caller disambiguation).
+  const allCallers: Caller[] = [...existingCallers];
   const callersByKey = new Map<string, Caller>();
   const callerRowNumbers = new Map<string, number[]>();
   existingCallers.forEach((c) => {
@@ -471,7 +475,7 @@ export async function parseExcelFile(
     const fullNorm = normalizeText(firstName + lastName);
     let best: Caller | null = null;
     let bestDist = Infinity;
-    for (const c of callersByKey.values()) {
+    for (const c of allCallers) {
       const dist = levenshtein(fullNorm, normalizeText(c.firstName + c.lastName));
       if (dist > 0 && dist <= DUPLICATE_NAME_MAX_DISTANCE && dist < bestDist) {
         bestDist = dist;
@@ -564,6 +568,7 @@ export async function parseExcelFile(
         updatedAt: callDateISO,
       };
       callersByKey.set(callerKey, caller);
+      allCallers.push(caller);
 
       const similar = findSimilarCaller(firstName, lastName);
       if (similar) {
@@ -667,7 +672,7 @@ export async function parseExcelFile(
   });
 
   return {
-    callers: Array.from(callersByKey.values()),
+    callers: allCallers,
     records: parsedRecords,
     valueReviews,
     duplicateReviews,
