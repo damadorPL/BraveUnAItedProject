@@ -69,7 +69,15 @@ export function loadSpecialists(): Specialist[] {
       localStorage.setItem(SPECIALISTS_KEY, JSON.stringify(INITIAL_SPECIALISTS));
       return INITIAL_SPECIALISTS;
     }
-    return JSON.parse(raw);
+    const parsed: Specialist[] = JSON.parse(raw);
+    const hasAdminWithTag = parsed.some(
+      (s: Specialist) => s.id === "spec-admin" && s.isAdmin && s.name.includes("(Admin)")
+    );
+    if (!hasAdminWithTag) {
+      localStorage.setItem(SPECIALISTS_KEY, JSON.stringify(INITIAL_SPECIALISTS));
+      return INITIAL_SPECIALISTS;
+    }
+    return parsed;
   } catch (err) {
     return INITIAL_SPECIALISTS;
   }

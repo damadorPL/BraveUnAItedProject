@@ -3,7 +3,7 @@ import { Caller, CallRecord, Specialist } from "../types";
 export const INITIAL_SPECIALISTS: Specialist[] = [
   {
     id: "spec-admin",
-    name: "dr Michał Adamczyk",
+    name: "dr Michał Adamczyk (Admin)",
     role: "Administrator Systemu / Koordynator",
     title: "Administrator",
     guidanceType: "prawno-obywatelskie",
