@@ -303,7 +303,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
             }`}
           >
             <FolderOpen className="w-4 h-4" />
-            <span>Dokumentacja kontaktu ({callerAttachmentsCount})</span>
+            <span>Dokumentacja kontaktu ({callerAttachmentsCount + totalRecordAttachmentsCount})</span>
           </button>
         </div>
 
@@ -328,6 +328,18 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
             specialistName={currentSpecialist.name}
             title="Pliki przypisane bezpośrednio do profilu kontaktu"
           />
+
+          {totalRecordAttachmentsCount > 0 && (
+            <div className="pt-4 border-t border-slate-100 dark:border-[#2C2927]">
+              <AttachmentsManager
+                attachments={records.flatMap((r) => r.attachments || [])}
+                onChange={() => {}}
+                specialistName={currentSpecialist.name}
+                title="Załączniki dodane przy poszczególnych poradach (edycja przy wpisie na osi czasu)"
+                readOnly
+              />
+            </div>
+          )}
         </div>
       )}
 
