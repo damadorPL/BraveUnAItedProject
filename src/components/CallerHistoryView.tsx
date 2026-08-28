@@ -144,7 +144,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
         <button
           type="button"
           onClick={() => setSelectedCaller(null)}
-          className="flex items-center space-x-1.5 text-xs font-semibold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm hover:shadow transition-all cursor-pointer"
+          className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 hover:text-[#296B6E] bg-white hover:bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm hover:shadow transition-all cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>← Wróć do rejestru / wyszukiwania</span>
@@ -153,7 +153,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
         <button
           type="button"
           onClick={() => setIsNewRecordModalOpen(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer"
+          className="flex items-center space-x-2 px-4 py-2 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-md hover:shadow-lg transition-all cursor-pointer"
         >
           <PlusCircle className="w-4 h-4" />
           <span>Dodaj nową poradę</span>
@@ -181,7 +181,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
               <h1 className="text-2xl font-black text-slate-900 tracking-tight">
                 {caller.firstName || "Anonim"} {caller.lastName || "Dzwoniący"}
               </h1>
-              <span className="bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-full border border-indigo-100">
+              <span className="bg-[#FFB200]/20 text-amber-950 text-xs font-bold px-2.5 py-1 rounded-full border border-[#FFB200]/40">
                 {records.length} {records.length === 1 ? "porada w historii" : "porady w historii"}
               </span>
             </div>
@@ -203,7 +203,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
               </div>
 
               <div className="flex items-center">
-                <Users className="w-3.5 h-3.5 mr-1.5 text-indigo-500" />
+                <Users className="w-3.5 h-3.5 mr-1.5 text-[#296B6E]" />
                 <span>
                   Beneficjent: <strong className="text-slate-800">{beneficiaryStr}</strong>
                 </span>
@@ -239,13 +239,13 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
         </div>
 
         {/* 5-Second AI Briefing Box */}
-        <div className="mt-5 bg-gradient-to-r from-indigo-50/90 via-slate-50 to-purple-50/70 border border-indigo-100 rounded-2xl p-4">
+        <div className="mt-5 bg-gradient-to-r from-amber-50/90 via-slate-50 to-teal-50/60 border border-amber-200/80 rounded-2xl p-4">
           <div className="flex items-start space-x-2.5">
-            <div className="bg-indigo-600 text-white p-1.5 rounded-xl shadow-sm shrink-0">
-              <Sparkles className="w-4 h-4" />
+            <div className="bg-[#296B6E] text-white p-1.5 rounded-xl shadow-sm shrink-0">
+              <Sparkles className="w-4 h-4 text-[#FFB200]" />
             </div>
             <div>
-              <div className="text-xs font-bold text-indigo-950">
+              <div className="text-xs font-bold text-[#2D2A28]">
                 Szybki skrót kontekstu dla dyżurującego (5 sekund):
               </div>
               <p className="text-xs text-slate-700 mt-1 leading-relaxed">
@@ -264,7 +264,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
             onClick={() => setActiveViewMode("TIMELINE")}
             className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeViewMode === "TIMELINE"
-                ? "bg-indigo-600 text-white shadow-sm"
+                ? "bg-[#2D2A28] text-[#FFB200] shadow-sm"
                 : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
             }`}
           >
@@ -277,7 +277,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
             onClick={() => setActiveViewMode("DOCS")}
             className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeViewMode === "DOCS"
-                ? "bg-indigo-600 text-white shadow-sm"
+                ? "bg-[#2D2A28] text-[#FFB200] shadow-sm"
                 : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
             }`}
           >

@@ -36,7 +36,7 @@ export const SearchBar: React.FC = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Wpisz imię, nazwisko, numer telefonu lub miejscowość kontaktu..."
-          className="w-full pl-11 pr-24 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-inner"
+          className="w-full pl-11 pr-24 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-all shadow-inner"
         />
 
         {searchQuery ? (
@@ -57,15 +57,15 @@ export const SearchBar: React.FC = () => {
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs text-slate-500">
         <div className="flex items-center space-x-1.5 flex-wrap">
           <span className="text-[11px] font-semibold text-slate-400 flex items-center mr-1">
-            <Sparkles className="w-3 h-3 mr-1 text-amber-500" /> Szybki test:
+            <Sparkles className="w-3 h-3 mr-1 text-[#FFB200]" /> Szybki test:
           </span>
           {sampleSearches.map((item) => (
             <button
               key={item.query}
               onClick={() => setSearchQuery(item.query)}
-              className={`px-2.5 py-1 rounded-lg text-xs transition-colors border ${
+              className={`px-2.5 py-1 rounded-lg text-xs transition-colors border cursor-pointer ${
                 searchQuery === item.query
-                  ? "bg-indigo-50 text-indigo-700 border-indigo-200 font-semibold"
+                  ? "bg-[#FFB200]/20 text-amber-950 border-[#FFB200]/50 font-bold"
                   : "bg-slate-100/70 hover:bg-slate-200/70 text-slate-600 border-slate-200"
               }`}
             >

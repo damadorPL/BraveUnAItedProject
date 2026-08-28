@@ -110,7 +110,7 @@ const MainContent: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-indigo-600" />
+                  <Users className="w-4 h-4 text-[#296B6E]" />
                   <span>
                     {searchQuery
                       ? "Wyniki wyszukiwania (" + filteredCallers.length + ")"
@@ -121,7 +121,7 @@ const MainContent: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsNewCallerModalOpen(true)}
-                  className="flex items-center space-x-1 text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
+                  className="flex items-center space-x-1 text-xs font-bold text-[#2D2A28] bg-[#FFB200]/25 hover:bg-[#FFB200]/45 border border-[#FFB200]/40 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   <span>Zarejestruj nową osobę</span>
@@ -141,7 +141,7 @@ const MainContent: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setIsNewCallerModalOpen(true)}
-                      className="mt-4 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors inline-flex items-center space-x-1.5 cursor-pointer"
+                      className="mt-4 px-4 py-2 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-xs transition-colors inline-flex items-center space-x-1.5 cursor-pointer"
                     >
                       <UserPlus className="w-4 h-4" />
                       <span>Załóż nową kartotekę dla &quot;{searchQuery.trim()}&quot;</span>
@@ -159,7 +159,7 @@ const MainContent: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setIsNewCallerModalOpen(true)}
-                      className="mt-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs transition-colors inline-flex items-center space-x-1.5 cursor-pointer"
+                      className="mt-2 px-4 py-2 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-xs transition-colors inline-flex items-center space-x-1.5 cursor-pointer"
                     >
                       <UserPlus className="w-4 h-4" />
                       <span>Załóż nową kartotekę</span>
@@ -189,12 +189,12 @@ const MainContent: React.FC = () => {
                         <div
                           key={caller.id}
                           onClick={() => setSelectedCaller(caller)}
-                          className="bg-white border border-slate-200 hover:border-indigo-400 rounded-3xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
+                          className="bg-white border border-slate-200 hover:border-[#FFB200] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
                         >
                           <div>
                             <div className="flex items-start justify-between">
                               <div>
-                                <span className="font-extrabold text-slate-900 text-base group-hover:text-indigo-600 transition-colors">
+                                <span className="font-extrabold text-slate-900 text-base group-hover:text-[#296B6E] transition-colors">
                                   {caller.firstName} {caller.lastName}
                                 </span>
                                 <div className="flex items-center text-xs text-slate-500 mt-1">
@@ -205,14 +205,14 @@ const MainContent: React.FC = () => {
                                 </div>
                               </div>
 
-                              <span className="bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-indigo-100">
+                              <span className="bg-[#FFB200]/15 text-amber-950 text-xs font-bold px-2.5 py-0.5 rounded-full border border-[#FFB200]/30">
                                 {records.length} {records.length === 1 ? "porada" : "porady"}
                               </span>
                             </div>
 
                             <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 px-2.5 py-1 rounded-xl">
                               <span className="font-medium text-slate-700">{beneficiaryLabel}</span>
-                              <span className="text-purple-700 font-semibold">
+                              <span className="text-[#296B6E] font-semibold">
                                 Orzeczenie: {caller.hasDisabilityCertificate === "tak" ? "Tak" : caller.hasDisabilityCertificate}
                               </span>
                             </div>
@@ -244,7 +244,7 @@ const MainContent: React.FC = () => {
                             </div>
                           </div>
 
-                          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-indigo-600 font-bold group-hover:translate-x-0.5 transition-transform">
+                          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-[#296B6E] font-bold group-hover:text-[#FFB200] group-hover:translate-x-0.5 transition-all">
                             <span>Otwórz kartotekę</span>
                             <ChevronRight className="w-4 h-4" />
                           </div>
@@ -278,7 +278,7 @@ const MainContent: React.FC = () => {
                               onClick={() => setCallerPage(pg)}
                               className={"w-7 h-7 rounded-xl text-xs font-bold transition-all cursor-pointer " + (
                                 callerPage === pg
-                                  ? "bg-indigo-600 text-white shadow-2xs"
+                                  ? "bg-[#2D2A28] text-[#FFB200] shadow-xs"
                                   : "text-slate-600 hover:bg-slate-100"
                               )}
                             >

@@ -149,7 +149,7 @@ export const CallRecordsTable: React.FC = () => {
                       <td className="py-3 px-3.5 whitespace-nowrap">
                         {caller ? (
                           <>
-                            <div className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                            <div className="font-bold text-slate-900 group-hover:text-[#296B6E] transition-colors">
                               {caller.firstName} {caller.lastName}
                             </div>
                             <div className="text-[10px] text-slate-500 mt-0.5">
@@ -163,7 +163,7 @@ export const CallRecordsTable: React.FC = () => {
 
                       <td className="py-3 px-3.5 whitespace-nowrap">
                         <div className="flex items-center text-slate-800 font-medium">
-                          <Users className="w-3 h-3 mr-1 text-slate-400" />
+                          <Users className="w-3 h-3 mr-1 text-[#296B6E]" />
                           {beneficiaryStr}
                         </div>
                         <div className="text-[10px] text-purple-700 font-semibold mt-0.5 flex items-center">
@@ -219,7 +219,7 @@ export const CallRecordsTable: React.FC = () => {
                                 e.stopPropagation();
                                 setEditingRecord(rec);
                               }}
-                              className="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl transition-all shadow-2xs cursor-pointer"
+                              className="p-1.5 bg-amber-50 hover:bg-[#FFB200] text-amber-950 border border-amber-300 rounded-xl transition-all shadow-2xs cursor-pointer"
                               title={currentSpecialist.isAdmin ? "Edytuj wpis jako administrator" : "Edytuj własną poradę"}
                             >
                               <Edit3 className="w-3.5 h-3.5" />
@@ -239,7 +239,7 @@ export const CallRecordsTable: React.FC = () => {
                               e.stopPropagation();
                               handleOpenCaller(rec);
                             }}
-                            className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 font-bold rounded-xl transition-all flex items-center space-x-1 shadow-xs border border-indigo-100 cursor-pointer text-xs"
+                            className="px-2.5 py-1.5 bg-amber-50 hover:bg-[#FFB200] hover:text-[#2D2A28] text-amber-950 font-bold rounded-xl transition-all flex items-center space-x-1 shadow-xs border border-amber-200 cursor-pointer text-xs"
                           >
                             <span>Kartoteka</span>
                             <ExternalLink className="w-3 h-3" />
@@ -271,10 +271,10 @@ export const CallRecordsTable: React.FC = () => {
                   }}
                   className="bg-white border border-slate-200 rounded-lg px-2 py-1 font-semibold text-slate-800 focus:outline-none cursor-pointer"
                 >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
+                  <option value={12}>12</option>
+                  <option value={24}>24</option>
+                  <option value={48}>48</option>
+                  <option value={100}>100</option>
                 </select>
               </div>
             </div>
@@ -298,7 +298,7 @@ export const CallRecordsTable: React.FC = () => {
                     onClick={() => setPage(pg)}
                     className={"w-7 h-7 rounded-xl text-xs font-bold transition-all cursor-pointer " + (
                       page === pg
-                        ? "bg-indigo-600 text-white shadow-2xs"
+                        ? "bg-[#2D2A28] text-[#FFB200] shadow-xs"
                         : "text-slate-600 hover:bg-slate-200/70"
                     )}
                   >

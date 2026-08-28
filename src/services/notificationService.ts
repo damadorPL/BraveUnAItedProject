@@ -11,7 +11,7 @@ export function createReferralEmailNotification(params: {
 }): EmailNotification {
   const { sender, recipient, caller, recordId, adviceDescription, notes, referralNote } = params;
 
-  const subject = `[Linia Poradnicza ASD] Nowa sprawa przekazana: ${caller.firstName} ${caller.lastName} (${caller.city || caller.voivodeship})`;
+  const subject = `[Linia Poradnicza] Nowa sprawa przekazana: ${caller.firstName} ${caller.lastName} (${caller.city || caller.voivodeship})`;
 
   const message = `Dzień dobry ${recipient.name},
 
@@ -37,7 +37,7 @@ ${notes}
 Szczegóły i załączniki są dostępne po zalogowaniu do systemu w zakładce "Przekazane sprawy".
 
 Pozdrawiamy,
-System Poradnictwa Specjalistycznego ASD`;
+System Poradnictwa Specjalistycznego`;
 
   return {
     id: "email-" + Date.now(),

@@ -1,8 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+  --color-synapsis-charcoal: #2D2A28;
+  --color-synapsis-dark: #22201E;
+  --color-synapsis-gold: #FFB200;
+  --color-synapsis-gold-light: #FFDF06;
+  --color-synapsis-gold-hover: #E5A000;
+  --color-synapsis-teal: #296B6E;
+  --color-synapsis-teal-dark: #1F5254;
+  --color-synapsis-teal-light: #E6F3F3;
+}
+
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 antialiased min-h-screen font-sans selection:bg-indigo-100 selection:text-indigo-900;
+    @apply bg-slate-100 text-[#2D2A28] antialiased min-h-screen font-sans selection:bg-[#FFB200]/30 selection:text-[#2D2A28];
   }
 }
 
