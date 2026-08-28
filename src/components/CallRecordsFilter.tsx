@@ -64,11 +64,11 @@ export const CallRecordsFilter: React.FC = () => {
           <select
             value={filterState.voivodeship}
             onChange={(e) => setFilterState((prev) => ({ ...prev, voivodeship: e.target.value }))}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none capitalize"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
           >
             <option value="">Wszystkie (cała Polska)</option>
             {VOIVODESHIPS.map((v) => (
-              <option key={v} value={v} className="capitalize">
+              <option key={v} value={v} className="">
                 {v}
               </option>
             ))}
@@ -84,11 +84,11 @@ export const CallRecordsFilter: React.FC = () => {
           <select
             value={filterState.guidanceType}
             onChange={(e) => setFilterState((prev) => ({ ...prev, guidanceType: e.target.value }))}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none capitalize"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
           >
             <option value="">Wszystkie rodzaje</option>
             {GUIDANCE_TYPES.map((t) => (
-              <option key={t} value={t} className="capitalize">
+              <option key={t} value={t} className="">
                 {t}
               </option>
             ))}
@@ -104,11 +104,11 @@ export const CallRecordsFilter: React.FC = () => {
           <select
             value={filterState.beneficiaryType}
             onChange={(e) => setFilterState((prev) => ({ ...prev, beneficiaryType: e.target.value }))}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none capitalize"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
           >
             <option value="">Wszyscy beneficjenci</option>
             {BENEFICIARY_TYPES.map((b) => (
-              <option key={b} value={b} className="capitalize">
+              <option key={b} value={b} className="">
                 {b}
               </option>
             ))}

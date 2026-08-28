@@ -68,7 +68,7 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
                       <MapPin className="w-3.5 h-3.5 mr-1 text-slate-400" />
                       <span className="font-medium text-slate-700">{caller.city}</span>
                       <span className="mx-1 text-slate-300">•</span>
-                      <span className="capitalize">{caller.voivodeship}</span>
+                      <span className="">{caller.voivodeship}</span>
                     </div>
                   </div>
 

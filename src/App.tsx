@@ -168,7 +168,7 @@ const MainContent: React.FC = () => {
                               <MapPin className="w-3.5 h-3.5 mr-1 text-slate-400" />
                               <span className="font-medium text-slate-700">{caller.city}</span>
                               <span className="mx-1 text-slate-300">•</span>
-                              <span className="capitalize">{caller.voivodeship}</span>
+                              <span className="">{caller.voivodeship}</span>
                             </div>
                           </div>
 
@@ -179,7 +179,7 @@ const MainContent: React.FC = () => {
 
                         {/* Beneficiary & Certificate info */}
                         <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 px-2.5 py-1 rounded-xl">
-                          <span className="capitalize font-medium text-slate-700">{beneficiaryLabel}</span>
+                          <span className="font-medium text-slate-700">{beneficiaryLabel}</span>
                           <span className="text-purple-700 font-semibold">
                             Orzeczenie: {caller.hasDisabilityCertificate === "tak" ? "Tak" : caller.hasDisabilityCertificate}
                           </span>
@@ -203,7 +203,7 @@ const MainContent: React.FC = () => {
 
                           {lastRec && (
                             <div className="mt-2 text-[11px] text-slate-600 bg-indigo-50/40 p-2.5 rounded-xl border border-indigo-100/60">
-                              <div className="font-bold text-slate-800 capitalize mb-0.5">
+                              <div className="font-bold text-slate-800 mb-0.5">
                                 {lastRec.guidanceType}
                               </div>
                               <span className="line-clamp-2 text-slate-700 font-medium">

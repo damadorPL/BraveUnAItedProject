@@ -43,7 +43,7 @@ export const StatsBar: React.FC = () => {
         {/* KPI 1 */}
         <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
+            <span className="text-slate-500 font-semibold text-[11px]">
               Udzielone porady
             </span>
             <div className="bg-indigo-50 text-indigo-600 p-2.5 rounded-2xl">
@@ -59,7 +59,7 @@ export const StatsBar: React.FC = () => {
         {/* KPI 2 */}
         <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
+            <span className="text-slate-500 font-semibold text-[11px]">
               Kartoteki dzwoniących
             </span>
             <div className="bg-emerald-50 text-emerald-600 p-2.5 rounded-2xl">
@@ -75,7 +75,7 @@ export const StatsBar: React.FC = () => {
         {/* KPI 3 */}
         <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
+            <span className="text-slate-500 font-semibold text-[11px]">
               Posiadający orzeczenie OzN
             </span>
             <div className="bg-purple-50 text-purple-600 p-2.5 rounded-2xl">
@@ -93,7 +93,7 @@ export const StatsBar: React.FC = () => {
         {/* KPI 4 */}
         <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">
+            <span className="text-slate-500 font-semibold text-[11px]">
               Godziny dyżurów
             </span>
             <div className="bg-blue-50 text-blue-600 p-2.5 rounded-2xl">
@@ -201,8 +201,8 @@ export const StatsBar: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             {topVoivodeships.map(([vName, count]) => (
               <div key={vName} className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5">
-                <div className="text-[10px] text-slate-400 uppercase font-semibold">Województwo</div>
-                <div className="font-bold text-slate-900 text-sm capitalize mt-0.5">{vName}</div>
+                <div className="text-[10px] text-slate-400 font-semibold">Województwo</div>
+                <div className="font-bold text-slate-900 text-sm mt-0.5">{vName}</div>
                 <div className="text-xs text-indigo-600 font-semibold mt-1">
                   {count} {count === 1 ? "kartoteka" : "kartotek"}
                 </div>

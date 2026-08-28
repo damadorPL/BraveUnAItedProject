@@ -8,7 +8,10 @@ import {
   CONTACT_TYPES,
   SubjectTarget,
   SUBJECT_TARGETS,
+  Attachment,
 } from "../types";
+import { AttachmentUpload } from "./AttachmentUpload";
+import { todayDateInputValue, callDateToIso } from "../services/callDate";
 import {
   X,
   PlusCircle,
@@ -46,6 +49,8 @@ export const NewCallRecordModal: React.FC = () => {
   const [adviceDescription, setAdviceDescription] = useState("");
   const [notes, setNotes] = useState("");
   const [referredTo, setReferredTo] = useState("");
+  const [callDate, setCallDate] = useState<string>(() => todayDateInputValue());
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [durationMinutes, setDurationMinutes] = useState(45);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -87,7 +92,7 @@ export const NewCallRecordModal: React.FC = () => {
     setIsSubmitting(true);
     addNewRecord({
       callerId: selectedCaller.id,
-      callDate: new Date().toISOString(),
+      callDate: callDateToIso(callDate),
       specialistId: currentSpecialist.id,
       specialistName: currentSpecialist.name,
       specialistRole: currentSpecialist.role,
@@ -98,6 +103,7 @@ export const NewCallRecordModal: React.FC = () => {
       adviceDescription: adviceDescription.trim(),
       notes: notes.trim(),
       referredTo: referredTo.trim(),
+      attachments,
       durationMinutes,
     });
 
@@ -112,6 +118,8 @@ export const NewCallRecordModal: React.FC = () => {
     setAdviceDescription("");
     setNotes("");
     setReferredTo("");
+    setCallDate(todayDateInputValue());
+    setAttachments([]);
   };
 
   const availableAreas = GUIDANCE_AREAS_MAP[guidanceType] || [];
@@ -123,7 +131,7 @@ export const NewCallRecordModal: React.FC = () => {
         <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs bg-indigo-500/30 text-indigo-300 font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+              <span className="text-xs bg-indigo-500/30 text-indigo-300 font-bold px-2 py-0.5 rounded">
                 Nowy wpis poradniczy
               </span>
               <span className="text-xs text-slate-400">
@@ -148,7 +156,7 @@ export const NewCallRecordModal: React.FC = () => {
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-xs">
           {/* 1. Rodzaj poradnictwa */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-800 mb-1.5">
               1. Rodzaj poradnictwa (wybór jednokrotny):
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
@@ -163,8 +171,8 @@ export const NewCallRecordModal: React.FC = () => {
                       : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                   }`}
                 >
-                  <div className="text-[10px] opacity-75 uppercase">Rodzaj</div>
-                  <div className="capitalize mt-0.5">{type}</div>
+                  
+                  <div className="capitalize-first">{type.charAt(0).toUpperCase() + type.slice(1)}</div>
                 </button>
               ))}
             </div>
@@ -172,7 +180,7 @@ export const NewCallRecordModal: React.FC = () => {
 
           {/* 2. Obszar, którego dotyczy porada (Kaskadowy wielokrotny) */}
           <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-3.5">
-            <label className="block text-xs font-bold text-indigo-950 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-indigo-950 mb-2">
               2. Obszar, którego dotyczy porada (wybór wielokrotny powiązany z &quot;{guidanceType}&quot;):
             </label>
             <div className="flex flex-wrap gap-2">
@@ -201,7 +209,7 @@ export const NewCallRecordModal: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Rodzaj kontaktu */}
             <div>
-              <label className="block font-bold text-slate-700 mb-1.5 uppercase text-[11px]">
+              <label className="block font-bold text-slate-700 mb-1.5 text-[11px]">
                 3. Rodzaj kontaktu (wielokrotny):
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -212,7 +220,7 @@ export const NewCallRecordModal: React.FC = () => {
                       type="button"
                       key={ct}
                       onClick={() => toggleContactType(ct)}
-                      className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors capitalize ${
+                      className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors  ${
                         sel
                           ? "bg-slate-900 text-white border-slate-900"
                           : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -227,7 +235,7 @@ export const NewCallRecordModal: React.FC = () => {
 
             {/* Kogo dotyczy porada */}
             <div>
-              <label className="block font-bold text-slate-700 mb-1.5 uppercase text-[11px]">
+              <label className="block font-bold text-slate-700 mb-1.5 text-[11px]">
                 4. Kogo dotyczy porada (wielokrotny):
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -238,7 +246,7 @@ export const NewCallRecordModal: React.FC = () => {
                       type="button"
                       key={st}
                       onClick={() => toggleSubjectTarget(st)}
-                      className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors capitalize ${
+                      className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors  ${
                         sel
                           ? "bg-purple-700 text-white border-purple-700"
                           : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -319,6 +327,25 @@ export const NewCallRecordModal: React.FC = () => {
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* 8. Data porady & Załączniki */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block font-bold text-slate-800 mb-1 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-slate-500" />
+                8. Kiedy udzielono porady:
+              </label>
+              <input
+                type="date"
+                value={callDate}
+                max={todayDateInputValue()}
+                onChange={(e) => setCallDate(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+            </div>
+
+            <AttachmentUpload attachments={attachments} onChange={setAttachments} />
           </div>
 
           {/* Footer Buttons */}

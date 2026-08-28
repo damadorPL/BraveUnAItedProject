@@ -158,7 +158,7 @@ export const Header: React.FC = () => {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
                 <div className="text-left">
-                  <div className="text-[9px] text-slate-400 uppercase tracking-wider font-bold leading-none">
+                  <div className="text-[9px] text-slate-400 font-bold leading-none">
                     Dyżurujący:
                   </div>
                   <select

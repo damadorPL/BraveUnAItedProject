@@ -161,13 +161,13 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                 <MapPin className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
                 <span className="font-medium text-slate-800">{caller.city || "Brak miasta"}</span>
                 <span className="mx-1 text-slate-300">•</span>
-                <span className="capitalize text-slate-600 font-semibold">{caller.voivodeship || "Polska"}</span>
+                <span className="text-slate-600 font-semibold">{caller.voivodeship || "Polska"}</span>
               </div>
 
               <div className="flex items-center">
                 <Users className="w-3.5 h-3.5 mr-1.5 text-indigo-500" />
                 <span>
-                  Beneficjent: <strong className="text-slate-800 capitalize">{beneficiaryStr}</strong>
+                  Beneficjent: <strong className="text-slate-800">{beneficiaryStr}</strong>
                 </span>
               </div>
 
@@ -207,7 +207,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-xs font-bold text-indigo-950 uppercase tracking-wider">
+              <div className="text-xs font-bold text-indigo-950">
                 Szybki skrót kontekstu dla dyżurującego (5 sekund):
               </div>
               <p className="text-xs text-slate-700 mt-1 leading-relaxed">
@@ -270,13 +270,13 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                     </span>
 
                     {rec.contactTypes && rec.contactTypes.map((ct) => (
-                      <span key={ct} className="text-[10px] bg-slate-100 text-slate-600 font-medium px-2 py-0.5 rounded capitalize">
+                      <span key={ct} className="text-[10px] bg-slate-100 text-slate-600 font-medium px-2 py-0.5 rounded">
                         {ct === "telefon" ? "📞 tel" : ct === "e-mail" ? "✉️ mail" : ct}
                       </span>
                     ))}
 
                     {rec.subjectTargets && rec.subjectTargets.map((st) => (
-                      <span key={st} className="text-[10px] bg-purple-50 text-purple-700 font-semibold px-2 py-0.5 rounded capitalize border border-purple-100">
+                      <span key={st} className="text-[10px] bg-purple-50 text-purple-700 font-semibold px-2 py-0.5 rounded border border-purple-100">
                         {st}
                       </span>
                     ))}
@@ -299,7 +299,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                 {/* Guidance Areas Badges */}
                 {rec.guidanceAreas && rec.guidanceAreas.length > 0 && (
                   <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">
+                    <span className="text-[10px] font-bold text-slate-400 mr-1">
                       Obszar:
                     </span>
                     {rec.guidanceAreas.map((area) => (
@@ -317,7 +317,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                 <div className="mt-3.5 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                   {/* Rodzaj porady (opis, czego dotyczyła) */}
                   <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/80">
-                    <div className="font-bold text-slate-700 uppercase tracking-wider text-[10px] flex items-center mb-1.5">
+                    <div className="font-bold text-slate-700 text-[10px] flex items-center mb-1.5">
                       <FileText className="w-3.5 h-3.5 mr-1 text-slate-500" />
                       Rodzaj porady (opis zgłoszenia)
                     </div>
@@ -328,7 +328,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
 
                   {/* Uwagi */}
                   <div className="bg-indigo-50/40 p-3.5 rounded-2xl border border-indigo-100/80">
-                    <div className="font-bold text-indigo-900 uppercase tracking-wider text-[10px] flex items-center mb-1.5">
+                    <div className="font-bold text-indigo-900 text-[10px] flex items-center mb-1.5">
                       <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-indigo-600" />
                       Uwagi, udzielona pomoc i wskazówki
                     </div>

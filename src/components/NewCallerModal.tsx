@@ -11,7 +11,14 @@ import {
   GuidanceType,
   GUIDANCE_TYPES,
   GUIDANCE_AREAS_MAP,
+  ContactType,
+  CONTACT_TYPES,
+  SubjectTarget,
+  SUBJECT_TARGETS,
+  Attachment,
 } from "../types";
+import { AttachmentUpload } from "./AttachmentUpload";
+import { todayDateInputValue, callDateToIso } from "../services/callDate";
 import {
   X,
   UserPlus,
@@ -51,6 +58,16 @@ export const NewCallerModal: React.FC = () => {
   const [guidanceType, setGuidanceType] = useState<GuidanceType>(
     currentSpecialist.guidanceType || "w zakresie psychologii i rehabilitacji społecznej"
   );
+  const [guidanceAreas, setGuidanceAreas] = useState<string[]>(() => {
+    const areas =
+      GUIDANCE_AREAS_MAP[currentSpecialist.guidanceType || "w zakresie psychologii i rehabilitacji społecznej"];
+    return areas ? [areas[0]] : [];
+  });
+  const [callDate, setCallDate] = useState<string>(() => todayDateInputValue());
+  const [contactTypes, setContactTypes] = useState<ContactType[]>(["telefon"]);
+  const [subjectTargets, setSubjectTargets] = useState<SubjectTarget[]>(["dziecko"]);
+  const [referredTo, setReferredTo] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [adviceDescription, setAdviceDescription] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -60,6 +77,30 @@ export const NewCallerModal: React.FC = () => {
     setBeneficiaryTypes((prev) =>
       prev.includes(b) ? (prev.length > 1 ? prev.filter((item) => item !== b) : prev) : [...prev, b]
     );
+  };
+
+  const toggleContactType = (type: ContactType) => {
+    setContactTypes((prev) =>
+      prev.includes(type) ? (prev.length > 1 ? prev.filter((t) => t !== type) : prev) : [...prev, type]
+    );
+  };
+
+  const toggleSubjectTarget = (target: SubjectTarget) => {
+    setSubjectTargets((prev) =>
+      prev.includes(target) ? (prev.length > 1 ? prev.filter((t) => t !== target) : prev) : [...prev, target]
+    );
+  };
+
+  const toggleArea = (area: string) => {
+    setGuidanceAreas((prev) =>
+      prev.includes(area) ? prev.filter((a) => a !== area) : [...prev, area]
+    );
+  };
+
+  const handleGuidanceTypeChange = (type: GuidanceType) => {
+    setGuidanceType(type);
+    const areas = GUIDANCE_AREAS_MAP[type] || [];
+    setGuidanceAreas(areas.length > 0 ? [areas[0]] : []);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -90,17 +131,18 @@ export const NewCallerModal: React.FC = () => {
       const defaultAreas = GUIDANCE_AREAS_MAP[guidanceType] || ["inne"];
       addNewRecord({
         callerId: createdCaller.id,
-        callDate: new Date().toISOString(),
+        callDate: callDateToIso(callDate),
         specialistId: currentSpecialist.id,
         specialistName: currentSpecialist.name,
         specialistRole: currentSpecialist.role,
-        contactTypes: ["telefon"],
-        subjectTargets: beneficiaryTypes.includes("osoba dorosła w spektrum") ? ["osoba dorosła"] : ["dziecko"],
+        contactTypes,
+        subjectTargets,
         guidanceType,
-        guidanceAreas: [defaultAreas[0]],
+        guidanceAreas: guidanceAreas.length > 0 ? guidanceAreas : [defaultAreas[0]],
         adviceDescription: adviceDescription.trim(),
         notes: notes.trim(),
-        referredTo: "",
+        referredTo: referredTo.trim(),
+        attachments,
         durationMinutes: 30,
       });
     }
@@ -119,6 +161,11 @@ export const NewCallerModal: React.FC = () => {
     setCity("");
     setAdviceDescription("");
     setNotes("");
+    setCallDate(todayDateInputValue());
+    setContactTypes(["telefon"]);
+    setSubjectTargets(["dziecko"]);
+    setReferredTo("");
+    setAttachments([]);
   };
 
   return (
@@ -201,10 +248,10 @@ export const NewCallerModal: React.FC = () => {
               <select
                 value={voivodeship}
                 onChange={(e) => setVoivodeship(e.target.value as Voivodeship)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none capitalize"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               >
                 {VOIVODESHIPS.map((v) => (
-                  <option key={v} value={v} className="capitalize">
+                  <option key={v} value={v} className="">
                     {v}
                   </option>
                 ))}
@@ -227,7 +274,7 @@ export const NewCallerModal: React.FC = () => {
 
           {/* Kim jest beneficjent (Wielokrotny) */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1.5 uppercase text-[11px]">
+            <label className="block font-bold text-slate-700 mb-1.5 text-[11px]">
               Kim jest beneficjent (wybór wielokrotny):
             </label>
             <div className="flex flex-wrap gap-2">
@@ -238,7 +285,7 @@ export const NewCallerModal: React.FC = () => {
                     type="button"
                     key={b}
                     onClick={() => toggleBeneficiary(b)}
-                    className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors capitalize ${
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors  ${
                       isSel
                         ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
                         : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -276,10 +323,10 @@ export const NewCallerModal: React.FC = () => {
                 value={disabilityDegree}
                 disabled={hasDisabilityCertificate === "nie"}
                 onChange={(e) => setDisabilityDegree(e.target.value as DisabilityDegree)}
-                className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400 capitalize"
+                className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400"
               >
                 {DISABILITY_DEGREES.map((d) => (
-                  <option key={d} value={d} className="capitalize">
+                  <option key={d} value={d} className="">
                     {d}
                   </option>
                 ))}
@@ -317,19 +364,113 @@ export const NewCallerModal: React.FC = () => {
 
             {addRecordNow && (
               <div className="bg-indigo-50/40 p-4 rounded-2xl border border-indigo-100 space-y-3">
-                <div className="flex items-center space-x-2">
-                  <span className="font-bold text-slate-700">Rodzaj poradnictwa:</span>
-                  <select
-                    value={guidanceType}
-                    onChange={(e) => setGuidanceType(e.target.value as GuidanceType)}
-                    className="bg-white border border-slate-200 rounded-xl p-2 text-xs font-bold text-indigo-900 capitalize"
-                  >
-                    {GUIDANCE_TYPES.map((t) => (
-                      <option key={t} value={t} className="capitalize">
-                        {t}
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Kiedy udzielono porady:
+                    </label>
+                    <input
+                      type="date"
+                      value={callDate}
+                      max={todayDateInputValue()}
+                      onChange={(e) => setCallDate(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Rodzaj poradnictwa:
+                    </label>
+                    <select
+                      value={guidanceType}
+                      onChange={(e) => handleGuidanceTypeChange(e.target.value as GuidanceType)}
+                      className="w-full bg-white border border-slate-200 rounded-xl p-2 text-xs font-bold text-indigo-900"
+                    >
+                      {GUIDANCE_TYPES.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1.5">
+                    Obszar, którego dotyczy porada (wybór wielokrotny):
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(GUIDANCE_AREAS_MAP[guidanceType] || []).map((area) => {
+                      const isSel = guidanceAreas.includes(area);
+                      return (
+                        <button
+                          type="button"
+                          key={area}
+                          onClick={() => toggleArea(area)}
+                          className={`px-3 py-1.5 rounded-xl font-semibold text-xs border transition-colors text-left ${
+                            isSel
+                              ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
+                              : "bg-white text-slate-700 border-slate-200 hover:bg-indigo-50 hover:text-indigo-700"
+                          }`}
+                        >
+                          {area}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1.5">
+                      Rodzaj kontaktu (wielokrotny):
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {CONTACT_TYPES.map((ct) => {
+                        const sel = contactTypes.includes(ct);
+                        return (
+                          <button
+                            type="button"
+                            key={ct}
+                            onClick={() => toggleContactType(ct)}
+                            className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors ${
+                              sel
+                                ? "bg-slate-900 text-white border-slate-900"
+                                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                            }`}
+                          >
+                            {ct === "telefon" ? "📞 Telefon" : ct === "e-mail" ? "✉️ E-mail" : ct === "osobisty" ? "👤 Osobisty" : "Inne"}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1.5">
+                      Kogo dotyczy porada (wielokrotny):
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {SUBJECT_TARGETS.map((st) => {
+                        const sel = subjectTargets.includes(st);
+                        return (
+                          <button
+                            type="button"
+                            key={st}
+                            onClick={() => toggleSubjectTarget(st)}
+                            className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors ${
+                              sel
+                                ? "bg-purple-700 text-white border-purple-700"
+                                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                            }`}
+                          >
+                            {st === "dziecko" ? "👶 Dziecko" : st === "osoba dorosła" ? "🧑 Osoba dorosła" : "Inne"}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -357,6 +498,21 @@ export const NewCallerModal: React.FC = () => {
                     className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   />
                 </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Przekazane do innego specjalisty (opcjonalnie):
+                  </label>
+                  <input
+                    type="text"
+                    value={referredTo}
+                    onChange={(e) => setReferredTo(e.target.value)}
+                    placeholder="Np. mec. Anna Nowak (konsultacja orzeczenia WZON)"
+                    className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  />
+                </div>
+
+                <AttachmentUpload attachments={attachments} onChange={setAttachments} />
               </div>
             )}
           </div>
