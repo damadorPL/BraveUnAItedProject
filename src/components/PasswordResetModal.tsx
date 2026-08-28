@@ -144,7 +144,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
                 setEmail(e.target.value);
                 setError(null);
               }}
-              placeholder="np. a.nowak@fundacja-spektrum.pl"
+              placeholder="np. a.nowak@synapsis.org.pl"
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
             />
 

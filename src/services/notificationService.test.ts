@@ -10,7 +10,7 @@ describe("createReferralEmailNotification", () => {
     title: "Psycholog",
     guidanceType: "w zakresie psychologii i rehabilitacji społecznej",
     avatarBg: "bg-purple-600",
-    email: "j.mrozek@fundacja-spektrum.pl",
+    email: "j.mrozek@synapsis.org.pl",
   };
 
   const toSpecialist: Specialist = {
@@ -20,7 +20,7 @@ describe("createReferralEmailNotification", () => {
     title: "Prawnik",
     guidanceType: "prawno-obywatelskie",
     avatarBg: "bg-blue-600",
-    email: "a.nowak@fundacja-spektrum.pl",
+    email: "a.nowak@synapsis.org.pl",
   };
 
   const caller: Caller = {
@@ -46,7 +46,7 @@ describe("createReferralEmailNotification", () => {
       adviceDescription: "Matka pyta o procedurę odwoławczą.",
     });
 
-    expect(notification.recipientEmail).toBe("a.nowak@fundacja-spektrum.pl");
+    expect(notification.recipientEmail).toBe("a.nowak@synapsis.org.pl");
     expect(notification.recipientName).toBe("mec. Anna Nowak");
     expect(notification.senderName).toBe("mgr Joanna Mrożek");
     expect(notification.subject).toContain("Katarzyna Kowalska");
