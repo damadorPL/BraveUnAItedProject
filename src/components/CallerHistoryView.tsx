@@ -20,6 +20,8 @@ import {
   FolderOpen,
   Edit3,
   Lock,
+  Inbox,
+  MessageSquare,
 } from "lucide-react";
 import { AttachmentsManager } from "./AttachmentsManager";
 
@@ -259,6 +261,59 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
           </div>
         </div>
 
+        {/* Pending Referral Alert for Current Specialist */}
+        {(() => {
+          const currentLastName = currentSpecialist.name.split(" ").pop()?.toLowerCase() || "";
+          const pendingRef = records.find(
+            (r) =>
+              (r.referredSpecialistId === currentSpecialist.id ||
+                (!r.referredSpecialistId &&
+                  r.referredTo &&
+                  r.referredTo.toLowerCase().includes(currentLastName))) &&
+              (r.referredStatus === "OCZEKUJĄCA" || !r.referredStatus) &&
+              r.referredTo
+          );
+
+          if (!pendingRef) return null;
+
+          return (
+            <div className="mt-4 bg-amber-500/15 dark:bg-amber-950/60 border-2 border-[#FFB200] rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in">
+              <div className="flex items-start space-x-3 min-w-0">
+                <div className="p-2 bg-[#FFB200] text-[#2D2A28] rounded-xl shrink-0 mt-0.5 shadow-2xs font-bold">
+                  <Inbox className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-black text-slate-900 dark:text-white text-xs">
+                      Sprawa przekazana do Twojej konsultacji
+                    </span>
+                    <span className="text-[10px] bg-amber-500 text-white font-bold px-2 py-0.5 rounded-full shadow-2xs">
+                      Oczekuje na Twój kontakt
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 mt-1">
+                    Przekazał/a: <strong>{pendingRef.specialistName}</strong>
+                    {pendingRef.referredNote && (
+                      <span className="block sm:inline sm:ml-1">
+                        &bull; Notatka / wytyczne: <em>„{pendingRef.referredNote}”</em>
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsNewRecordModalOpen(true)}
+                className="px-3.5 py-2 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-xs hover:shadow transition-all shrink-0 flex items-center space-x-1.5 cursor-pointer"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>Udziel porady</span>
+              </button>
+            </div>
+          );
+        })()}
+
         {/* 5-Second AI Briefing Box */}
         <div className="mt-5 bg-gradient-to-r from-amber-50/90 via-slate-50 to-teal-50/60 dark:from-[#262015] dark:via-[#1D1B19] dark:to-[#162728] border border-amber-200/80 dark:border-amber-500/30 rounded-2xl p-4">
           <div className="flex items-start space-x-2.5">
@@ -470,16 +525,32 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
 
                     {/* Przekazane do innego specjalisty */}
                     {rec.referredTo && (
-                      <div className="bg-amber-50 dark:bg-[#251F14] border border-amber-200 dark:border-amber-600/40 rounded-xl p-2.5 text-xs text-amber-950 dark:text-amber-200 flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <Share2 className="w-3.5 h-3.5 text-amber-600 dark:text-[#FFB200] shrink-0" />
-                          <span>
-                            <strong>Przekazane do:</strong> {rec.referredTo}
+                      <div className="bg-amber-50 dark:bg-[#251F14] border border-amber-200 dark:border-amber-600/40 rounded-2xl p-3 text-xs text-amber-950 dark:text-[#FFB200] space-y-1.5">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center space-x-2">
+                            <Share2 className="w-3.5 h-3.5 text-amber-600 dark:text-[#FFB200] shrink-0" />
+                            <span>
+                              <strong>Przekazano do:</strong> {rec.referredTo}
+                            </span>
+                          </div>
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                              (rec.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
+                                ? "bg-amber-200/70 dark:bg-amber-900/60 text-amber-950 dark:text-[#FFDF06] border-amber-300 dark:border-amber-700"
+                                : "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800"
+                            }`}
+                          >
+                            {(rec.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
+                              ? "🟡 Oczekuje na kontakt"
+                              : "🟢 Sprawa załatwiona"}
                           </span>
                         </div>
-                        <span className="text-[10px] bg-amber-200/60 dark:bg-amber-900/60 font-bold px-2 py-0.5 rounded text-amber-900 dark:text-[#FFB200]">
-                          Kontynuacja
-                        </span>
+                        {rec.referredNote && (
+                          <div className="text-[11px] text-amber-900 dark:text-amber-200/90 pl-5 flex items-start gap-1 italic">
+                            <MessageSquare className="w-3 h-3 text-amber-600 dark:text-[#FFB200] shrink-0 mt-0.5" />
+                            <span>„{rec.referredNote}”</span>
+                          </div>
+                        )}
                       </div>
                     )}
 

@@ -21,10 +21,12 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
   - **Kategorie i obszary poradnictwa**: prawno-obywatelskie, psychologiczne, Parent to Parent, społeczne.
   - **Zarządzanie załącznikami**: dodawanie i podgląd dokumentów (PDF, skany orzeczeń, tabele Excel, obrazy, pliki tekstowe).
 
-### 3. 🔄 Przekazywanie Spraw & Powiadomienia E-mail (Referral System)
-- **Dynamiczny wybór konsultanta (Autocomplete)**: wyszukiwarka dyżurujących specjalistów w trakcie pisania.
-- **Automatyczne powiadomienia e-mail**: podgląd i wysyłka powiadomień ze szczegółami i notatką/wytycznymi na adres dyżurującego specjalisty.
-- **Kolejka spraw przekazanych**: widok spraw oczekujących na konsultację, przyjętych i zakończonych.
+### 3. 🔄 System Przekazywania Spraw & Handoff (Referral System)
+- **Ekran powitalny Handoff po zalogowaniu**: po zalogowaniu lub zmianie dyżurującego specjalisty na pulpicie wyświetla się wyróżniony baner z listą oczekujących spraw, notatkami od poprzednich konsultantów i przyciskami natychmiastowej konsultacji.
+- **Dynamiczny wybór konsultanta (Autocomplete)**: pole wyszukiwania specjalistów w trakcie pisania tolerancyjne na polskie znaki z awatarami i specjalizacjami.
+- **Nawigacja w nagłówku**: przycisk *„Przekazane”* z licznikiem i pulsującym wskaźnikiem nowości przy oczekujących sprawach.
+- **Automatyczne powiadomienia e-mail**: generowanie i wysyłka powiadomień ze szczegółami i notatką/wytycznymi na adres dyżurującego specjalisty.
+- **Automatyczne zamykanie spraw**: rejestracja porady przez specjalistę automatycznie oznacza przekazanie jako *„Zakończona”*.
 
 ### 4. 🛡️ Panel Administratora & Zarządzanie Kartotekami
 - **Wykrywanie i scalanie duplikatów (Merge Contacts)**: inteligentna analiza podobieństw numerów telefonów i nazwisk z bezpiecznym przeniesieniem całej historii porad i załączników.
@@ -56,7 +58,7 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 - **Ikony**: [Lucide React](https://lucide.dev/)
 - **Arkusze i Eksport**: [XLSX (SheetJS)](https://sheetjs.com/)
 - **Efekty**: [Canvas Confetti](https://www.npmjs.com/package/canvas-confetti)
-- **Testy**: [Vitest](https://vitest.dev/)
+- **Testy**: [Vitest](https://vitest.dev/) (88 testów jednostkowych, 100% passed)
 
 ---
 
@@ -77,11 +79,12 @@ src/
 │   ├── EmailNotificationModal.tsx# Podgląd powiadomień e-mail
 │   ├── ExcelMigratorModal.tsx    # Kreator importu bazy z plików Excel
 │   ├── ExportModal.tsx           # Kreator eksportu XLSX / CSV z RODO
-│   ├── Header.tsx                # Nagłówek z przełącznikiem dyżurującego i Dark Mode
+│   ├── Header.tsx                # Nagłówek z przełącznikiem dyżurującego, Handoff i Dark Mode
+│   ├── LoginScreen.tsx           # Ekran logowania ze sprawdzaniem uprawnień
 │   ├── NewCallerModal.tsx        # Rejestracja nowego kontaktu i pierwszej porady
 │   ├── NewCallRecordModal.tsx    # Formularz dodania nowej porady
 │   ├── ReferralSelector.tsx      # Autocomplete wyboru konsultanta do przekazania
-│   ├── ReferredCasesModal.tsx    # Kolejka spraw przekazanych
+│   ├── ReferredCasesModal.tsx    # Kolejka spraw przekazanych (Handoff)
 │   ├── SearchBar.tsx             # Pasek szybkiego wyszukiwania kontaktów
 │   ├── StatsBar.tsx              # Pulpit statystyk i wykresów PFRON
 │   └── UserProfileModal.tsx      # Modal edycji profilu konsultanta
@@ -92,11 +95,13 @@ src/
 │   └── sampleData.test.ts        # Testy spójności danych początkowych
 ├── services/                     # Logika biznesowa i integracje
 │   ├── adminService.test.ts      # Testy operacji administratora
+│   ├── auth.ts / .test.ts        # Autoryzacja i role dyżurujących
 │   ├── callDate.ts / .test.ts    # Narzędzia formatowania i walidacji dat
 │   ├── excelMigrator.ts / .test  # Silnik parsowania i scalania Excela
 │   ├── exportService.ts          # Generator raportów XLSX i CSV
 │   ├── fuzzyMatch.ts / .test.ts  # Algorytmy dopasowania rozmytego i Levenshteina
 │   ├── notificationService.ts    # Generowanie szablonów e-mail
+│   ├── referrals.test.ts         # Testy modułu przekazywania spraw i handoff
 │   └── storage.ts / .test.ts     # Pamięć lokalna i wyszukiwarka kontaktów
 ├── types/
 │   └── index.ts                  # Typy TypeScript (Caller, CallRecord, Specialist itp.)

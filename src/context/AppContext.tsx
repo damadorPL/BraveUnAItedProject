@@ -280,9 +280,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const getReferredRecordsForSpecialist = useCallback(
     (specialistId: string) => {
-      return records.filter((r) => r.referredSpecialistId === specialistId);
+      const spec = specialists.find((s) => s.id === specialistId);
+      const specLastName = spec ? spec.name.split(" ").pop()?.toLowerCase() : null;
+
+      return records.filter((r) => {
+        if (r.referredSpecialistId === specialistId) return true;
+        if (!r.referredSpecialistId && r.referredTo && specLastName) {
+          const refToNorm = r.referredTo.toLowerCase();
+          return refToNorm.includes(specLastName);
+        }
+        return false;
+      });
     },
-    [records]
+    [records, specialists]
   );
 
   const markReferralStatus = useCallback(
@@ -477,7 +487,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         createdAt: now,
       };
 
-      const updatedRecords = [newRec, ...records];
+      if (data.referredSpecialistId && !data.referredStatus) {
+        newRec.referredStatus = "OCZEKUJĄCA";
+      }
+
+      // If this specialist is consulting a caller who had an outstanding referral for them, mark it resolved
+      const updatedRecords = [
+        newRec,
+        ...records.map((r) => {
+          if (
+            r.callerId === data.callerId &&
+            r.referredSpecialistId === data.specialistId &&
+            (r.referredStatus === "OCZEKUJĄCA" || !r.referredStatus)
+          ) {
+            return { ...r, referredStatus: "ZAKOŃCZONA" as const };
+          }
+          return r;
+        }),
+      ];
       setRecords(updatedRecords);
       saveRecords(updatedRecords);
 
