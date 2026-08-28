@@ -85,14 +85,16 @@ export const CallRecordsTable: React.FC = () => {
           Liczba zarejestrowanych porad: <strong className="text-slate-900">{filteredRecords.length}</strong>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsExportModalOpen(true)}
-          className="flex items-center space-x-1.5 px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-semibold shadow-xs transition-colors cursor-pointer"
-        >
-          <Download className="w-3.5 h-3.5 text-indigo-600" />
-          <span>Eksportuj tę listę do CSV</span>
-        </button>
+        {currentSpecialist.isAdmin && (
+          <button
+            type="button"
+            onClick={() => setIsExportModalOpen(true)}
+            className="flex items-center space-x-1.5 px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-semibold shadow-xs transition-colors cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5 text-indigo-600" />
+            <span>Eksportuj tę listę do CSV</span>
+          </button>
+        )}
       </div>
 
       <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
