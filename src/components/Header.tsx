@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { getSpecialistInitials } from "../services/auth";
 import {
@@ -16,6 +16,9 @@ import {
   Sun,
   Moon,
   Inbox,
+  Menu,
+  X,
+  ChevronRight,
 } from "lucide-react";
 import { ReferredCasesModal } from "./ReferredCasesModal";
 import { UserProfileModal } from "./UserProfileModal";
@@ -43,6 +46,7 @@ export const Header: React.FC = () => {
   const currentSpecialist = useCurrentSpecialist();
 
   const [isReferredModalOpen, setIsReferredModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const myReferredCases = getReferredRecordsForSpecialist(currentSpecialist.id);
   const pendingReferredCount = myReferredCases.filter(
@@ -52,38 +56,45 @@ export const Header: React.FC = () => {
   const handleTabChange = (tab: "SEARCH" | "ALL_RECORDS" | "STATS") => {
     setSelectedCaller(null);
     setActiveTab(tab);
+    setIsMobileMenuOpen(false);
   };
+
+  // Close mobile menu on resize to full desktop (xl: >= 1280px)
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1280) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <header className="bg-[#2D2A28] text-white shadow-md border-b border-[#3E3A37] sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
-        <div className="flex items-center justify-between gap-3">
+      <div className="w-full max-w-[1440px] mx-auto px-3 sm:px-4 lg:px-5 py-2">
+        <div className="flex items-center justify-between gap-2">
           {/* 1. Left: Branding */}
           <div
             onClick={() => handleTabChange("SEARCH")}
-            className="flex items-center space-x-3 cursor-pointer shrink-0 select-none group"
+            className="flex items-center space-x-2 cursor-pointer shrink-0 select-none group"
           >
-            <div className="w-9 h-9 bg-gradient-to-br from-[#FFB200] via-[#FFB200] to-[#E5A000] rounded-xl text-[#2D2A28] shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform font-bold">
+            <div className="w-8 h-8 bg-gradient-to-br from-[#FFB200] via-[#FFB200] to-[#E5A000] rounded-xl text-[#2D2A28] shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform font-bold shrink-0">
               <PhoneCall className="w-4 h-4" />
             </div>
             <div>
-              <div className="flex items-center">
-                <span className="font-black text-base tracking-tight text-white whitespace-nowrap">
-                  Baza Porad
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 hidden sm:block whitespace-nowrap leading-tight mt-0.5">
-                Wspólna historia rozmów dla dyżurujących specjalistów
-              </p>
+              <span className="font-black text-sm sm:text-base tracking-tight text-white whitespace-nowrap">
+                Baza Porad
+              </span>
             </div>
           </div>
 
-          {/* 2. Center: Navigation Tabs */}
-          <nav className="flex items-center space-x-1 bg-[#242220] p-1 rounded-xl border border-[#3E3A37] shrink-0">
+          {/* 2. Center: Desktop Navigation Tabs (Visible on xl: >= 1280px) */}
+          <nav className="hidden xl:flex items-center space-x-1 bg-[#242220] p-1 rounded-xl border border-[#3E3A37] shrink-0">
             <button
               type="button"
               onClick={() => handleTabChange("SEARCH")}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 activeTab === "SEARCH" && !selectedCaller
                   ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
                   : "text-slate-300 hover:text-white hover:bg-[#34302E]"
@@ -96,7 +107,7 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => handleTabChange("ALL_RECORDS")}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 activeTab === "ALL_RECORDS" && !selectedCaller
                   ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
                   : "text-slate-300 hover:text-white hover:bg-[#34302E]"
@@ -109,7 +120,7 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsReferredModalOpen(true)}
-              className={`relative flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`relative flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 pendingReferredCount > 0
                   ? "bg-[#FFB200]/20 text-[#FFDF06] border border-[#FFB200]/50 shadow-xs"
                   : "text-slate-300 hover:text-white hover:bg-[#34302E]"
@@ -141,7 +152,7 @@ export const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleTabChange("STATS")}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                   activeTab === "STATS" && !selectedCaller
                     ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
                     : "text-slate-300 hover:text-white hover:bg-[#34302E]"
@@ -153,13 +164,13 @@ export const Header: React.FC = () => {
             )}
           </nav>
 
-          {/* 3. Right: Actions & Specialist Switcher */}
-          <div className="flex items-center space-x-2 shrink-0">
+          {/* 3. Right: Desktop Actions & User Controls (Visible on xl: >= 1280px) */}
+          <div className="hidden xl:flex items-center space-x-1.5 shrink-0">
             {/* New Caller Primary CTA */}
             <button
               type="button"
               onClick={() => setIsNewCallerModalOpen(true)}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] shadow-xs hover:shadow transition-all cursor-pointer whitespace-nowrap"
+              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] shadow-xs hover:shadow transition-all cursor-pointer whitespace-nowrap"
               title="Zarejestruj nowy kontakt"
             >
               <UserPlus className="w-3.5 h-3.5 shrink-0" />
@@ -171,11 +182,11 @@ export const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsExcelModalOpen(true)}
-                className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-[#242220] hover:bg-[#34302E] text-slate-200 border border-[#3E3A37] transition-colors cursor-pointer whitespace-nowrap"
+                className="flex items-center space-x-1 px-2 py-1.5 rounded-xl text-xs font-semibold bg-[#242220] hover:bg-[#34302E] text-slate-200 border border-[#3E3A37] transition-colors cursor-pointer whitespace-nowrap"
                 title="Migracja z pliku Excel"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="hidden lg:inline">Import</span>
+                <span>Import</span>
               </button>
             )}
 
@@ -184,11 +195,11 @@ export const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsExportModalOpen(true)}
-                className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-[#242220] hover:bg-[#34302E] text-slate-200 border border-[#3E3A37] transition-colors cursor-pointer whitespace-nowrap"
+                className="flex items-center space-x-1 px-2 py-1.5 rounded-xl text-xs font-semibold bg-[#242220] hover:bg-[#34302E] text-slate-200 border border-[#3E3A37] transition-colors cursor-pointer whitespace-nowrap"
                 title="Eksportuj do CSV / Excel"
               >
                 <Download className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                <span className="hidden lg:inline">Eksport</span>
+                <span>Eksport</span>
               </button>
             )}
 
@@ -197,11 +208,11 @@ export const Header: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsAdminPanelOpen(true)}
-                className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-black bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 transition-all cursor-pointer whitespace-nowrap shadow-xs"
+                className="flex items-center space-x-1 px-2 py-1.5 rounded-xl text-xs font-black bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 transition-all cursor-pointer whitespace-nowrap shadow-xs"
                 title="Panel Administratora: scalanie kontaktów i zarządzanie dyżurującymi"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                <span className="hidden md:inline">Panel Admina</span>
+                <span>Admin</span>
               </button>
             )}
 
@@ -220,11 +231,11 @@ export const Header: React.FC = () => {
             </button>
 
             {/* Logged-in Specialist Profile */}
-            <div className="border-l border-[#3E3A37] pl-2 ml-0.5 flex items-center space-x-1.5">
-              <div className="flex items-center space-x-2 bg-[#242220] py-1 px-2.5 rounded-xl border border-[#3E3A37]">
+            <div className="border-l border-[#3E3A37] pl-1.5 ml-0.5 flex items-center space-x-1">
+              <div className="flex items-center space-x-1.5 bg-[#242220] py-1 px-2 rounded-xl border border-[#3E3A37]">
                 <div className="relative shrink-0">
                   <div
-                    className={`w-7 h-7 ${currentSpecialist.avatarBg} rounded-full flex items-center justify-center text-white text-[10px] font-black`}
+                    className={`w-6 h-6 ${currentSpecialist.avatarBg} rounded-lg flex items-center justify-center text-white text-[10px] font-black`}
                     aria-hidden="true"
                   >
                     {getSpecialistInitials(currentSpecialist.name)}
@@ -235,18 +246,11 @@ export const Header: React.FC = () => {
                   </span>
                 </div>
                 <div className="text-left">
-                  <div className="text-[9px] font-bold leading-none flex items-center gap-1">
-                    {currentSpecialist.isAdmin ? (
-                      <span className="text-amber-400 flex items-center gap-0.5">
-                        <ShieldCheck className="w-2.5 h-2.5" />
-                        <span>Administrator</span>
-                      </span>
-                    ) : (
-                      <span className="text-slate-400">Dyżurujący</span>
-                    )}
+                  <div className="text-[9px] font-bold leading-none text-slate-400">
+                    {currentSpecialist.isAdmin ? "Admin" : "Dyżur"}
                   </div>
-                  <div className="text-xs font-bold text-white max-w-[150px] sm:max-w-[200px] truncate">
-                    {currentSpecialist.name}
+                  <div className="text-xs font-bold text-white max-w-[100px] truncate">
+                    {currentSpecialist.name.split(" ")[0]}
                   </div>
                 </div>
                 <button
@@ -254,7 +258,7 @@ export const Header: React.FC = () => {
                   onClick={logout}
                   title="Wyloguj się"
                   aria-label="Wyloguj się"
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-[#34302E] transition-colors cursor-pointer shrink-0"
+                  className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-[#34302E] transition-colors cursor-pointer shrink-0 ml-0.5"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                 </button>
@@ -275,7 +279,7 @@ export const Header: React.FC = () => {
                 type="button"
                 onClick={toggleDarkMode}
                 className="p-1.5 bg-[#242220] hover:bg-[#34302E] text-slate-300 hover:text-white rounded-xl border border-[#3E3A37] transition-all cursor-pointer shrink-0 flex items-center justify-center"
-                title={isDarkMode ? "Przełącz na tryb jasny (Light mode)" : "Przełącz na tryb ciemny (Dark mode)"}
+                title={isDarkMode ? "Przełącz na tryb jasny" : "Przełącz na tryb ciemny"}
               >
                 {isDarkMode ? (
                   <Sun className="w-3.5 h-3.5 text-[#FFB200]" />
@@ -285,8 +289,303 @@ export const Header: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {/* 4. Responsive Bar (Visible on < xl: phones, tablets, small laptops) */}
+          <div className="flex xl:hidden items-center space-x-1.5 sm:space-x-2 shrink-0">
+            {/* Quick New Contact */}
+            <button
+              type="button"
+              onClick={() => setIsNewCallerModalOpen(true)}
+              className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] shadow-xs cursor-pointer"
+              title="Zarejestruj nową osobę"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Nowy kontakt</span>
+            </button>
+
+            {/* Quick Handoff Button (if has cases) */}
+            <button
+              type="button"
+              onClick={() => setIsReferredModalOpen(true)}
+              className={`flex items-center space-x-1 px-2 sm:px-2.5 py-1.5 rounded-xl border transition-colors relative cursor-pointer ${
+                pendingReferredCount > 0
+                  ? "bg-amber-500/20 text-amber-300 border-amber-500/50"
+                  : "bg-[#242220] text-slate-300 border-[#3E3A37]"
+              }`}
+              title="Przekazane sprawy (Handoff)"
+            >
+              <Inbox className="w-3.5 h-3.5 text-[#FFB200]" />
+              <span className="hidden md:inline text-xs font-bold">Przekazane</span>
+              {myReferredCases.length > 0 && (
+                <span
+                  className={`text-[9px] sm:text-[10px] px-1.5 py-0.2 rounded-full font-black ml-0.5 ${
+                    pendingReferredCount > 0
+                      ? "bg-[#FFB200] text-[#2D2A28]"
+                      : "bg-slate-700 text-slate-300"
+                  }`}
+                >
+                  {pendingReferredCount > 0 ? pendingReferredCount : myReferredCases.length}
+                </span>
+              )}
+            </button>
+
+            {/* Dark Mode Toggle */}
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              className="p-1.5 bg-[#242220] hover:bg-[#34302E] text-slate-300 hover:text-white rounded-xl border border-[#3E3A37] transition-all cursor-pointer flex items-center justify-center"
+              title={isDarkMode ? "Tryb jasny" : "Tryb ciemny"}
+            >
+              {isDarkMode ? (
+                <Sun className="w-4 h-4 text-[#FFB200]" />
+              ) : (
+                <Moon className="w-4 h-4 text-slate-300" />
+              )}
+            </button>
+
+            {/* User Avatar Compact Badge */}
+            <div
+              onClick={() => setIsProfileModalOpen(true)}
+              className="flex items-center space-x-1.5 bg-[#242220] border border-[#3E3A37] hover:border-[#FFB200] p-1 rounded-xl cursor-pointer transition-colors"
+              title={`Zalogowano: ${currentSpecialist.name} (kliknij, aby edytować profil)`}
+            >
+              <div
+                className={`w-6 h-6 sm:w-7 sm:h-7 ${currentSpecialist.avatarBg} rounded-lg flex items-center justify-center text-white text-[10px] font-black shrink-0`}
+              >
+                {getSpecialistInitials(currentSpecialist.name)}
+              </div>
+              <span className="hidden md:inline text-xs font-bold text-white max-w-[90px] lg:max-w-[130px] truncate pr-1">
+                {currentSpecialist.name.split(" ")[0]}
+              </span>
+            </div>
+
+            {/* Hamburger Menu Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              aria-expanded={isMobileMenuOpen}
+              aria-label="Otwórz menu nawigacji"
+              className={`p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
+                isMobileMenuOpen
+                  ? "bg-[#FFB200] text-[#2D2A28] border-[#FFB200]"
+                  : "bg-[#242220] text-slate-200 border-[#3E3A37] hover:bg-[#34302E]"
+              }`}
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* 5. Mobile & Tablet Menu Drawer (Shown when isMobileMenuOpen is true) */}
+      {isMobileMenuOpen && (
+        <div className="xl:hidden bg-[#242220] border-t border-[#3E3A37] px-4 py-4 space-y-4 animate-in slide-in-from-top-2 duration-200 shadow-2xl">
+          {/* User Profile Card in Mobile Menu */}
+          <div className="bg-[#1A1918] border border-[#3E3A37] rounded-2xl p-3.5 flex items-center justify-between">
+            <div className="flex items-center space-x-3 min-w-0">
+              <div
+                className={`w-9 h-9 ${currentSpecialist.avatarBg} rounded-xl flex items-center justify-center text-white text-xs font-black shrink-0 shadow-xs`}
+              >
+                {getSpecialistInitials(currentSpecialist.name)}
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-white text-xs truncate">{currentSpecialist.name}</span>
+                  {currentSpecialist.isAdmin && (
+                    <span className="text-[9px] bg-amber-400/20 text-amber-300 border border-amber-400/40 px-1.5 py-0.2 rounded font-bold">
+                      Admin
+                    </span>
+                  )}
+                </div>
+                <div className="text-[11px] text-[#FFB200] truncate font-medium">{currentSpecialist.role}</div>
+                <div className="text-[10px] text-slate-400 font-mono truncate">{currentSpecialist.email}</div>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-1.5 shrink-0 ml-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsProfileModalOpen(true);
+                }}
+                className="p-2 bg-[#2D2A28] hover:bg-[#383431] text-slate-300 hover:text-white rounded-xl border border-[#3E3A37] transition-colors cursor-pointer"
+                title="Edytuj profil"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  logout();
+                }}
+                className="p-2 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 rounded-xl border border-rose-800/50 transition-colors cursor-pointer"
+                title="Wyloguj się"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Navigation Links */}
+          <div className="space-y-1">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">
+              Nawigacja
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleTabChange("SEARCH")}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "SEARCH" && !selectedCaller
+                  ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
+                  : "text-slate-200 hover:bg-[#2D2A28]"
+              }`}
+            >
+              <div className="flex items-center space-x-2.5">
+                <Search className="w-4 h-4" />
+                <span>Kartoteka i wyszukiwarka</span>
+              </div>
+              <ChevronRight className="w-4 h-4 opacity-50" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleTabChange("ALL_RECORDS")}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "ALL_RECORDS" && !selectedCaller
+                  ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
+                  : "text-slate-200 hover:bg-[#2D2A28]"
+              }`}
+            >
+              <div className="flex items-center space-x-2.5">
+                <ListFilter className="w-4 h-4" />
+                <span>Wszystkie wpisy rejestru porad</span>
+              </div>
+              <ChevronRight className="w-4 h-4 opacity-50" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setIsReferredModalOpen(true);
+              }}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-200 hover:bg-[#2D2A28] transition-all cursor-pointer"
+            >
+              <div className="flex items-center space-x-2.5">
+                <Inbox className="w-4 h-4 text-[#FFB200]" />
+                <span>Przekazane sprawy (Handoff)</span>
+              </div>
+              {myReferredCases.length > 0 && (
+                <span
+                  className={`text-[11px] font-black px-2 py-0.5 rounded-full ${
+                    pendingReferredCount > 0
+                      ? "bg-[#FFB200] text-[#2D2A28]"
+                      : "bg-slate-700 text-slate-300"
+                  }`}
+                >
+                  {pendingReferredCount > 0 ? `${pendingReferredCount} oczekujących` : `${myReferredCases.length}`}
+                </span>
+              )}
+            </button>
+
+            {currentSpecialist.isAdmin && (
+              <button
+                type="button"
+                onClick={() => handleTabChange("STATS")}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === "STATS" && !selectedCaller
+                    ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
+                    : "text-slate-200 hover:bg-[#2D2A28]"
+                }`}
+              >
+                <div className="flex items-center space-x-2.5">
+                  <BarChart3 className="w-4 h-4" />
+                  <span>Raporty PFRON i analityka</span>
+                </div>
+                <ChevronRight className="w-4 h-4 opacity-50" />
+              </button>
+            )}
+          </div>
+
+          {/* Quick Actions in Mobile Menu */}
+          <div className="space-y-1 pt-2 border-t border-[#3E3A37]">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">
+              Akcje i narzędzia
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setIsNewCallerModalOpen(true);
+              }}
+              className="w-full flex items-center space-x-2.5 px-3.5 py-2.5 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-xs transition-colors cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Zarejestruj nową osobę</span>
+            </button>
+
+            {currentSpecialist.isAdmin && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsAdminPanelOpen(true);
+                  }}
+                  className="w-full flex items-center space-x-2.5 px-3.5 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  <span>Panel Administratora (scalanie i konsultanci)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsExportModalOpen(true);
+                  }}
+                  className="w-full flex items-center space-x-2.5 px-3.5 py-2.5 bg-[#1E1C1A] hover:bg-[#2D2A28] text-slate-200 border border-[#3E3A37] rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-blue-400" />
+                  <span>Eksportuj rejestr (XLSX / CSV / RODO)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setIsExcelModalOpen(true);
+                  }}
+                  className="w-full flex items-center space-x-2.5 px-3.5 py-2.5 bg-[#1E1C1A] hover:bg-[#2D2A28] text-slate-200 border border-[#3E3A37] rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                  <span>Importuj bazę z pliku Excel</span>
+                </button>
+              </>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                if (window.confirm("Czy na pewno chcesz przywrócić początkową bazę danych demo?")) {
+                  resetDatabase();
+                }
+              }}
+              className="w-full flex items-center space-x-2.5 px-3.5 py-2 text-slate-400 hover:text-slate-200 text-xs font-semibold cursor-pointer pt-1"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Przywróć bazę demo</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modals rendered conditionally */}
       <ReferredCasesModal isOpen={isReferredModalOpen} onClose={() => setIsReferredModalOpen(false)} />
       <UserProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
       <AdminPanelModal isOpen={isAdminPanelOpen} onClose={() => setIsAdminPanelOpen(false)} />
