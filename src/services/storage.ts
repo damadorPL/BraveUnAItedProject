@@ -5,6 +5,7 @@ const CALLERS_KEY = "unaited_pfron_callers_v1";
 const RECORDS_KEY = "unaited_pfron_records_v1";
 const SPECIALISTS_KEY = "unaited_pfron_specialists_v1";
 const SESSION_KEY = "unaited_pfron_session_v1";
+const PASSWORDS_KEY = "unaited_pfron_passwords_v1";
 
 // Remove Polish diacritics including ł/Ł for ultra-tolerant fuzzy search
 export function normalizeText(str: string): string {
@@ -122,6 +123,27 @@ export function clearSession(): void {
     localStorage.removeItem(SESSION_KEY);
   } catch (err) {
     console.error("Failed to clear session:", err);
+  }
+}
+
+// Hashe haseł ustawionych przez reset (id specjalistki -> SHA-256 hex); brak wpisu = hasło demo
+export function loadPasswordOverrides(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(PASSWORDS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (err) {
+    console.error("Failed to load password overrides:", err);
+    return {};
+  }
+}
+
+export function savePasswordOverride(specialistId: string, passwordHash: string): void {
+  try {
+    const overrides = loadPasswordOverrides();
+    overrides[specialistId] = passwordHash;
+    localStorage.setItem(PASSWORDS_KEY, JSON.stringify(overrides));
+  } catch (err) {
+    console.error("Failed to save password override:", err);
   }
 }
 

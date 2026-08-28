@@ -22,6 +22,31 @@ export function verifyDemoPassword(password: string): boolean {
   return password === DEMO_PASSWORD;
 }
 
+export const MIN_PASSWORD_LENGTH = 8;
+
+export async function hashPassword(password: string): Promise<string> {
+  const data = new TextEncoder().encode(password);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+// Brak nadpisania (null) = obowiązuje wspólne hasło demo.
+export async function verifySpecialistPassword(
+  passwordHashOverride: string | null,
+  password: string
+): Promise<boolean> {
+  if (passwordHashOverride) {
+    return (await hashPassword(password)) === passwordHashOverride;
+  }
+  return verifyDemoPassword(password);
+}
+
+export function generateResetCode(): string {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
 // "dr Michał Adamczyk (Admin)" -> "MA"
 export function getSpecialistInitials(name: string): string {
   const words = name

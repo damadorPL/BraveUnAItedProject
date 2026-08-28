@@ -2,10 +2,12 @@ import React, { useMemo, useState } from "react";
 import { useApp } from "../context/AppContext";
 import {
   findSpecialistByEmail,
-  verifyDemoPassword,
+  verifySpecialistPassword,
   getSpecialistInitials,
   DEMO_PASSWORD,
 } from "../services/auth";
+import { loadPasswordOverrides } from "../services/storage";
+import { PasswordResetModal } from "./PasswordResetModal";
 import {
   PhoneCall,
   Eye,
@@ -13,6 +15,7 @@ import {
   ShieldCheck,
   UserCheck,
   AlertCircle,
+  CheckCircle2,
   LogIn,
   ChevronDown,
   ChevronUp,
@@ -27,6 +30,8 @@ export const LoginScreen: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDemoAccounts, setShowDemoAccounts] = useState(false);
+  const [isResetOpen, setIsResetOpen] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState<string | null>(null);
 
   // Auto-detekcja typu konta: system rozpoznaje konto (i rolę) po adresie e-mail
   const recognized = useMemo(
@@ -34,7 +39,7 @@ export const LoginScreen: React.FC = () => {
     [specialists, email]
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email.trim()) {
@@ -45,13 +50,22 @@ export const LoginScreen: React.FC = () => {
       setError("Nie znaleziono konta dla podanego adresu e-mail.");
       return;
     }
-    if (!verifyDemoPassword(password)) {
+    const overrides = loadPasswordOverrides();
+    const passwordOk = await verifySpecialistPassword(overrides[recognized.id] ?? null, password);
+    if (!passwordOk) {
       setError("Nieprawidłowe hasło. Spróbuj ponownie.");
       return;
     }
 
     setError(null);
     login(recognized);
+  };
+
+  const handleResetSuccess = (resetEmail: string) => {
+    setEmail(resetEmail);
+    setPassword("");
+    setError(null);
+    setResetSuccess("Hasło zostało zmienione. Zaloguj się nowym hasłem.");
   };
 
   return (
@@ -75,6 +89,16 @@ export const LoginScreen: React.FC = () => {
         <p className="text-xs text-slate-500 mt-1 mb-5">
           System sam rozpozna Twoje konto i uprawnienia na podstawie służbowego adresu e-mail.
         </p>
+
+        {resetSuccess && (
+          <div
+            role="status"
+            className="mb-4 flex items-center space-x-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold rounded-xl px-3 py-2 animate-in fade-in"
+          >
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{resetSuccess}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="space-y-4">
@@ -128,9 +152,21 @@ export const LoginScreen: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="login-password" className="block text-xs font-bold text-slate-700 mb-1.5">
-                Hasło
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="login-password" className="block text-xs font-bold text-slate-700">
+                  Hasło
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setResetSuccess(null);
+                    setIsResetOpen(true);
+                  }}
+                  className="text-[11px] font-bold text-[#296B6E] hover:text-[#1F5254] transition-colors cursor-pointer"
+                >
+                  Nie pamiętasz hasła?
+                </button>
+              </div>
               <div className="relative">
                 <input
                   id="login-password"
@@ -182,7 +218,8 @@ export const LoginScreen: React.FC = () => {
             Wersja demonstracyjna — hasło dla wszystkich kont:{" "}
             <code className="font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md">
               {DEMO_PASSWORD}
-            </code>
+            </code>{" "}
+            (o ile nie zostało zmienione przez reset hasła)
           </p>
           <button
             type="button"
@@ -235,6 +272,16 @@ export const LoginScreen: React.FC = () => {
         <Lock className="w-3.5 h-3.5 text-emerald-500" />
         Szyfrowanie zgodne z art. 9 RODO (dane medyczne) • Dostęp tylko dla upoważnionych specjalistów
       </p>
+
+      {isResetOpen && (
+        <PasswordResetModal
+          isOpen={isResetOpen}
+          initialEmail={email}
+          specialists={specialists}
+          onClose={() => setIsResetOpen(false)}
+          onSuccess={handleResetSuccess}
+        />
+      )}
     </div>
   );
 };

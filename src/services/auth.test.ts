@@ -2,6 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   findSpecialistByEmail,
   verifyDemoPassword,
+  verifySpecialistPassword,
+  hashPassword,
+  generateResetCode,
   getSpecialistInitials,
   DEMO_PASSWORD,
 } from "./auth";
@@ -54,6 +57,38 @@ describe("verifyDemoPassword", () => {
     expect(verifyDemoPassword(DEMO_PASSWORD)).toBe(true);
     expect(verifyDemoPassword("zlehaslo")).toBe(false);
     expect(verifyDemoPassword("")).toBe(false);
+  });
+});
+
+describe("hashPassword", () => {
+  it("zwraca deterministyczny 64-znakowy hex SHA-256", async () => {
+    const a = await hashPassword("nowehaslo123");
+    const b = await hashPassword("nowehaslo123");
+    expect(a).toBe(b);
+    expect(a).toMatch(/^[0-9a-f]{64}$/);
+    expect(await hashPassword("innehaslo")).not.toBe(a);
+  });
+});
+
+describe("verifySpecialistPassword", () => {
+  it("bez nadpisania akceptuje wyłącznie hasło demo", async () => {
+    expect(await verifySpecialistPassword(null, DEMO_PASSWORD)).toBe(true);
+    expect(await verifySpecialistPassword(null, "nowehaslo123")).toBe(false);
+  });
+
+  it("z nadpisaniem akceptuje nowe hasło i odrzuca hasło demo", async () => {
+    const hash = await hashPassword("nowehaslo123");
+    expect(await verifySpecialistPassword(hash, "nowehaslo123")).toBe(true);
+    expect(await verifySpecialistPassword(hash, DEMO_PASSWORD)).toBe(false);
+    expect(await verifySpecialistPassword(hash, "")).toBe(false);
+  });
+});
+
+describe("generateResetCode", () => {
+  it("zwraca 6 cyfr", () => {
+    for (let i = 0; i < 20; i++) {
+      expect(generateResetCode()).toMatch(/^\d{6}$/);
+    }
   });
 });
 
