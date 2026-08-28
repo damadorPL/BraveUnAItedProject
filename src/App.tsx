@@ -35,6 +35,7 @@ import {
   MessageSquare,
   PlusCircle,
   Sparkles,
+  Download,
 } from "lucide-react";
 
 const MainContent: React.FC = () => {
@@ -50,6 +51,7 @@ const MainContent: React.FC = () => {
     setIsNewRecordModalOpen,
     setEditingCaller,
     getReferredRecordsForSpecialist,
+    setIsExportModalOpen,
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
 
@@ -99,13 +101,24 @@ const MainContent: React.FC = () => {
 
       {activeTab === "STATS" && currentSpecialist.isAdmin && (
         <div className="animate-in fade-in">
-          <div className="mb-4">
-            <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-              Pulpit analityczny i raporty PFRON
-            </h1>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
-              Statystyki linii wsparcia, wskaźniki grantowe i podsumowania geograficzne
-            </p>
+          <div className="mb-4 flex items-end justify-between gap-3 flex-wrap">
+            <div>
+              <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                Pulpit analityczny i raporty PFRON
+              </h1>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+                Statystyki linii wsparcia, wskaźniki grantowe i podsumowania geograficzne
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsExportModalOpen(true)}
+              className="flex items-center space-x-1.5 px-3.5 py-1.5 bg-white dark:bg-[#1E1C1A] hover:bg-slate-50 dark:hover:bg-[#282522] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#383431] rounded-xl font-semibold text-xs shadow-xs transition-colors cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
+              <span>Eksportuj raport (CSV / Excel)</span>
+            </button>
           </div>
           <StatsBar />
         </div>

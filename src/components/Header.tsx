@@ -3,7 +3,6 @@ import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { getSpecialistInitials } from "../services/auth";
 import {
   FileSpreadsheet,
-  Download,
   UserPlus,
   RotateCcw,
   Search,
@@ -32,7 +31,6 @@ export const Header: React.FC = () => {
     setSelectedCaller,
     setIsNewCallerModalOpen,
     setIsExcelModalOpen,
-    setIsExportModalOpen,
     isProfileModalOpen,
     setIsProfileModalOpen,
     isAdminPanelOpen,
@@ -188,19 +186,6 @@ export const Header: React.FC = () => {
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 <span>Import</span>
-              </button>
-            )}
-
-            {/* CSV Exporter */}
-            {currentSpecialist.isAdmin && (
-              <button
-                type="button"
-                onClick={() => setIsExportModalOpen(true)}
-                className="flex items-center space-x-1 px-2 py-1.5 rounded-xl text-xs font-semibold bg-[#242220] hover:bg-[#34302E] text-slate-200 border border-[#3E3A37] transition-colors cursor-pointer whitespace-nowrap"
-                title="Eksportuj do CSV / Excel"
-              >
-                <Download className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                <span>Eksport</span>
               </button>
             )}
 
@@ -547,18 +532,6 @@ export const Header: React.FC = () => {
                 >
                   <ShieldCheck className="w-4 h-4 text-amber-400" />
                   <span>Panel Administratora (scalanie i konsultanci)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    setIsExportModalOpen(true);
-                  }}
-                  className="w-full flex items-center space-x-2.5 px-3.5 py-2.5 bg-[#1E1C1A] hover:bg-[#2D2A28] text-slate-200 border border-[#3E3A37] rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                >
-                  <Download className="w-4 h-4 text-blue-400" />
-                  <span>Eksportuj rejestr (XLSX / CSV / RODO)</span>
                 </button>
 
                 <button
