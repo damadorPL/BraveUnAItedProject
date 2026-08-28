@@ -14,18 +14,7 @@ export const SearchBar: React.FC = () => {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Keyboard shortcut: "/" or "Ctrl+K" focuses search bar
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === "/" || (e.ctrlKey && e.key === "k")) && document.activeElement !== inputRef.current) {
-        e.preventDefault();
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+
 
   const sampleSearches = [
     { label: "Kowalska (wielokrotny kontakt)", query: "Kowalska" },
@@ -46,7 +35,7 @@ export const SearchBar: React.FC = () => {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Wpisz imię, nazwisko, numer telefonu lub miejscowość dzwoniącego... (Skrót: /)"
+          placeholder="Wpisz imię, nazwisko, numer telefonu lub miejscowość kontaktu..."
           className="w-full pl-11 pr-24 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-inner"
         />
 
@@ -61,11 +50,7 @@ export const SearchBar: React.FC = () => {
           >
             <X className="w-4 h-4" />
           </button>
-        ) : (
-          <div className="absolute right-3 flex items-center space-x-1 text-[11px] text-slate-400 bg-slate-200/60 px-2 py-0.5 rounded border border-slate-300 pointer-events-none font-mono">
-            <span>/</span>
-          </div>
-        )}
+        ) : null}
       </div>
 
       {/* Quick Search Chips & Fast Info */}
@@ -90,7 +75,7 @@ export const SearchBar: React.FC = () => {
         </div>
 
         <div className="text-[11px] font-medium text-slate-400">
-          W bazie: <strong className="text-slate-700">{callers.length}</strong> osób dzwoniących
+          W bazie: <strong className="text-slate-700">{callers.length}</strong> zarejestrowanych kontaktów
         </div>
       </div>
     </div>

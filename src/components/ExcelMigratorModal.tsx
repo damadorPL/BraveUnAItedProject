@@ -214,7 +214,7 @@ export const ExcelMigratorModal: React.FC = () => {
                       <div className="text-xl font-extrabold text-emerald-700">
                         +{stats.newCallersCount}
                       </div>
-                      <div className="text-[11px] text-emerald-950 font-semibold">Nowych dzwoniących</div>
+                      <div className="text-[11px] text-emerald-950 font-semibold">Nowych kontaktów</div>
                     </div>
 
                     <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
@@ -369,7 +369,7 @@ export const ExcelMigratorModal: React.FC = () => {
                         <table className="w-full text-left text-[11px]">
                           <thead className="bg-slate-100 text-slate-700 font-bold">
                             <tr>
-                              <th className="py-2 px-3">Osoba Dzwoniąca</th>
+                              <th className="py-2 px-3">Osoba kontaktowa</th>
                               <th className="py-2 px-3">Województwo</th>
                               <th className="py-2 px-3">Rodzaj Poradnictwa</th>
                               <th className="py-2 px-3">Obszar</th>

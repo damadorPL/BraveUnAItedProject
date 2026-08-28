@@ -60,7 +60,7 @@ export const StatsBar: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-slate-500 font-semibold text-[11px]">
-              Kartoteki dzwoniących
+              Kartoteki kontaktów
             </span>
             <div className="bg-emerald-50 text-emerald-600 p-2.5 rounded-2xl">
               <Users className="w-4 h-4" />

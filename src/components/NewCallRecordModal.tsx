@@ -270,7 +270,7 @@ export const NewCallRecordModal: React.FC = () => {
               rows={3}
               value={adviceDescription}
               onChange={(e) => setAdviceDescription(e.target.value)}
-              placeholder="Wpisz treść i zagadnienie zgłoszone przez osobę dzwoniącą..."
+              placeholder="Wpisz treść i zagadnienie zgłoszone podczas kontaktu..."
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-slate-400 font-medium"
             />
           </div>

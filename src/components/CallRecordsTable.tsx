@@ -71,7 +71,7 @@ export const CallRecordsTable: React.FC = () => {
     if (!targetCaller) {
       targetCaller = {
         id: rec.callerId || "caller-" + Date.now(),
-        firstName: "Dzwoniący",
+        firstName: "Kontakt",
         lastName: "Konsultacja #" + rec.id.slice(-4),
         phoneNumber: "Brak numeru",
         voivodeship: "mazowieckie",
@@ -118,7 +118,7 @@ export const CallRecordsTable: React.FC = () => {
               <thead>
                 <tr className="bg-slate-900 text-white text-[11px] font-bold">
                   <th className="py-3 px-3.5">Kiedy udzielono</th>
-                  <th className="py-3 px-3.5">Osoba dzwoniąca</th>
+                  <th className="py-3 px-3.5">Osoba kontaktowa</th>
                   <th className="py-3 px-3.5">Beneficjent i orzeczenie</th>
                   <th className="py-3 px-3.5">Rodzaj poradnictwa i obszar</th>
                   <th className="py-3 px-3.5">Rodzaj porady (opis) i uwagi</th>
@@ -167,7 +167,7 @@ export const CallRecordsTable: React.FC = () => {
                           </div>
                         ) : (
                           <div>
-                            <div className="font-bold text-slate-900">Dzwoniący</div>
+                            <div className="font-bold text-slate-900">Kontakt</div>
                             <div className="text-[10px] text-slate-400">ID: {rec.callerId}</div>
                           </div>
                         )}

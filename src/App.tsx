@@ -84,7 +84,7 @@ const MainContent: React.FC = () => {
               Szybka baza historii rozmów
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
-              Wpisz nazwisko lub numer telefonu, aby w <strong>mniej niż 5 sekund</strong> sprawdzić, czy dzwoniący kontaktował się wcześniej i jakie zalecenia otrzymał.
+              Wpisz nazwisko lub numer telefonu, aby w <strong>mniej niż 5 sekund</strong> sprawdzić, czy kontakt odbywał się wcześniej i jakie zalecenia otrzymał.
             </p>
           </div>
 
@@ -102,7 +102,7 @@ const MainContent: React.FC = () => {
                 <span>
                   {searchQuery
                     ? `Wyniki wyszukiwania (${filteredCallers.length})`
-                    : `Ostatnio kontaktujący się dzwoniący (${callers.length})`}
+                    : `Zarejestrowane kontakty (${callers.length})`}
                 </span>
               </h2>
 
@@ -123,7 +123,7 @@ const MainContent: React.FC = () => {
                   Brak osoby o nazwisku &quot;{searchQuery}&quot; w bazie
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-                  Wygląda na to, że ta osoba dzwoni na linię poradniczą po raz pierwszy. Możesz natychmiast utworzyć dla niej nową kartotekę.
+                  Wygląda na to, że jest to pierwszy kontakt tej osoby z poradnią. Możesz natychmiast utworzyć dla niej nową kartotekę.
                 </p>
                 <button
                   type="button"

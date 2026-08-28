@@ -108,10 +108,10 @@ export const Header: React.FC = () => {
               type="button"
               onClick={() => setIsNewCallerModalOpen(true)}
               className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs hover:shadow transition-all cursor-pointer whitespace-nowrap"
-              title="Zarejestruj nową osobę dzwoniącą"
+              title="Zarejestruj nowy kontakt"
             >
               <UserPlus className="w-3.5 h-3.5 shrink-0" />
-              <span>Nowy dzwoniący</span>
+              <span>Nowy kontakt</span>
             </button>
 
             {/* Excel Importer */}

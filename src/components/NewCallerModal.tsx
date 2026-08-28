@@ -106,7 +106,7 @@ export const NewCallerModal: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!lastName.trim()) {
-      alert("Proszę podać nazwisko lub identyfikator dzwoniącego.");
+      alert("Proszę podać nazwisko lub identyfikator kontaktu.");
       return;
     }
 
@@ -178,7 +178,7 @@ export const NewCallerModal: React.FC = () => {
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Zarejestruj nową kartotekę dzwoniącego</h2>
+              <h2 className="text-lg font-bold text-white">Zarejestruj nowy kontakt</h2>
               <p className="text-xs text-slate-400">
                 Pola zgodne z oficjalnym wzorcem linii wsparcia fundacji
               </p>

@@ -490,7 +490,7 @@ export const AttachmentsManager: React.FC<Props> = ({
                   <div className="bg-slate-50 p-4 rounded-xl text-xs space-y-2 border border-slate-200">
                     <div className="font-bold text-slate-700">Zawartość / opis dokumentu:</div>
                     <p className="text-slate-700 leading-relaxed font-mono whitespace-pre-wrap">
-                      {previewAttachment.description || "Wzór pisma przygotowany dla dzwoniącego w celu złożenia odwołania od orzeczenia WZON lub wniosku do dyrekcji szkoły."}
+                      {previewAttachment.description || "Wzór pisma przygotowany dla osoby kontaktowej w celu złożenia odwołania od orzeczenia WZON lub wniosku do dyrekcji szkoły."}
                     </p>
                   </div>
 

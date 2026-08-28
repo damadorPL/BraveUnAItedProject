@@ -29,7 +29,7 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
             Znaleziono {callers.length} osoby o pasujących danych (weryfikacja tożsamości)
           </h3>
           <p className="text-xs text-amber-800 mt-0.5">
-            Zgodnie z procedurą bezpieczeństwa danych medycznych: <strong>zapytaj dzwoniącego o województwo/miejscowość</strong>, aby nie połączyć błędnie historii dwóch różnych osób.
+            Zgodnie z procedurą bezpieczeństwa danych medycznych: <strong>zapytaj o województwo/miejscowość osoby kontaktowej</strong>, aby nie połączyć błędnie historii dwóch różnych osób.
           </p>
         </div>
       </div>
@@ -126,7 +126,7 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
       {/* Option to create new caller */}
       <div className="mt-4 pt-3 border-t border-amber-200/80 flex items-center justify-between flex-wrap gap-2">
         <span className="text-xs text-amber-900 font-medium">
-          Dzwoniący to zupełnie inna osoba o nazwisku &quot;{searchQuery}&quot;?
+          To zupełnie inny kontakt o nazwisku &quot;{searchQuery}&quot;?
         </span>
         <button
           type="button"
