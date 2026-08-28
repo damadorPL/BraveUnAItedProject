@@ -239,7 +239,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const canEditRecord = useCallback(
     (record: CallRecord) => {
       if (!record) return false;
-      if (currentSpecialist.isAdmin) return true;
+      if (
+        Boolean(currentSpecialist.isAdmin) ||
+        currentSpecialist.id === "spec-admin" ||
+        (currentSpecialist.role && currentSpecialist.role.toLowerCase().includes("admin"))
+      ) {
+        return true;
+      }
       return record.specialistId === currentSpecialist.id;
     },
     [currentSpecialist]

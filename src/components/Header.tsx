@@ -170,8 +170,15 @@ export const Header: React.FC = () => {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
                 <div className="text-left">
-                  <div className="text-[9px] text-slate-400 font-bold leading-none">
-                    Dyżurujący:
+                  <div className="text-[9px] font-bold leading-none flex items-center gap-1">
+                    {currentSpecialist.isAdmin ? (
+                      <span className="text-amber-400 flex items-center gap-0.5">
+                        <ShieldCheck className="w-2.5 h-2.5" />
+                        <span>Administrator:</span>
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">Dyżurujący:</span>
+                    )}
                   </div>
                   <select
                     value={currentSpecialist.id}
@@ -179,11 +186,11 @@ export const Header: React.FC = () => {
                       const found = specialists.find((s) => s.id === e.target.value);
                       if (found) setCurrentSpecialist(found);
                     }}
-                    className="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer pr-1 max-w-[150px] sm:max-w-[200px] truncate"
+                    className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer pr-1 max-w-[170px] sm:max-w-[220px] truncate"
                   >
                     {specialists.map((s) => (
-                      <option key={s.id} value={s.id} className="bg-slate-900 text-white">
-                        {s.name}
+                      <option key={s.id} value={s.id} className="bg-slate-900 text-white font-medium">
+                        {s.isAdmin ? `🛡️ ${s.name}` : `🟢 ${s.name}`}
                       </option>
                     ))}
                   </select>
