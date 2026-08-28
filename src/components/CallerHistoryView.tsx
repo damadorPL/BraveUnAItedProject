@@ -22,6 +22,7 @@ import {
   Lock,
   Inbox,
   MessageSquare,
+  User,
 } from "lucide-react";
 import { AttachmentsManager } from "./AttachmentsManager";
 
@@ -451,24 +452,20 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                             {ct === "telefon" ? "📞 tel" : ct === "e-mail" ? "✉️ mail" : ct}
                           </span>
                         ))}
-
-                        {rec.subjectTargets && rec.subjectTargets.map((st) => (
-                          <span key={st} className="text-[10px] bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 font-semibold px-2 py-0.5 rounded border border-purple-100 dark:border-purple-800/50">
-                            {st}
-                          </span>
-                        ))}
                       </div>
 
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 flex-wrap gap-y-1.5">
                         <span
-                          className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${getGuidanceBadgeColor(
+                          className={`text-xs font-bold px-2.5 py-0.5 rounded-full border whitespace-nowrap ${getGuidanceBadgeColor(
                             rec.guidanceType
                           )}`}
                         >
                           {rec.guidanceType || "Porada"}
                         </span>
-                        <span className="text-xs bg-slate-100 dark:bg-[#2A2724] text-slate-700 dark:text-slate-300 font-semibold px-2 py-0.5 rounded border border-slate-200 dark:border-[#383431]">
-                          {rec.specialistName || "Specjalista"} ({rec.specialistRole || "Konsultant"})
+                        <span className="flex items-center gap-1.5 text-xs bg-slate-100 dark:bg-[#2A2724] text-slate-700 dark:text-slate-300 font-semibold px-2.5 py-1 rounded-full border border-slate-200 dark:border-[#383431] whitespace-nowrap">
+                          <User className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
+                          <span className="text-slate-500 dark:text-slate-400 font-normal">Specjalista:</span>
+                          <span>{rec.specialistName || "Nieznany"}</span>
                         </span>
 
                         {canEdit ? (
@@ -479,7 +476,7 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                             title={currentSpecialist.isAdmin ? "Edytuj tę poradę jako Administrator" : "Edytuj swoją poradę"}
                           >
                             <Edit3 className="w-3.5 h-3.5 text-amber-700 dark:text-[#FFB200]" />
-                            <span>{currentSpecialist.isAdmin ? "Edytuj (Admin)" : "Edytuj"}</span>
+                            <span>Edytuj</span>
                           </button>
                         ) : (
                           <span
@@ -493,20 +490,41 @@ export const CallerHistoryView: React.FC<Props> = ({ caller }) => {
                       </div>
                     </div>
 
-                    {/* Guidance Areas Badges */}
-                    {rec.guidanceAreas && rec.guidanceAreas.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 mr-1">
-                          Obszar:
-                        </span>
-                        {rec.guidanceAreas.map((area) => (
-                          <span
-                            key={area}
-                            className="text-xs bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-300 font-semibold px-2.5 py-0.5 rounded-lg border border-indigo-100 dark:border-indigo-800/40"
-                          >
-                            {area}
-                          </span>
-                        ))}
+                    {/* Subject Targets & Guidance Areas Badges */}
+                    {((rec.subjectTargets && rec.subjectTargets.length > 0) ||
+                      (rec.guidanceAreas && rec.guidanceAreas.length > 0)) && (
+                      <div className="space-y-1.5">
+                        {rec.subjectTargets && rec.subjectTargets.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 mr-1">
+                              Dotyczy:
+                            </span>
+                            {rec.subjectTargets.map((st) => (
+                              <span
+                                key={st}
+                                className="text-[10px] bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 font-semibold px-2 py-0.5 rounded border border-purple-100 dark:border-purple-800/50"
+                              >
+                                {st}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {rec.guidanceAreas && rec.guidanceAreas.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 mr-1">
+                              Obszar:
+                            </span>
+                            {rec.guidanceAreas.map((area) => (
+                              <span
+                                key={area}
+                                className="text-xs bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-300 font-semibold px-2.5 py-0.5 rounded-lg border border-indigo-100 dark:border-indigo-800/40"
+                              >
+                                {area}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
 
