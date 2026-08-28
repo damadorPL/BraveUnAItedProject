@@ -221,7 +221,7 @@ export const ExcelMigratorModal: React.FC = () => {
                             <tr key={i} className="hover:bg-slate-50">
                               <td className="py-2 px-3 font-semibold text-slate-900">{r.callerName}</td>
                               <td className="py-2 px-3 font-mono">{r.phone}</td>
-                              <td className="py-2 px-3 capitalize">{r.voivodeship}</td>
+                              <td className="py-2 px-3">{r.voivodeship}</td>
                               <td className="py-2 px-3 font-bold">{r.adviceType}</td>
                               <td className="py-2 px-3">{r.specialistName}</td>
                             </tr>

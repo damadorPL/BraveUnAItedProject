@@ -89,7 +89,7 @@ export const ExportModal: React.FC = () => {
 
           {/* Anonymization Choice */}
           <div>
-            <label className="block font-bold text-slate-700 uppercase tracking-wider mb-2">
+            <label className="block font-bold text-slate-700 mb-2">
               Tryb Bezpieczeństwa Danych (RODO / PFRON):
             </label>
 
@@ -143,7 +143,7 @@ export const ExportModal: React.FC = () => {
 
           {/* Format Choice */}
           <div>
-            <label className="block font-bold text-slate-700 uppercase tracking-wider mb-2">
+            <label className="block font-bold text-slate-700 mb-2">
               Format Pliku:
             </label>
             <div className="grid grid-cols-2 gap-3">

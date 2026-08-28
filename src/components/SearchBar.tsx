@@ -71,7 +71,7 @@ export const SearchBar: React.FC = () => {
       {/* Quick Search Chips & Fast Info */}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs text-slate-500">
         <div className="flex items-center space-x-1.5 flex-wrap">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center mr-1">
+          <span className="text-[11px] font-semibold text-slate-400 flex items-center mr-1">
             <Sparkles className="w-3 h-3 mr-1 text-amber-500" /> Szybki test:
           </span>
           {sampleSearches.map((item) => (

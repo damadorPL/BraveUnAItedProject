@@ -123,7 +123,7 @@ export const NewCallRecordModal: React.FC = () => {
         <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs bg-indigo-500/30 text-indigo-300 font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+              <span className="text-xs bg-indigo-500/30 text-indigo-300 font-bold px-2 py-0.5 rounded">
                 Nowy wpis poradniczy
               </span>
               <span className="text-xs text-slate-400">
@@ -148,7 +148,7 @@ export const NewCallRecordModal: React.FC = () => {
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-xs">
           {/* 1. Rodzaj poradnictwa */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-800 mb-1.5">
               1. Rodzaj poradnictwa (wybór jednokrotny):
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
@@ -163,8 +163,8 @@ export const NewCallRecordModal: React.FC = () => {
                       : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                   }`}
                 >
-                  <div className="text-[10px] opacity-75 uppercase">Rodzaj</div>
-                  <div className="capitalize mt-0.5">{type}</div>
+                  
+                  <div className="capitalize-first">{type.charAt(0).toUpperCase() + type.slice(1)}</div>
                 </button>
               ))}
             </div>
@@ -172,7 +172,7 @@ export const NewCallRecordModal: React.FC = () => {
 
           {/* 2. Obszar, którego dotyczy porada (Kaskadowy wielokrotny) */}
           <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-3.5">
-            <label className="block text-xs font-bold text-indigo-950 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-indigo-950 mb-2">
               2. Obszar, którego dotyczy porada (wybór wielokrotny powiązany z &quot;{guidanceType}&quot;):
             </label>
             <div className="flex flex-wrap gap-2">
@@ -201,7 +201,7 @@ export const NewCallRecordModal: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Rodzaj kontaktu */}
             <div>
-              <label className="block font-bold text-slate-700 mb-1.5 uppercase text-[11px]">
+              <label className="block font-bold text-slate-700 mb-1.5 text-[11px]">
                 3. Rodzaj kontaktu (wielokrotny):
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -212,7 +212,7 @@ export const NewCallRecordModal: React.FC = () => {
                       type="button"
                       key={ct}
                       onClick={() => toggleContactType(ct)}
-                      className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors capitalize ${
+                      className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors  ${
                         sel
                           ? "bg-slate-900 text-white border-slate-900"
                           : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -227,7 +227,7 @@ export const NewCallRecordModal: React.FC = () => {
 
             {/* Kogo dotyczy porada */}
             <div>
-              <label className="block font-bold text-slate-700 mb-1.5 uppercase text-[11px]">
+              <label className="block font-bold text-slate-700 mb-1.5 text-[11px]">
                 4. Kogo dotyczy porada (wielokrotny):
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -238,7 +238,7 @@ export const NewCallRecordModal: React.FC = () => {
                       type="button"
                       key={st}
                       onClick={() => toggleSubjectTarget(st)}
-                      className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors capitalize ${
+                      className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors  ${
                         sel
                           ? "bg-purple-700 text-white border-purple-700"
                           : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"

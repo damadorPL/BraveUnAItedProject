@@ -116,7 +116,7 @@ export const CallRecordsTable: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-900 text-white text-[11px] uppercase tracking-wider font-bold">
+                <tr className="bg-slate-900 text-white text-[11px] font-bold">
                   <th className="py-3 px-3.5">Kiedy udzielono</th>
                   <th className="py-3 px-3.5">Osoba dzwoniąca</th>
                   <th className="py-3 px-3.5">Beneficjent i orzeczenie</th>
@@ -161,7 +161,7 @@ export const CallRecordsTable: React.FC = () => {
                             <div className="text-[10px] text-slate-500 font-mono">
                               {caller.phoneNumber || "Brak numeru"}
                             </div>
-                            <div className="text-[10px] text-slate-400 capitalize">
+                            <div className="text-[10px] text-slate-400">
                               {caller.city}, {caller.voivodeship}
                             </div>
                           </div>
@@ -177,7 +177,7 @@ export const CallRecordsTable: React.FC = () => {
                       <td className="py-3 px-3.5 whitespace-nowrap">
                         {caller ? (
                           <div>
-                            <div className="font-semibold text-slate-800 capitalize">
+                            <div className="font-semibold text-slate-800">
                               {caller.beneficiaryTypes?.join(", ") || "Rodzic"}
                             </div>
                             <div className="text-[10px] text-purple-700 font-medium">
@@ -192,7 +192,7 @@ export const CallRecordsTable: React.FC = () => {
                       {/* 4. Rodzaj poradnictwa & Obszar */}
                       <td className="py-3 px-3.5 max-w-[200px]">
                         <span
-                          className={`px-2 py-0.5 rounded-full font-bold border text-[10px] inline-block capitalize ${getGuidanceBadge(
+                          className={`px-2 py-0.5 rounded-full font-bold border text-[10px] inline-block  ${getGuidanceBadge(
                             rec.guidanceType
                           )}`}
                         >

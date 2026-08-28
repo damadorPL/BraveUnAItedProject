@@ -201,10 +201,10 @@ export const NewCallerModal: React.FC = () => {
               <select
                 value={voivodeship}
                 onChange={(e) => setVoivodeship(e.target.value as Voivodeship)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none capitalize"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               >
                 {VOIVODESHIPS.map((v) => (
-                  <option key={v} value={v} className="capitalize">
+                  <option key={v} value={v} className="">
                     {v}
                   </option>
                 ))}
@@ -227,7 +227,7 @@ export const NewCallerModal: React.FC = () => {
 
           {/* Kim jest beneficjent (Wielokrotny) */}
           <div>
-            <label className="block font-bold text-slate-700 mb-1.5 uppercase text-[11px]">
+            <label className="block font-bold text-slate-700 mb-1.5 text-[11px]">
               Kim jest beneficjent (wybór wielokrotny):
             </label>
             <div className="flex flex-wrap gap-2">
@@ -238,7 +238,7 @@ export const NewCallerModal: React.FC = () => {
                     type="button"
                     key={b}
                     onClick={() => toggleBeneficiary(b)}
-                    className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors capitalize ${
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs border transition-colors  ${
                       isSel
                         ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
                         : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -276,10 +276,10 @@ export const NewCallerModal: React.FC = () => {
                 value={disabilityDegree}
                 disabled={hasDisabilityCertificate === "nie"}
                 onChange={(e) => setDisabilityDegree(e.target.value as DisabilityDegree)}
-                className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400 capitalize"
+                className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none disabled:bg-slate-100 disabled:text-slate-400"
               >
                 {DISABILITY_DEGREES.map((d) => (
-                  <option key={d} value={d} className="capitalize">
+                  <option key={d} value={d} className="">
                     {d}
                   </option>
                 ))}
@@ -322,10 +322,10 @@ export const NewCallerModal: React.FC = () => {
                   <select
                     value={guidanceType}
                     onChange={(e) => setGuidanceType(e.target.value as GuidanceType)}
-                    className="bg-white border border-slate-200 rounded-xl p-2 text-xs font-bold text-indigo-900 capitalize"
+                    className="bg-white border border-slate-200 rounded-xl p-2 text-xs font-bold text-indigo-900"
                   >
                     {GUIDANCE_TYPES.map((t) => (
-                      <option key={t} value={t} className="capitalize">
+                      <option key={t} value={t} className="">
                         {t}
                       </option>
                     ))}
