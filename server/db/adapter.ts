@@ -31,6 +31,7 @@ export interface DatabaseAdapter {
   ping(): Promise<boolean>;
   getStats(): Promise<AdminOverviewStats>;
   resetToSample(initialCallers: Caller[], initialRecords: CallRecord[], initialSpecialists: Specialist[]): Promise<void>;
+  purgeData(keepSpecialists?: boolean): Promise<void>;
 
   // Callers CRUD
   getCallers(options?: CallerQueryOptions): Promise<Caller[]>;

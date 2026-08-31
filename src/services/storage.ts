@@ -214,3 +214,32 @@ export function resetToSampleData(): { callers: Caller[]; records: CallRecord[] 
   idbSet(SPECIALISTS_KEY, INITIAL_SPECIALISTS).catch(() => {});
   return { callers: INITIAL_CALLERS, records: INITIAL_RECORDS };
 }
+
+export function clearDemoData(keepSpecialists: boolean = false): {
+  callers: Caller[];
+  records: CallRecord[];
+  specialists: Specialist[];
+} {
+  const currentSpecialists = loadSpecialists();
+  const retainedSpecialists = keepSpecialists
+    ? currentSpecialists
+    : currentSpecialists.filter((s) => s.isAdmin || s.id === "spec-admin");
+
+  // Fallback to default admin if somehow none exists
+  if (retainedSpecialists.length === 0) {
+    const defaultAdmin = INITIAL_SPECIALISTS.find((s) => s.isAdmin) || INITIAL_SPECIALISTS[0];
+    retainedSpecialists.push(defaultAdmin);
+  }
+
+  try {
+    localStorage.setItem(CALLERS_KEY, JSON.stringify([]));
+    localStorage.setItem(RECORDS_KEY, JSON.stringify([]));
+    localStorage.setItem(SPECIALISTS_KEY, JSON.stringify(retainedSpecialists));
+  } catch (_) {}
+
+  idbSet(CALLERS_KEY, []).catch(() => {});
+  idbSet(RECORDS_KEY, []).catch(() => {});
+  idbSet(SPECIALISTS_KEY, retainedSpecialists).catch(() => {});
+
+  return { callers: [], records: [], specialists: retainedSpecialists };
+}

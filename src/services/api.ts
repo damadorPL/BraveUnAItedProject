@@ -13,6 +13,7 @@ import {
   loadSpecialists as loadLocalSpecialists,
   saveSpecialists as saveLocalSpecialists,
   resetToSampleData as resetLocalData,
+  clearDemoData as clearLocalData,
 } from "./storage";
 
 const JWT_STORAGE_KEY = "unaited_pfron_jwt_v1";
@@ -335,7 +336,26 @@ export const api = {
         return res;
       } catch (err) {
         resetLocalData();
-        return { success: true, message: "Zresetowano lokalną bazę danych." };
+        return { success: true, message: "Zresetowano lokalną bazę danych do danych demo." };
+      }
+    },
+
+    async clearDb(keepSpecialists: boolean = false): Promise<{ success: boolean; message: string }> {
+      try {
+        const res = await request<{ success: boolean; message: string }>("/admin/db/clear", {
+          method: "POST",
+          body: JSON.stringify({ keepSpecialists }),
+        });
+        clearLocalData(keepSpecialists);
+        return res;
+      } catch (err) {
+        clearLocalData(keepSpecialists);
+        return {
+          success: true,
+          message: keepSpecialists
+            ? "Wyczyszczono lokalną bazę danych. Zachowano konta specjalistów i administratora."
+            : "Wyczyszczono lokalne dane demonstracyjne. Zachowano konto Administratora.",
+        };
       }
     },
   },

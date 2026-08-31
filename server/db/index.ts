@@ -123,6 +123,11 @@ class DatabaseManager {
     const adapter = await this.getAdapter();
     await adapter.resetToSample(INITIAL_CALLERS, INITIAL_RECORDS, INITIAL_SPECIALISTS);
   }
+
+  async purgeDatabase(keepSpecialists: boolean = false): Promise<void> {
+    const adapter = await this.getAdapter();
+    await adapter.purgeData(keepSpecialists);
+  }
 }
 
 export const dbManager = new DatabaseManager();

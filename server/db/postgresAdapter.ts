@@ -9,6 +9,7 @@ import {
   AdminOverviewStats,
 } from "../types.js";
 import { DatabaseAdapter, CallerQueryOptions, RecordQueryOptions } from "./adapter.js";
+import { INITIAL_SPECIALISTS } from "../../src/data/sampleData.js";
 
 export class PostgresAdapter implements DatabaseAdapter {
   readonly engine = "postgres" as const;
@@ -254,6 +255,50 @@ export class PostgresAdapter implements DatabaseAdapter {
     } catch (e) {
       await client.query("ROLLBACK");
       throw e;
+    } finally {
+      client.release();
+    }
+  }
+
+  async purgeData(keepSpecialists: boolean = false): Promise<void> {
+    if (!this.pool) throw new Error("PG pool not open");
+    const client = await this.pool.connect();
+
+    try {
+      await client.query("BEGIN");
+      await client.query("TRUNCATE TABLE audit_logs CASCADE;");
+      await client.query("TRUNCATE TABLE call_records CASCADE;");
+      await client.query("TRUNCATE TABLE callers CASCADE;");
+
+      if (!keepSpecialists) {
+        await client.query("DELETE FROM passwords WHERE specialist_id NOT IN (SELECT id FROM specialists WHERE is_admin = true);");
+        await client.query("DELETE FROM specialists WHERE is_admin IS NOT TRUE;");
+
+        const adminRes = await client.query("SELECT id FROM specialists WHERE is_admin = true LIMIT 1;");
+        if (adminRes.rows.length === 0) {
+          const defaultAdmin = INITIAL_SPECIALISTS.find((s) => s.isAdmin) || INITIAL_SPECIALISTS[0];
+          await client.query(
+            `INSERT INTO specialists (id, name, role, title, guidance_type, avatar_bg, avatar_url, email, is_admin)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+            [
+              defaultAdmin.id,
+              defaultAdmin.name,
+              defaultAdmin.role,
+              defaultAdmin.title,
+              defaultAdmin.guidanceType,
+              defaultAdmin.avatarBg,
+              defaultAdmin.avatarUrl || null,
+              defaultAdmin.email.toLowerCase(),
+              true,
+            ]
+          );
+        }
+      }
+
+      await client.query("COMMIT");
+    } catch (err) {
+      await client.query("ROLLBACK");
+      throw err;
     } finally {
       client.release();
     }

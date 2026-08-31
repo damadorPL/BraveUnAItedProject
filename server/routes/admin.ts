@@ -259,3 +259,19 @@ adminRouter.post("/db/reset", async (req, res) => {
     res.status(500).json({ error: err.message || "Błąd resetowania bazy danych" });
   }
 });
+
+// POST /api/admin/db/clear (Purge demo data / clear database)
+adminRouter.post("/db/clear", async (req, res) => {
+  try {
+    const keepSpecialists = Boolean(req.body.keepSpecialists);
+    await dbManager.purgeDatabase(keepSpecialists);
+    res.json({
+      success: true,
+      message: keepSpecialists
+        ? "Wyczyszczono wszystkie kartoteki i porady. Zachowano zdefiniowane konta specjalistów i administratora."
+        : "Wyczyszczono wszystkie dane demonstracyjne. Zachowano konto Administratora do logowania.",
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Błąd czyszczenia bazy danych" });
+  }
+});

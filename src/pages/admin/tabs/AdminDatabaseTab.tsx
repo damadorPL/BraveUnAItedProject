@@ -10,18 +10,21 @@ import {
   HardDrive,
   FileCode,
   RotateCcw,
+  Trash2,
+  ShieldCheck,
   Zap,
   Layers,
   ArrowRight,
 } from "lucide-react";
 
 export const AdminDatabaseTab: React.FC = () => {
-  const { resetDatabase } = useApp();
+  const { resetDatabase, clearDatabase } = useApp();
 
   const [currentConfig, setCurrentConfig] = useState<any>(null);
   const [engine, setEngine] = useState<"sqlite" | "postgres">("sqlite");
   const [sqlitePath, setSqlitePath] = useState("data/synapsis.sqlite");
   const [postgresUrl, setPostgresUrl] = useState("postgres://postgres:postgres@localhost:5432/brave_synapsis");
+  const [keepSpecialists, setKeepSpecialists] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
@@ -114,6 +117,32 @@ export const AdminDatabaseTab: React.FC = () => {
       setTimeout(() => setActionMessage(null), 5000);
     } catch (err: any) {
       setActionMessage({ success: false, text: err.message || "Błąd resetowania bazy" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClearDatabase = async () => {
+    const promptMsg = keepSpecialists
+      ? "Czy na pewno chcesz WYCZYŚCIĆ bazę danych? Wszystkie kartoteki i porady zostaną usunięte. Zdefiniowane konta specjalistów oraz konto Administratora zostaną ZACHOWANE."
+      : "Czy na pewno chcesz WYCZYŚCIĆ bazę danych do stanu produkcyjnego? Wszystkie kartoteki, porady oraz konta demo zostaną usunięte. Konto Administratora (admin@synapsis.org.pl) zostanie BEZPIECZNIE ZACHOWANE do logowania.";
+
+    if (!window.confirm(promptMsg)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await api.admin.clearDb(keepSpecialists);
+      clearDatabase(keepSpecialists);
+      setActionMessage({ success: true, text: res.message || "Baza danych została wyczyszczona." });
+      setTimeout(() => setActionMessage(null), 6000);
+    } catch (err: any) {
+      let text = err.message || "Błąd czyszczenia bazy danych";
+      if (text.includes("Brak tokenu") || text.includes("Wymagana autoryzacja") || text.includes("401")) {
+        text = "Wymagana autoryzacja sesji administratora. Zaloguj się ponownie przez ekran logowania.";
+      }
+      setActionMessage({ success: false, text });
     } finally {
       setLoading(false);
     }
@@ -317,28 +346,79 @@ export const AdminDatabaseTab: React.FC = () => {
         </div>
       </form>
 
-      {/* Danger Zone: Reset Sample Data */}
-      <div className="bg-rose-50/40 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 rounded-3xl p-6 space-y-3">
-        <div className="flex items-center space-x-2 text-rose-700 dark:text-rose-400">
-          <RotateCcw className="w-5 h-5" />
-          <h3 className="text-sm font-black">
-            Przywrócenie Bazy Demonstracyjnej (Sample Data)
-          </h3>
+      {/* Danger Zone: Operations */}
+      <div className="space-y-4 pt-2">
+        <h3 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          Strefa operacji zaawansowanych i czyszczenia danych
+        </h3>
+
+        {/* 1. Clear Demo Data (Production clean slate) */}
+        <div className="bg-rose-50/50 dark:bg-rose-950/20 border-2 border-rose-200 dark:border-rose-900/50 rounded-3xl p-6 space-y-4">
+          <div className="flex items-center space-x-2.5 text-rose-700 dark:text-rose-400">
+            <Trash2 className="w-5 h-5" />
+            <h3 className="text-sm font-black">
+              Wycyszczenie Bazy / Usunięcie Danych Demonstracyjnych (Stan produkcyjny)
+            </h3>
+          </div>
+
+          <p className="text-xs text-slate-700 dark:text-slate-300 max-w-2xl leading-relaxed">
+            Usuwa wszystkie 71 wpisów testowych, kartoteki kontaktów oraz załączniki, przygotowując system do bieżącej pracy operacyjnej na linii pomocowej.
+          </p>
+
+          <div className="bg-white/80 dark:bg-[#1A1816] border border-rose-200 dark:border-rose-900/50 rounded-2xl p-3.5 space-y-2">
+            <div className="flex items-center space-x-2 text-xs font-bold text-slate-800 dark:text-slate-200">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>Gwarancja zachowania dostępu do logowania:</span>
+            </div>
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-normal">
+              Główne konto <strong>Administratora (<code>admin@synapsis.org.pl</code>)</strong> jest trwale chronione i <strong>nigdy nie zostanie usunięte</strong>. Twoja aktywna sesja pozostanie ważna, a po wylogowaniu nadal zalogujesz się dotychczasowym hasłem.
+            </p>
+
+            <label className="flex items-center space-x-2 pt-1.5 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <input
+                type="checkbox"
+                checked={keepSpecialists}
+                onChange={(e) => setKeepSpecialists(e.target.checked)}
+                className="w-4 h-4 text-[#FFB200] focus:ring-[#FFB200] rounded"
+              />
+              <span>Zachowaj zdefiniowane konta dyżurujących specjalistów (usuń tylko historię kontaktów i porady)</span>
+            </label>
+          </div>
+
+          <button
+            type="button"
+            disabled={loading}
+            onClick={handleClearDatabase}
+            className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black shadow-xs transition-colors cursor-pointer inline-flex items-center space-x-1.5"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Wyczyść bazę danych (Usuń dane demo)</span>
+          </button>
         </div>
 
-        <p className="text-xs text-slate-600 dark:text-slate-300 max-w-2xl">
-          Ta operacja zastąpi bieżący stan tabel wzorcowym zestawem 71 konsultacji, kartotek beneficjentów oraz kont specjalistów Fundacji SYNAPSIS.
-        </p>
+        {/* 2. Restore Sample Data */}
+        <div className="bg-slate-50 dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-6 space-y-3">
+          <div className="flex items-center space-x-2 text-slate-700 dark:text-slate-300">
+            <RotateCcw className="w-5 h-5" />
+            <h3 className="text-sm font-black">
+              Przywrócenie Wzorcowego Zestawu Demonstracyjnego
+            </h3>
+          </div>
 
-        <button
-          type="button"
-          disabled={loading}
-          onClick={handleResetDatabase}
-          className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black shadow-xs transition-colors cursor-pointer inline-flex items-center space-x-1.5"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span>Przywróć dane demonstracyjne</span>
-        </button>
+          <p className="text-xs text-slate-600 dark:text-slate-400 max-w-2xl">
+            Ta operacja przywróci wzorcowy zestaw 71 konsultacji, kartotek beneficjentów oraz kont specjalistów Fundacji SYNAPSIS.
+          </p>
+
+          <button
+            type="button"
+            disabled={loading}
+            onClick={handleResetDatabase}
+            className="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer inline-flex items-center space-x-1.5"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Przywróć dane demonstracyjne</span>
+          </button>
+        </div>
       </div>
     </div>
   );

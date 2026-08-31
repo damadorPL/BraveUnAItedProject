@@ -20,6 +20,7 @@ import {
   clearSession,
   saveSpecialists,
   resetToSampleData,
+  clearDemoData,
   searchCallers,
   loadAsyncCachedData,
 } from "../services/storage";
@@ -107,6 +108,7 @@ interface AppContextType {
   getCallerRecords: (callerId: string) => CallRecord[];
   applyBulkImport: (newCallers: Caller[], newRecords: CallRecord[]) => void;
   resetDatabase: () => void;
+  clearDatabase: (keepSpecialists?: boolean) => void;
 
   livePresenceSpecialist: string | null;
   liveNotification: string | null;
@@ -796,6 +798,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSearchQuery("");
   }, []);
 
+  const clearDatabase = useCallback((keepSpecialists: boolean = false) => {
+    const res = clearDemoData(keepSpecialists);
+    setCallers(res.callers);
+    setRecords(res.records);
+    setSpecialists(res.specialists);
+    setSelectedCaller(null);
+    setSearchQuery("");
+  }, []);
+
   return (
     <AppContext.Provider
       value={{
@@ -856,6 +867,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         getCallerRecords,
         applyBulkImport,
         resetDatabase,
+        clearDatabase,
         livePresenceSpecialist,
         liveNotification,
         dismissNotification,

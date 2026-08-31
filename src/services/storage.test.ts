@@ -85,4 +85,14 @@ describe("Caller Search & Storage Logic", () => {
     expect(results).toHaveLength(1);
     expect(results[0].id).toBe("caller-3");
   });
+
+  it("clearDemoData should empty callers and records while retaining admin specialist", async () => {
+    const { clearDemoData, resetToSampleData } = await import("./storage");
+    resetToSampleData();
+    const result = clearDemoData(false);
+    expect(result.callers).toHaveLength(0);
+    expect(result.records).toHaveLength(0);
+    expect(result.specialists.length).toBeGreaterThanOrEqual(1);
+    expect(result.specialists.some((s) => s.isAdmin)).toBe(true);
+  });
 });

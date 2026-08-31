@@ -11,6 +11,7 @@ import {
   AdminOverviewStats,
 } from "../types.js";
 import { DatabaseAdapter, CallerQueryOptions, RecordQueryOptions } from "./adapter.js";
+import { INITIAL_SPECIALISTS } from "../../src/data/sampleData.js";
 
 export class SQLiteAdapter implements DatabaseAdapter {
   readonly engine = "sqlite" as const;
@@ -268,6 +269,45 @@ export class SQLiteAdapter implements DatabaseAdapter {
           updatedAt: r.updatedAt || null,
           editLogs: JSON.stringify(r.editLogs || []),
         });
+      }
+    });
+
+    transaction();
+  }
+
+  async purgeData(keepSpecialists: boolean = false): Promise<void> {
+    if (!this.db) throw new Error("DB not open");
+
+    const transaction = this.db.transaction(() => {
+      this.db!.exec("DELETE FROM audit_logs;");
+      this.db!.exec("DELETE FROM call_records;");
+      this.db!.exec("DELETE FROM callers;");
+
+      if (!keepSpecialists) {
+        // Delete password entries for non-admin accounts
+        this.db!.exec("DELETE FROM passwords WHERE specialistId NOT IN (SELECT id FROM specialists WHERE isAdmin = 1);");
+        this.db!.exec("DELETE FROM specialists WHERE isAdmin != 1;");
+
+        // Guarantee at least one Administrator account exists
+        const adminExists = this.db!.prepare("SELECT id FROM specialists WHERE isAdmin = 1 LIMIT 1").get();
+        if (!adminExists) {
+          const defaultAdmin = INITIAL_SPECIALISTS.find((s) => s.isAdmin) || INITIAL_SPECIALISTS[0];
+          this.db!.prepare(`
+            INSERT OR REPLACE INTO specialists (id, name, role, title, guidanceType, avatarBg, avatarUrl, email, isAdmin, createdAt)
+            VALUES (@id, @name, @role, @title, @guidanceType, @avatarBg, @avatarUrl, @email, @isAdmin, @createdAt)
+          `).run({
+            id: defaultAdmin.id,
+            name: defaultAdmin.name,
+            role: defaultAdmin.role,
+            title: defaultAdmin.title,
+            guidanceType: defaultAdmin.guidanceType,
+            avatarBg: defaultAdmin.avatarBg,
+            avatarUrl: defaultAdmin.avatarUrl || null,
+            email: defaultAdmin.email.toLowerCase(),
+            isAdmin: 1,
+            createdAt: new Date().toISOString(),
+          });
+        }
       }
     });
 
