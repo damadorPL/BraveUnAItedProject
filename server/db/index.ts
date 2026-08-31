@@ -24,6 +24,10 @@ class DatabaseManager {
       this.currentConfig.engine = process.env.DATABASE_ENGINE as DatabaseEngine;
     }
 
+    if (!config?.sqlitePath && process.env.SQLITE_PATH) {
+      this.currentConfig.sqlitePath = process.env.SQLITE_PATH;
+    }
+
     if (this.currentConfig.engine === "postgres") {
       const adapter = new PostgresAdapter(this.currentConfig.postgresUrl);
       await adapter.init();

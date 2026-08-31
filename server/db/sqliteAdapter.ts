@@ -20,7 +20,7 @@ export class SQLiteAdapter implements DatabaseAdapter {
   private dbPath: string;
 
   constructor(customPath?: string) {
-    this.dbPath = customPath || path.resolve(process.cwd(), "data", "synapsis.sqlite");
+    this.dbPath = customPath || process.env.SQLITE_PATH || path.resolve(process.cwd(), "data", "synapsis.sqlite");
   }
 
   getDbPath(): string {
