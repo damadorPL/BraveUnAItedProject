@@ -10,20 +10,20 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 
 ### 1. 🌐 Trasy URL (URL Routes & Deep Linking)
 - **Klient-side Routing (`react-router-dom`)**:
-  - `/login`: ekran logowania ze wsparciem autoryzacji JWT i kontami demo.
+  - `/login`: ekran logowania ze wsparciem autoryzacji JWT i opcjonalnym trybem demonstracyjnym (Demo Mode).
   - `/search` lub `/`: szybka wyszukiwarka kontaktów, ujednoznacznianie i baner przekazań Handoff.
   - `/callers/:id`: bezpośredni link do profilu kontaktu i osi czasu porad (Timeline).
-  - `/records`: centralny rejestr wszystkich udzielonych porad z zaawansowanymi filtrami.
-  - `/stats`: pulpit statystyk i raportów PFRON.
+  - `/records`: centralny rejestr wszystkich udzielonych porad z zaawansowanymi filtrami oraz eksportem dostępnym dla administratorów.
+  - `/stats`: pulpit statystyk i raportów PFRON z przejrzystym, 2-kolumnowym podziałem geograficznym.
   - `/admin/*`: dedykowany, pełnoekranowy panel administratora chroniony strażnikiem uprawnień (`AdminRoute`).
   - `/unauthorized`: strona błędu 403 w przypadku braku uprawnień administratora.
 
 ### 2. 🛡️ Dedykowany Panel Administratora (`/admin`)
 - **Pulpit Główny (Overview)**: wskaźniki KPI bazy, stan silnika bazy danych, status połączenia oraz szybkie skróty.
-- **Specjaliści i Uprawnienia**: pełne zarządzanie kontami specjalistów (CRUD), nadawanie ról, przypisywanie obszarów poradnictwa, przełączanie flagi administratora i generator resetu haseł.
+- **Specjaliści i Uprawnienia**: pełne zarządzanie kontami specjalistów (CRUD), nadawanie ról, przypisywanie obszarów poradnictwa, zabezpieczone oknem potwierdzenia (`ConfirmModal`) nadawanie/odbieranie uprawnień administratora oraz zabezpieczenia przed odebraniem uprawnień samemu sobie lub głównemu kontu systemowemu.
 - **Wykrywanie i Scalanie Duplikatów (Merge Tool)**: algorytm wyszukiwania powtórzonych kartotek z porównaniem pól i automatycznym przeniesieniem całej historii konsultacji i załączników.
 - **Centralny Dziennik Zmian (Audit Logs)**: pełny rejestr modyfikacji porad z podglądem różnic (diff przed/po).
-- **Zarządzanie Bazami Danych (DB Manager)**: przełączanie silnika bazy danych, testowanie połączeń, migracje schematu oraz przywracanie bazy demonstracyjnej.
+- **Zarządzanie Bazami Danych (DB Manager)**: przełączanie silnika bazy danych, testowanie połączeń, migracje schematu oraz przełącznik trybu demo.
 
 ### 3. 🗄️ Obsługa Baz Danych (PostgreSQL & SQLite)
 - **Modułowa warstwa dostępu do danych (`DatabaseAdapter`)**:
@@ -45,15 +45,15 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 - Pełna historia konsultacji z podziałem na rodzaj kontaktu, beneficjenta, orzeczenie o niepełnosprawności, kategorie poradnictwa oraz zarządzanie załącznikami.
 
 ### 7. 📎 Wydajny Magazyn Załączników na Dysku & Wolumenie
-- **Optymalizacja bazy danych**: pliki załączników (PDF, skany, zdjęcia, arkusze Excel) nie są zapisywane jako ciężki Base64 w kolumnach JSON bazy, lecz bezpośrednio na dysku w katalogu `data/uploads/attachments/` (lub ścieżce `ATTACHMENTS_DIR`).
+- **Optymalizacja bazy danych**: pliki załączników (PDF, skany, zdjęcia, arkusze Excel) nie powiększają bazy danych, lecz są zapisywane bezpośrednio na dysku/wolumenie w katalogu `data/uploads/attachments/` (lub ścieżce `ATTACHMENTS_DIR`).
 - **Endpointy API (`/api/attachments`)**: bezpieczny upload `multipart/form-data` do 50 MB, streaming plików, bezpośredni podgląd w przeglądarce i pobieranie z autoryzacją JWT.
-- **Automatyczna migracja**: serwer automatycznie konwertuje starsze załączniki Base64 z bazy SQLite/PostgreSQL na fizyczne pliki na dysku przy starcie.
 
 ### 8. 🔄 System Przekazywania Spraw & Handoff (Referral System)
 - Ekran powitalny z oczekującymi sprawami, dynamiczny wybór konsultanta, powiadomienia e-mail i automatyczne oznaczanie spraw jako zakończone po udzieleniu porady.
 
-### 9. 📊 Raporty PFRON & Eksport Danych
+### 9. 📊 Raporty PFRON & Eksport Danych (Tylko Administratorzy)
 - Eksport XLSX (Excel) z rejestrem i arkuszem podsumowania wskaźników grantowych, eksport CSV z anonimizacją RODO.
+- Funkcjonalność eksportu zabezpieczona na poziomie interfejsu oraz logiki – dostępna wyłącznie dla zweryfikowanych administratorów systemu.
 
 ### 10. 🐳 Konteneryzacja Docker & Wdrożenie Coolify
 - **Wielostopniowy Dockerfile**: optymalny obraz produkcyjny Node 22 Alpine.
@@ -64,7 +64,7 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 
 ## 🛠️ Stos Technologiczny
 
-- **Frontend**: [React 19](https://react.dev/), [React Router](https://reactrouter.com/), [TypeScript](https://www.typescriptlang.org/)
+- **Frontend**: [React 19](https://react.dev/), [React Router](https://reactrouter.com/), [TypeScript](https://www.typescriptlang.org/), [ErrorBoundary]
 - **Backend**: [Node.js](https://nodejs.org/), [Express](https://expressjs.com/), [TypeScript](https://www.typescriptlang.org/), [Multer](https://github.com/expressjs/multer)
 - **ORM & Walidacja**: [Drizzle ORM](https://orm.drizzle.team/), [Zod](https://zod.dev/), [Drizzle Zod](https://orm.drizzle.team/docs/zod)
 - **Bazy Danych**: [SQLite (better-sqlite3)](https://github.com/WiseLibs/better-sqlite3), [PostgreSQL (pg)](https://node-postgres.com/)
@@ -72,7 +72,7 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 - **Bezpieczeństwo**: [JSON Web Token (JWT)](https://jwt.io/), [SHA-256 / Crypto]
 - **Style**: [Tailwind CSS 4](https://tailwindcss.com/)
 - **Ikony**: [Lucide React](https://lucide.dev/) (wersja `^1.38.0`)
-- **Testy**: [Vitest](https://vitest.dev/), [Supertest](https://github.com/ladjs/supertest) (24 pliki testowe, 156 testów, 100% passed)
+- **Testy**: [Vitest](https://vitest.dev/), [Supertest](https://github.com/ladjs/supertest) (24 pliki testowe, 155 testów, 100% passed)
 
 ---
 
@@ -97,7 +97,7 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 │   │   ├── callers.ts          # Kartoteki kontaktów (/api/callers/*)
 │   │   └── records.ts          # Rejestr porad (/api/records/*)
 │   ├── storage/
-│   │   └── attachmentStorage.ts # Dyskowa obsługa załączników i migracja Base64
+│   │   └── attachmentStorage.ts # Dyskowa obsługa załączników na wolumenie
 │   ├── attachments.test.ts     # Testy integracyjne załączników i magazynu dyskowego
 │   ├── index.ts                # Główny serwer Express
 │   ├── server.test.ts          # Testy integracyjne backendu i JWT
@@ -105,8 +105,11 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 ├── src/
 │   ├── components/             # Komponenty interfejsu użytkownika
 │   │   ├── AttachmentsManager.tsx # Menadżer załączników (upload, podgląd, pobieranie)
+│   │   ├── ConfirmModal.tsx    # Uniwersalny modal potwierdzenia akcji i uprawnień
+│   │   ├── ErrorBoundary.tsx   # Granica błędów React chroniąca przed awariami renderowania
+│   │   ├── ExportModal.tsx     # Modal eksportu danych (tylko administratorzy)
 │   │   ├── Header.tsx          # Główny nagłówek z nawigacją tras URL
-│   │   ├── LoginScreen.tsx     # Ekran logowania z autoryzacją JWT
+│   │   ├── LoginScreen.tsx     # Ekran logowania z autoryzacją JWT i trybem demo
 │   │   ├── ProtectedRoute.tsx  # Strażnik tras URL i uprawnień admina
 │   │   ├── ContactHistoryView.tsx # Kartoteka kontaktu i oś czasu
 │   │   └── ...                 # Modale i filtry
@@ -121,11 +124,11 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 │   │   ├── StatsPage.tsx            # /stats
 │   │   └── UnauthorizedPage.tsx     # 403
 │   ├── context/
-│   │   └── AppContext.tsx      # Globalny stan z synchronizacją z API i JWT
+│   │   └── AppContext.tsx      # Globalny stan z synchronizacją z API, JWT i useMemo
 │   ├── services/
 │   │   ├── api.ts              # Klient HTTP z tokenami JWT i uploadem załączników
 │   │   ├── auth.ts             # Usługa autoryzacji
-│   │   └── storage.ts          # Usługa magazynu lokalnego
+│   │   └── storage.ts          # Usługa magazynu stanu
 │   └── types/
 │       └── index.ts            # Współdzielone typy danych
 ├── package.json

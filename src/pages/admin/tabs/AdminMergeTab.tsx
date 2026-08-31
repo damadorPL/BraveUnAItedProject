@@ -168,9 +168,9 @@ export const AdminMergeTab: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-            {potentialDuplicates.slice(0, 4).map((pair, idx) => (
+            {potentialDuplicates.slice(0, 4).map((pair) => (
               <div
-                key={idx}
+                key={`${pair.c1.id}-${pair.c2.id}`}
                 className="bg-white dark:bg-[#1E1C1A] border border-amber-200/80 dark:border-[#383431] rounded-2xl p-3 flex items-center justify-between gap-2 shadow-2xs"
               >
                 <div className="text-xs space-y-0.5">

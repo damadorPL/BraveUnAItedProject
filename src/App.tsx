@@ -18,6 +18,7 @@ import { EditCallerModal } from "./components/EditCallerModal";
 import { EmailNotificationModal } from "./components/EmailNotificationModal";
 import { NewCallerModal } from "./components/NewCallerModal";
 import { LiveSyncBanner } from "./components/LiveSyncBanner";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ShieldCheck } from "lucide-react";
 
 // Lazy-loaded routes and heavy modals (Rule 2.4 / 1.6: Dynamic Imports & Suspense Boundaries)
@@ -64,9 +65,11 @@ const AppLayout: React.FC = () => {
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full grow">
-        <Suspense fallback={<PageFallback />}>
-          <Outlet />
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<PageFallback />}>
+            <Outlet />
+          </Suspense>
+        </ErrorBoundary>
       </main>
 
       <NewCallRecordModal />
@@ -97,10 +100,11 @@ const AppLayout: React.FC = () => {
 
 export default function App() {
   return (
-    <AppProvider>
-      <BrowserRouter>
-        <Suspense fallback={<PageFallback />}>
-          <Routes>
+    <ErrorBoundary>
+      <AppProvider>
+        <BrowserRouter>
+          <Suspense fallback={<PageFallback />}>
+            <Routes>
             {/* Public Login Route */}
             <Route path="/login" element={<LoginScreen />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
@@ -134,6 +138,7 @@ export default function App() {
         </Suspense>
       </BrowserRouter>
     </AppProvider>
+    </ErrorBoundary>
   );
 }
 

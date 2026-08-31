@@ -1,7 +1,7 @@
 import { Caller, CallRecord, Specialist } from "../types";
 import { INITIAL_CALLERS, INITIAL_RECORDS, INITIAL_SPECIALISTS } from "../data/sampleData";
 
-import { idbGet, idbSet } from "./indexedDbStorage";
+import { idbSet } from "./indexedDbStorage";
 
 
 export const CALLERS_KEY = "unaited_pfron_callers_v1";
@@ -56,18 +56,7 @@ export function loadRecords(): CallRecord[] {
       idbSet(RECORDS_KEY, INITIAL_RECORDS).catch(() => {});
       return INITIAL_RECORDS;
     }
-    const parsed: CallRecord[] = JSON.parse(raw);
-    if (parsed.length < INITIAL_RECORDS.length) {
-      // Merge initial records with any user-added records
-      const existingIds = new Set(parsed.map((r) => r.id));
-      const merged = [...parsed, ...INITIAL_RECORDS.filter((r) => !existingIds.has(r.id))];
-      try {
-        localStorage.setItem(RECORDS_KEY, JSON.stringify(merged));
-      } catch {}
-      idbSet(RECORDS_KEY, merged).catch(() => {});
-      return merged;
-    }
-    return parsed;
+    return JSON.parse(raw);
   } catch (err) {
     console.error("Failed to load records:", err);
     return INITIAL_RECORDS;
@@ -92,16 +81,7 @@ export function loadSpecialists(): Specialist[] {
       idbSet(SPECIALISTS_KEY, INITIAL_SPECIALISTS).catch(() => {});
       return INITIAL_SPECIALISTS;
     }
-    const parsed: Specialist[] = JSON.parse(raw);
-    const hasAdminWithTag = parsed.some(
-      (s: Specialist) => s.id === "spec-admin" && s.isAdmin && s.name.includes("(Admin)")
-    );
-    if (!hasAdminWithTag) {
-      localStorage.setItem(SPECIALISTS_KEY, JSON.stringify(INITIAL_SPECIALISTS));
-      idbSet(SPECIALISTS_KEY, INITIAL_SPECIALISTS).catch(() => {});
-      return INITIAL_SPECIALISTS;
-    }
-    return parsed;
+    return JSON.parse(raw);
   } catch {
     return INITIAL_SPECIALISTS;
   }
@@ -114,23 +94,6 @@ export function saveSpecialists(specialists: Specialist[]): void {
   } catch (err) {
     console.error("Failed to save specialists:", err);
   }
-}
-
-export async function loadAsyncCachedData(): Promise<{
-  callers?: Caller[];
-  records?: CallRecord[];
-  specialists?: Specialist[];
-}> {
-  const [callers, records, specialists] = await Promise.all([
-    idbGet<Caller[]>(CALLERS_KEY),
-    idbGet<CallRecord[]>(RECORDS_KEY),
-    idbGet<Specialist[]>(SPECIALISTS_KEY),
-  ]);
-  return {
-    callers: callers || undefined,
-    records: records || undefined,
-    specialists: specialists || undefined,
-  };
 }
 
 export function loadSessionSpecialistId(): string | null {

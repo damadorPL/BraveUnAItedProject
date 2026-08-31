@@ -135,25 +135,3 @@ export async function idbClear(): Promise<void> {
     // Handled
   }
 }
-
-/**
- * Automatically migrate initial keys from localStorage to IndexedDB once
- */
-export async function migrateFromLocalStorage(keys: string[]): Promise<void> {
-  if (typeof window === "undefined" || !window.localStorage) return;
-
-  for (const key of keys) {
-    try {
-      const existingInIdb = await idbGet(key);
-      if (existingInIdb === null) {
-        const raw = localStorage.getItem(key);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          await idbSet(key, parsed);
-        }
-      }
-    } catch (err) {
-      console.warn(`Migration for key ${key} skipped:`, err);
-    }
-  }
-}

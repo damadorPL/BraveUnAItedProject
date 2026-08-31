@@ -7,7 +7,6 @@ import {
   saveAttachmentFile,
   getAttachmentFilePath,
   deleteAttachmentFile,
-  migrateLegacyBase64Attachments,
 } from "./storage/attachmentStorage.js";
 import path from "path";
 import fs from "fs";
@@ -152,54 +151,6 @@ describe("Attachment Storage & API Endpoint Test Suite", () => {
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(checkRes.status).toBe(404);
-    });
-  });
-
-  describe("Legacy Base64 Migration", () => {
-    it("should migrate existing caller base64 attachments to disk files", async () => {
-      const adapter = await dbManager.getAdapter();
-      const sampleBase64 = "data:application/pdf;base64," + Buffer.from("Legacy PDF Content").toString("base64");
-
-      const caller = await adapter.createCaller({
-        id: "caller-legacy-1",
-        firstName: "Jan",
-        lastName: "Nowak",
-        phoneNumber: "500600700",
-        voivodeship: "mazowieckie",
-        city: "Warszawa",
-        beneficiaryTypes: ["rodzic"],
-        hasDisabilityCertificate: "tak",
-        tags: [],
-        attachments: [
-          {
-            id: "att-legacy-1",
-            name: "stare_orzeczenie.pdf",
-            size: 100,
-            type: "pdf",
-            mimeType: "application/pdf",
-            dataUrl: sampleBase64,
-            uploadedAt: new Date().toISOString(),
-          },
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-
-      const { migratedCount } = await migrateLegacyBase64Attachments(adapter);
-      expect(migratedCount).toBeGreaterThanOrEqual(1);
-
-      const updatedCaller = await adapter.getCallerById(caller.id);
-      expect(updatedCaller).not.toBeNull();
-      const migratedAtt = updatedCaller!.attachments![0];
-      expect(migratedAtt.dataUrl).toBeUndefined();
-      expect(migratedAtt.url).toBe(`/api/attachments/att-legacy-1`);
-
-      const fileInfo = getAttachmentFilePath("att-legacy-1");
-      expect(fileInfo).not.toBeNull();
-      expect(fs.readFileSync(fileInfo!.filePath, "utf8")).toBe("Legacy PDF Content");
-
-      // Cleanup
-      await deleteAttachmentFile("att-legacy-1");
     });
   });
 });

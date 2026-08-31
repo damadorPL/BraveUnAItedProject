@@ -5,7 +5,7 @@ import { CallRecordsTable } from "../components/CallRecordsTable";
 import { Download } from "lucide-react";
 
 export const RecordsPage: React.FC = () => {
-  const { setIsExportModalOpen } = useApp();
+  const { setIsExportModalOpen, currentSpecialist } = useApp();
 
   return (
     <div className="space-y-6 animate-in fade-in">
@@ -19,14 +19,16 @@ export const RecordsPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsExportModalOpen(true)}
-          className="flex items-center space-x-1.5 px-3.5 py-2 bg-white dark:bg-[#1E1C1A] hover:bg-slate-50 dark:hover:bg-[#282522] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#383431] rounded-xl font-semibold text-xs shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
-        >
-          <Download className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
-          <span>Eksportuj rejestr (XLSX / CSV)</span>
-        </button>
+        {currentSpecialist?.isAdmin && (
+          <button
+            type="button"
+            onClick={() => setIsExportModalOpen(true)}
+            className="flex items-center space-x-1.5 px-3.5 py-2 bg-white dark:bg-[#1E1C1A] hover:bg-slate-50 dark:hover:bg-[#282522] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#383431] rounded-xl font-semibold text-xs shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
+          >
+            <Download className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
+            <span>Eksportuj rejestr (XLSX / CSV)</span>
+          </button>
+        )}
       </div>
 
       <CallRecordsFilter />

@@ -13,7 +13,6 @@ import { adminRouter } from "./routes/admin.js";
 import { attachmentsRouter } from "./routes/attachments.js";
 import {
   initAttachmentStorage,
-  migrateLegacyBase64Attachments,
 } from "./storage/attachmentStorage.js";
 
 const app = express();
@@ -77,16 +76,6 @@ async function startServer() {
     // Initialize attachments storage directory
     const attachmentsDir = initAttachmentStorage();
     console.log(`Attachment storage initialized at: ${attachmentsDir}`);
-
-    // Run legacy base64 attachments migration in background
-    const adapter = await dbManager.getAdapter();
-    migrateLegacyBase64Attachments(adapter).then(({ migratedCount }) => {
-      if (migratedCount > 0) {
-        console.log(`Successfully migrated ${migratedCount} legacy base64 attachments to disk.`);
-      }
-    }).catch((e) => {
-      console.warn("Legacy attachment migration failed:", e);
-    });
 
     app.listen(PORT, () => {
       console.log(`🚀 SYNAPSIS Backend Server running on http://localhost:${PORT}`);

@@ -5,6 +5,7 @@ import {
   findSpecialistByEmail,
   DEMO_PASSWORD,
 } from "../services/auth";
+import { INITIAL_SPECIALISTS } from "../data/sampleData";
 import { api } from "../services/api";
 import { PasswordResetModal } from "./PasswordResetModal";
 import { SpecialistAvatar } from "./SpecialistAvatar";
@@ -22,7 +23,7 @@ import {
 } from "lucide-react";
 
 export const LoginScreen: React.FC = () => {
-  const { currentSpecialist, specialists, login } = useApp();
+  const { currentSpecialist, specialists, login, showDemoFeatures } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as any)?.from?.pathname || "/search";
@@ -40,6 +41,13 @@ export const LoginScreen: React.FC = () => {
     () => findSpecialistByEmail(specialists, email),
     [specialists, email]
   );
+
+  // Tylko standardowe konta demonstracyjne (nie ujawniamy wszystkich kont dodanych do bazy)
+  const demoSpecialists = useMemo(() => {
+    const demoIds = new Set(INITIAL_SPECIALISTS.map((s) => s.id));
+    const matched = specialists.filter((s) => demoIds.has(s.id));
+    return matched.length > 0 ? matched : INITIAL_SPECIALISTS;
+  }, [specialists]);
 
   // If already authenticated, redirect to destination safely
   if (currentSpecialist) {
@@ -245,61 +253,63 @@ export const LoginScreen: React.FC = () => {
           </div>
         </form>
 
-        {/* Demo hint */}
-        <div className="mt-6 pt-4 border-t border-slate-100 text-[11px] text-slate-600">
-          <p>
-            Wersja demonstracyjna (hasło dla wszystkich kont:{" "}
-            <code className="font-mono font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded-md">
-              {DEMO_PASSWORD}
-            </code>
-            , o ile nie zostało zmienione przez reset hasła)
-          </p>
-          <button
-            type="button"
-            onClick={() => setShowDemoAccounts((v) => !v)}
-            aria-expanded={showDemoAccounts}
-            className="mt-2 flex items-center gap-1 font-bold text-[#296B6E] hover:text-[#1F5254] transition-colors cursor-pointer"
-          >
-            {showDemoAccounts ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            <span>{showDemoAccounts ? "Ukryj konta demo" : "Pokaż konta demo"}</span>
-          </button>
+        {/* Demo hint - only visible when Demo Mode is enabled */}
+        {showDemoFeatures && (
+          <div className="mt-6 pt-4 border-t border-slate-100 text-[11px] text-slate-600">
+            <p>
+              Wersja demonstracyjna (hasło dla wszystkich kont:{" "}
+              <code className="font-mono font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded-md">
+                {DEMO_PASSWORD}
+              </code>
+              , o ile nie zostało zmienione przez reset hasła)
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowDemoAccounts((v) => !v)}
+              aria-expanded={showDemoAccounts}
+              className="mt-2 flex items-center gap-1 font-bold text-[#296B6E] hover:text-[#1F5254] transition-colors cursor-pointer"
+            >
+              {showDemoAccounts ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              <span>{showDemoAccounts ? "Ukryj konta demo" : "Pokaż konta demo"}</span>
+            </button>
 
-          {showDemoAccounts && (
-            <ul className="mt-2 space-y-1 animate-in fade-in">
-              {specialists.map((s) => (
-                <li key={s.id}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEmail(s.email);
-                      setPassword(DEMO_PASSWORD);
-                      setError(null);
-                    }}
-                    className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-50 text-left transition-colors cursor-pointer"
-                  >
-                    <span className="flex items-center gap-2 min-w-0">
-                      <SpecialistAvatar
-                        name={s.name}
-                        avatarBg={s.avatarBg}
-                        avatarUrl={s.avatarUrl}
-                        className="w-5 h-5 rounded-full text-[9px] font-black shrink-0"
-                      />
-                      <span className="font-mono text-slate-700 truncate">{s.email}</span>
-                    </span>
-                    {s.isAdmin ? (
-                      <span className="flex items-center gap-0.5 text-amber-800 font-bold shrink-0">
-                        <ShieldCheck className="w-3 h-3" />
-                        Admin
+            {showDemoAccounts && (
+              <ul className="mt-2 space-y-1 animate-in fade-in">
+                {demoSpecialists.map((s) => (
+                  <li key={s.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmail(s.email);
+                        setPassword(DEMO_PASSWORD);
+                        setError(null);
+                      }}
+                      className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-50 text-left transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2 min-w-0">
+                        <SpecialistAvatar
+                          name={s.name}
+                          avatarBg={s.avatarBg}
+                          avatarUrl={s.avatarUrl}
+                          className="w-5 h-5 rounded-full text-[9px] font-black shrink-0"
+                        />
+                        <span className="font-mono text-slate-700 truncate">{s.email}</span>
                       </span>
-                    ) : (
-                      <span className="text-slate-600 shrink-0">{s.title}</span>
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+                      {s.isAdmin ? (
+                        <span className="flex items-center gap-0.5 text-amber-800 font-bold shrink-0">
+                          <ShieldCheck className="w-3 h-3" />
+                          Admin
+                        </span>
+                      ) : (
+                        <span className="text-slate-600 shrink-0">{s.title}</span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
 
       <p className="mt-6 text-[11px] text-slate-300 flex items-center gap-1.5">

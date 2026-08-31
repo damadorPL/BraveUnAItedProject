@@ -1,7 +1,6 @@
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
-import { DatabaseAdapter } from "../db/adapter.js";
 
 export function getAttachmentsDir(): string {
   const customDir = process.env.ATTACHMENTS_DIR;
@@ -126,110 +125,4 @@ export async function deleteAttachmentFile(id: string): Promise<boolean> {
     console.error(`Failed to delete attachment ${id}:`, err);
     return false;
   }
-}
-
-export async function migrateLegacyBase64Attachments(adapter: DatabaseAdapter): Promise<{
-  migratedCount: number;
-  skippedCount: number;
-}> {
-  let migratedCount = 0;
-  let skippedCount = 0;
-
-  try {
-    const dir = initAttachmentStorage();
-    const callers = await adapter.getCallers();
-
-    for (const caller of callers) {
-      let modified = false;
-      const updatedAttachments = [];
-
-      for (const att of (caller.attachments || [])) {
-        if (att.dataUrl && typeof att.dataUrl === "string" && att.dataUrl.startsWith("data:")) {
-          try {
-            const matches = att.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
-            if (matches) {
-              const mimeType = matches[1] || att.mimeType || "application/octet-stream";
-              const buffer = Buffer.from(matches[2], "base64");
-              const ext = path.extname(att.name || "").replace(/[^a-zA-Z0-9.]/g, "").slice(0, 10);
-              const storageFilename = `${att.id}${ext}`;
-              const filePath = path.join(dir, storageFilename);
-
-              if (!fs.existsSync(filePath)) {
-                await fs.promises.writeFile(filePath, buffer);
-              }
-
-              const { dataUrl: _discard, ...rest } = att;
-              updatedAttachments.push({
-                ...rest,
-                url: `/api/attachments/${att.id}`,
-                size: att.size || buffer.length,
-                mimeType,
-                type: att.type || detectAttachmentType(att.name || "", mimeType),
-              });
-              modified = true;
-              migratedCount++;
-              continue;
-            }
-          } catch (e) {
-            console.warn(`Could not migrate caller attachment ${att.id}:`, e);
-          }
-        }
-        updatedAttachments.push(att);
-        skippedCount++;
-      }
-
-      if (modified) {
-        await adapter.updateCaller({ ...caller, attachments: updatedAttachments });
-      }
-    }
-
-    const records = await adapter.getRecords();
-    for (const record of records) {
-      let modified = false;
-      const updatedAttachments = [];
-
-      for (const att of (record.attachments || [])) {
-        if (att.dataUrl && typeof att.dataUrl === "string" && att.dataUrl.startsWith("data:")) {
-          try {
-            const matches = att.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
-            if (matches) {
-              const mimeType = matches[1] || att.mimeType || "application/octet-stream";
-              const buffer = Buffer.from(matches[2], "base64");
-              const ext = path.extname(att.name || "").replace(/[^a-zA-Z0-9.]/g, "").slice(0, 10);
-              const storageFilename = `${att.id}${ext}`;
-              const filePath = path.join(dir, storageFilename);
-
-              if (!fs.existsSync(filePath)) {
-                await fs.promises.writeFile(filePath, buffer);
-              }
-
-              const { dataUrl: _discard, ...rest } = att;
-              updatedAttachments.push({
-                ...rest,
-                url: `/api/attachments/${att.id}`,
-                size: att.size || buffer.length,
-                mimeType,
-                type: att.type || detectAttachmentType(att.name || "", mimeType),
-              });
-              modified = true;
-              migratedCount++;
-              continue;
-            }
-          } catch (e) {
-            console.warn(`Could not migrate record attachment ${att.id}:`, e);
-          }
-        }
-        updatedAttachments.push(att);
-        skippedCount++;
-      }
-
-      if (modified) {
-        await adapter.updateRecord({ ...record, attachments: updatedAttachments });
-      }
-    }
-  } catch (err) {
-    console.error("Error during legacy base64 migration:", err);
-  }
-
-  return { migratedCount, skippedCount };
 }

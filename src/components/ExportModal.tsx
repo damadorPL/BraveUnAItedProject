@@ -12,16 +12,17 @@ import {
 import { fireConfetti } from "../utils/confetti";
 
 export const ExportModal: React.FC = () => {
-  const { isExportModalOpen, setIsExportModalOpen, records, callers, filterState } = useApp();
+  const { isExportModalOpen, setIsExportModalOpen, records, callers, filterState, currentSpecialist } = useApp();
 
   const [anonymized, setAnonymized] = useState(true);
   const [format, setFormat] = useState<"csv" | "xlsx">("csv");
 
-  if (!isExportModalOpen) return null;
+  if (!isExportModalOpen || !currentSpecialist?.isAdmin) return null;
 
   const filteredRecords = filterCallRecords(records, buildCallersMap(callers), filterState);
 
   const handleExport = () => {
+    if (!currentSpecialist?.isAdmin) return;
     const exported = exportRecordsData(filteredRecords, callers, {
       anonymized,
       format,

@@ -387,9 +387,9 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                   </h3>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {potentialDuplicates.map((pair, idx) => (
+                  {potentialDuplicates.map((pair) => (
                     <div
-                      key={idx}
+                      key={`${pair.c1.id}-${pair.c2.id}`}
                       className="bg-white dark:bg-[#141312] border border-amber-200/80 dark:border-[#383431] rounded-xl p-2.5 flex items-center justify-between shadow-2xs text-xs"
                     >
                       <div>
