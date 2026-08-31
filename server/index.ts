@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import path from "path";
+import fs from "fs";
 import express from "express";
 import cors from "cors";
 import { dbManager } from "./db/index.js";
@@ -38,6 +40,18 @@ app.use("/api/auth", authRouter);
 app.use("/api/callers", callersRouter);
 app.use("/api/records", recordsRouter);
 app.use("/api/admin", adminRouter);
+
+// Serve frontend static build in production
+const distPath = path.resolve(process.cwd(), "dist");
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+  app.use((req, res, next) => {
+    if (req.method === "GET" && !req.path.startsWith("/api/")) {
+      return res.sendFile(path.join(distPath, "index.html"));
+    }
+    next();
+  });
+}
 
 // Global Error Handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
