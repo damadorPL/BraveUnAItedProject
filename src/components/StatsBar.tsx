@@ -24,8 +24,8 @@ interface GuidanceTypeMeta {
   barClass: string;
 }
 
-// Metadane czysto prezentacyjne (ikona, kolor paska) — etykiety sprawozdawcze
-// żyją w utils/reportStats.ts, wspólnie z eksportem raportu.
+// Purely presentational metadata (icon, bar color) — reporting labels
+// live in utils/reportStats.ts, shared with report export logic.
 const GUIDANCE_TYPE_META: Record<GuidanceType, GuidanceTypeMeta> = {
   "prawno-obywatelskie": {
     icon: <Scale className="w-3.5 h-3.5 text-blue-600" />,
@@ -55,7 +55,7 @@ function toIsoDate(date: Date): string {
   return date.getFullYear() + "-" + month + "-" + day;
 }
 
-// Kwartały bieżącego roku — okresy sprawozdawcze PFRON.
+// Current year quarters — PFRON reporting periods.
 function buildQuarterPresets(year: number): { label: string; from: string; to: string }[] {
   return [1, 2, 3, 4].map((q) => ({
     label: "Q" + q + " " + year,
@@ -85,7 +85,7 @@ export const StatsBar: React.FC = () => {
       filterState.specialistId
   );
 
-  // Wspólna logika liczenia ze sprawozdawczym eksportem (arkusz "Podsumowanie")
+  // Shared computation logic with reporting export ("Podsumowanie" sheet)
   const stats = useMemo(
     () => computeReportStats(filteredRecords, callersMap),
     [filteredRecords, callersMap]

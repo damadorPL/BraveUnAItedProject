@@ -25,10 +25,10 @@ import {
 import { api, getStoredToken, setStoredToken } from "../services/api";
 import { computeRecordChanges } from "../utils/auditLogger";
 
-// Jedno źródło prawdy dla "czy ten wpis jest przekazany do tego specjalisty" —
-// dopasowanie po referredSpecialistId, a gdy go brak (starsze/ręczne przekazania),
-// fallback po nazwisku w polu referredTo. Używane zarówno przy pokazywaniu listy
-// przekazanych spraw, jak i przy automatycznym oznaczaniu ich jako załatwione.
+// Single source of truth for "is this consultation referred to this specialist" —
+// matching by referredSpecialistId, or when missing (legacy/manual referrals),
+// fallback by last name in referredTo. Used both when rendering referred cases
+// and when automatically marking them as completed.
 const isReferredToSpecialist = (
   rec: CallRecord,
   specialistId: string,

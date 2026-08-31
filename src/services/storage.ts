@@ -137,7 +137,7 @@ export function clearSession(): void {
   }
 }
 
-// Hashe haseł ustawionych przez reset (id specjalistki -> SHA-256 hex); brak wpisu = hasło demo
+// Hash overrides set via reset (specialist ID -> SHA-256 hex); absence of entry = demo password applies
 export function loadPasswordOverrides(): Record<string, string> {
   try {
     const raw = localStorage.getItem(PASSWORDS_KEY);

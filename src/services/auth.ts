@@ -1,6 +1,6 @@
 import { Specialist } from "../types";
 
-// Wspólne hasło demo — aplikacja nie ma backendu, weryfikacja jest symulowana.
+// Shared demo password — client-only fallback authentication.
 export const DEMO_PASSWORD = "synapsis2026";
 
 const TITLE_PREFIXES = ["dr", "mgr", "mec.", "mec", "lic.", "lic", "prof.", "prof"];
@@ -32,7 +32,7 @@ export async function hashPassword(password: string): Promise<string> {
     .join("");
 }
 
-// Brak nadpisania (null) = obowiązuje wspólne hasło demo.
+// No override (null) = common demo password applies.
 export async function verifySpecialistPassword(
   passwordHashOverride: string | null,
   password: string

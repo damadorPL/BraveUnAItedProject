@@ -36,13 +36,13 @@ export const LoginScreen: React.FC = () => {
   const [isResetOpen, setIsResetOpen] = useState(false);
   const [resetSuccess, setResetSuccess] = useState<string | null>(null);
 
-  // Auto-detekcja typu konta: system rozpoznaje konto (i rolę) po adresie e-mail
+  // Account auto-detection: system identifies account (and role) by email address
   const recognized = useMemo(
     () => findSpecialistByEmail(specialists, email),
     [specialists, email]
   );
 
-  // Tylko standardowe konta demonstracyjne (nie ujawniamy wszystkich kont dodanych do bazy)
+  // Only standard demo accounts (do not expose newly added database accounts in demo list)
   const demoSpecialists = useMemo(() => {
     const demoIds = new Set(INITIAL_SPECIALISTS.map((s) => s.id));
     const matched = specialists.filter((s) => demoIds.has(s.id));

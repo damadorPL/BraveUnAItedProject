@@ -198,7 +198,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
 
         {step === "CODE" && recognized && (
           <form onSubmit={handleSetPassword} noValidate>
-            {/* Symulowana wiadomość e-mail (aplikacja demo nie wysyła prawdziwych maili) */}
+            {/* Simulated email message (demo application does not send real emails) */}
             <div className="mt-2 mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs">
               <div className="flex items-center gap-1.5 font-bold text-amber-900 mb-1.5">
                 <Mail className="w-3.5 h-3.5 shrink-0" />

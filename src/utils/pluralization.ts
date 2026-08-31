@@ -1,10 +1,10 @@
 /**
- * Uniwersalna polska odmiana rzeczowników i przymiotników przez liczby
+ * Universal Polish pluralization rules for nouns and adjectives based on numbers
  * 
- * Zasada:
- * - 1: forma pojedyncza (np. "1 porada", "1 wpis", "1 załącznik", "1 oczekująca")
- * - 2, 3, 4 (oraz liczby z końcówką 2, 3, 4 z wyjątkiem 12, 13, 14): forma nieliczna (np. "2 porady", "23 porady")
- * - 0, 5..21 (oraz liczby z końcówkami 0, 1 poza 1, 5..9, 12..14): forma mnoga / dopełniacz (np. "0 porad", "5 porad", "12 porad", "21 porad")
+ * Rules:
+ * - 1: singular form (e.g. "1 porada", "1 wpis", "1 załącznik", "1 oczekująca")
+ * - 2, 3, 4 (and numbers ending in 2, 3, 4 except 12, 13, 14): paucal form (e.g. "2 porady", "23 porady")
+ * - 0, 5..21 (and numbers ending in 0, 1 except 1, 5..9, 12..14): plural/genitive form (e.g. "0 porad", "5 porad", "12 porad", "21 porad")
  */
 
 export function pluralize(count: number, one: string, few: string, many: string): string {

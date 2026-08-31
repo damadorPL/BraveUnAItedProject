@@ -6,9 +6,8 @@ export function buildCallersMap(callers: Caller[]): Map<string, Caller> {
   return map;
 }
 
-// Jedno źródło prawdy dla filtrowania rejestru porad — używane przez tabelę
-// rejestru oraz eksport, żeby wyeksportowany zbiór zawsze odpowiadał temu,
-// co użytkownik widzi na ekranie.
+// Single source of truth for call records filtering — used by both the records
+// table and export logic, ensuring exported datasets match what users see on screen.
 export function filterCallRecords(
   records: CallRecord[],
   callersMap: Map<string, Caller>,
@@ -48,7 +47,7 @@ export function filterCallRecords(
     }
 
     if (filterState.dateTo && rec.callDate) {
-      // dateTo traktujemy włącznie — do końca wskazanego dnia
+      // Treat dateTo as inclusive — until the end of the specified day
       const to = new Date(filterState.dateTo);
       to.setHours(23, 59, 59, 999);
       if (new Date(rec.callDate).getTime() > to.getTime()) {

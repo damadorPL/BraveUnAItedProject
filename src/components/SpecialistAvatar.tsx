@@ -5,13 +5,13 @@ interface SpecialistAvatarProps {
   name: string;
   avatarBg?: string;
   avatarUrl?: string;
-  // Klasy rozmiaru, kształtu i typografii inicjałów, np. "w-7 h-7 rounded-lg text-[10px] font-black"
+  // Size, shape, and typography classes for initials, e.g. "w-7 h-7 rounded-lg text-[10px] font-black"
   className: string;
 }
 
-// Awatar konsultanta: zdjęcie profilowe (avatarUrl), a gdy go brak — inicjały
-// na kolorowym tle avatarBg. Renderowany jako <span>/<img>, bo bywa osadzany
-// wewnątrz <button>, gdzie <div> byłby niepoprawnym HTML.
+// Specialist avatar: profile photo (avatarUrl), or fallback initials
+// on colored avatarBg background. Rendered as <span>/<img> since it may be
+// nested inside <button>, where <div> would be invalid HTML.
 export const SpecialistAvatar: React.FC<SpecialistAvatarProps> = ({
   name,
   avatarBg,

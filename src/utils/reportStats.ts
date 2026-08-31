@@ -1,8 +1,7 @@
 import { Caller, CallRecord, GUIDANCE_TYPES, GuidanceType, VOIVODESHIPS } from "../types";
 
-// Etykiety sprawozdawcze rodzajów poradnictwa — wspólne dla widoku statystyk
-// (StatsBar) i eksportu raportu, żeby plik dla grantodawcy używał tych samych
-// nazw, które widać w aplikacji.
+// Reporting labels for guidance types — shared between statistics view (StatsBar)
+// and report export, so that grantor files use identical naming seen in the app.
 export const GUIDANCE_TYPE_LABELS: Record<GuidanceType, string> = {
   "prawno-obywatelskie": "Prawno-obywatelskie (WZON, szkoła, ZUS, prawo)",
   "w zakresie psychologii i rehabilitacji społecznej":
@@ -27,7 +26,7 @@ export interface VoivodeshipStatsRow {
 
 export interface ReportStats {
   totalRecords: number;
-  // Suma tylko faktycznie zarejestrowanych minut — bez fabrykowania czasu.
+  // Sum of actually recorded minutes only — no manufactured time.
   totalMinutes: number;
   uniqueBeneficiaries: number;
   certifiedBeneficiaries: number;
@@ -36,8 +35,8 @@ export interface ReportStats {
   voivodeshipRows: VoivodeshipStatsRow[];
 }
 
-// Jedno źródło prawdy dla liczenia statystyk sprawozdawczych — StatsBar i
-// eksport raportu muszą pokazywać identyczne wartości dla tego samego zbioru.
+// Single source of truth for computing reporting statistics — StatsBar and
+// report export must produce identical values for the same dataset.
 export function computeReportStats(
   records: CallRecord[],
   callersMap: Map<string, Caller>
@@ -70,8 +69,8 @@ export function computeReportStats(
     };
   });
 
-  // Liczba porad (nie kartotek) per województwo — pełna lista 16 dla raportu
-  // PFRON, "brak" tylko gdy faktycznie są porady bez przypisanego województwa.
+  // Number of consultations (not callers) per voivodeship — full list of 16 for
+  // PFRON reports, "none" only when there are consultations without assigned voivodeship.
   const voivodeshipCounts = new Map<string, number>();
   records.forEach((r) => {
     const voivodeship = callersMap.get(r.callerId)?.voivodeship || "brak";

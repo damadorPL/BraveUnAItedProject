@@ -84,11 +84,11 @@ export const useApp = (): AppContextType => {
   return context;
 };
 
-// Dla komponentów renderowanych wyłącznie za bramką logowania (AuthGate w App.tsx).
+// For components rendered exclusively behind authentication (AuthGate in App.tsx).
 export const useCurrentSpecialist = (): Specialist => {
   const { currentSpecialist } = useApp();
   if (!currentSpecialist) {
-    throw new Error("useCurrentSpecialist wymaga zalogowanego użytkownika (za AuthGate)");
+    throw new Error("useCurrentSpecialist requires an authenticated specialist (behind AuthGate)");
   }
   return currentSpecialist;
 };

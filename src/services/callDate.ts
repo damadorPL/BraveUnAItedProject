@@ -1,10 +1,10 @@
-/** Dzisiejsza data w formacie YYYY-MM-DD (dla input[type=date]). */
+/** Today's date in YYYY-MM-DD format (for input[type=date]). */
 export const todayDateInputValue = (): string => new Date().toISOString().slice(0, 10);
 
 /**
- * Zamienia wartość z input[type=date] na ISO string porady.
- * Dla daty dzisiejszej (lub pustej) zachowuje bieżącą godzinę,
- * dla wstecznej ustawia południe, żeby uniknąć przesunięć stref czasowych.
+ * Converts a value from input[type=date] into an ISO date string.
+ * For today's date (or empty), preserves the current time,
+ * for past dates sets noon to avoid timezone shifts.
  */
 export const callDateToIso = (dateInputValue: string): string => {
   if (!dateInputValue || dateInputValue === todayDateInputValue()) {

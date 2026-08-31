@@ -21,7 +21,7 @@ export const CallRecordsFilter: React.FC = () => {
   const handleGuidanceTypeChange = (value: string) => {
     setFilterState((prev) => {
       const areasForType = value ? GUIDANCE_AREAS_MAP[value as GuidanceType] || [] : [];
-      // Obszar zostaje tylko, gdy istnieje w nowo wybranym rodzaju poradnictwa
+      // Keep selected area only if it exists in the newly selected guidance type
       const keepArea = value === "" || areasForType.includes(prev.guidanceArea);
       return {
         ...prev,

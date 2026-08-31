@@ -625,7 +625,7 @@ export const AdminSpecialistsTab: React.FC = () => {
               />
             </div>
 
-            {/* Awatar i zdjęcie profilowe */}
+            {/* Avatar & Profile Photo */}
             <div className="sm:col-span-2 lg:col-span-3 bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#2C2927] rounded-2xl p-4 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center space-x-3.5">

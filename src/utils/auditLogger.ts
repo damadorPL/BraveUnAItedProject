@@ -1,8 +1,8 @@
 import { CallRecord, RecordEditLog, RecordFieldChange, Specialist } from "../types";
 
 /**
- * Porównuje poprzedni i zaktualizowany wpis porady, wykrywając zmienione pola
- * i tworząc wpis w rejestrze audytu edycji.
+ * Compares previous and updated record entries, detecting changed fields
+ * and creating an edit audit log entry.
  */
 export function computeRecordChanges(
   prev: CallRecord,
@@ -11,7 +11,7 @@ export function computeRecordChanges(
 ): RecordEditLog | null {
   const changes: RecordFieldChange[] = [];
 
-  // 1. Rodzaj porady (opis zgłoszenia)
+  // 1. Advice description (case type / description)
   const prevDesc = (prev.adviceDescription || "").trim();
   const nextDesc = (next.adviceDescription || "").trim();
   if (prevDesc !== nextDesc) {
@@ -23,7 +23,7 @@ export function computeRecordChanges(
     });
   }
 
-  // 2. Uwagi, pomoc i wskazówki
+  // 2. Notes, assistance, and guidance
   const prevNotes = (prev.notes || "").trim();
   const nextNotes = (next.notes || "").trim();
   if (prevNotes !== nextNotes) {
@@ -35,7 +35,7 @@ export function computeRecordChanges(
     });
   }
 
-  // 3. Rodzaj poradnictwa
+  // 3. Guidance type
   if (prev.guidanceType !== next.guidanceType) {
     changes.push({
       field: "guidanceType",
@@ -45,7 +45,7 @@ export function computeRecordChanges(
     });
   }
 
-  // 4. Obszary wsparcia
+  // 4. Support areas
   const prevAreas = [...(prev.guidanceAreas || [])].sort().join(", ");
   const nextAreas = [...(next.guidanceAreas || [])].sort().join(", ");
   if (prevAreas !== nextAreas) {
@@ -57,7 +57,7 @@ export function computeRecordChanges(
     });
   }
 
-  // 5. Forma kontaktu
+  // 5. Contact method
   const prevContacts = [...(prev.contactTypes || [])].sort().join(", ");
   const nextContacts = [...(next.contactTypes || [])].sort().join(", ");
   if (prevContacts !== nextContacts) {
@@ -69,7 +69,7 @@ export function computeRecordChanges(
     });
   }
 
-  // 6. Kogo dotyczy porada
+  // 6. Subject target (who the advice concerns)
   const prevTargets = [...(prev.subjectTargets || [])].sort().join(", ");
   const nextTargets = [...(next.subjectTargets || [])].sort().join(", ");
   if (prevTargets !== nextTargets) {
@@ -81,7 +81,7 @@ export function computeRecordChanges(
     });
   }
 
-  // 7. Czas trwania
+  // 7. Duration
   if (prev.durationMinutes !== next.durationMinutes) {
     changes.push({
       field: "durationMinutes",
@@ -91,7 +91,7 @@ export function computeRecordChanges(
     });
   }
 
-  // 8. Data porady
+  // 8. Call date
   if (prev.callDate !== next.callDate) {
     const prevDateStr = prev.callDate
       ? new Date(prev.callDate).toLocaleString("pl-PL", {
@@ -119,7 +119,7 @@ export function computeRecordChanges(
     });
   }
 
-  // 9. Przypisany specjalista
+  // 9. Assigned specialist
   if (prev.specialistName !== next.specialistName) {
     changes.push({
       field: "specialistName",
@@ -129,7 +129,7 @@ export function computeRecordChanges(
     });
   }
 
-  // 10. Przekazanie do specjalisty
+  // 10. Referral to specialist
   const prevRef = (prev.referredTo || "").trim();
   const nextRef = (next.referredTo || "").trim();
   if (prevRef !== nextRef) {
@@ -141,7 +141,7 @@ export function computeRecordChanges(
     });
   }
 
-  // 11. Notatka przekazania
+  // 11. Referral note
   const prevRefNote = (prev.referredNote || "").trim();
   const nextRefNote = (next.referredNote || "").trim();
   if (prevRefNote !== nextRefNote) {
@@ -153,7 +153,7 @@ export function computeRecordChanges(
     });
   }
 
-  // 12. Status sprawy przekazanej
+  // 12. Referred status
   if (prev.referredStatus !== next.referredStatus && (prev.referredStatus || next.referredStatus)) {
     changes.push({
       field: "referredStatus",
@@ -163,7 +163,7 @@ export function computeRecordChanges(
     });
   }
 
-  // 13. Załączniki
+  // 13. Attachments
   const prevAttCount = (prev.attachments || []).length;
   const nextAttCount = (next.attachments || []).length;
   if (prevAttCount !== nextAttCount) {

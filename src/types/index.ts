@@ -153,9 +153,9 @@ export interface Caller {
   phoneNumber: string;
   voivodeship: Voivodeship;
   city: string;
-  beneficiaryTypes: BeneficiaryType[]; // Kim jest beneficjent
-  hasDisabilityCertificate: DisabilityCertificateStatus; // Posiadanie orzeczenia
-  disabilityDegree?: DisabilityDegree; // Stopień niepełnosprawności
+  beneficiaryTypes: BeneficiaryType[]; // Beneficiary relation/type
+  hasDisabilityCertificate: DisabilityCertificateStatus; // Certificate status
+  disabilityDegree?: DisabilityDegree; // Disability degree
   tags: string[];
   attachments?: Attachment[];
   createdAt: string;
@@ -165,26 +165,26 @@ export interface Caller {
 export interface CallRecord {
   id: string;
   callerId: string;
-  callDate: string; // Kiedy udzielono porady (ISO String)
+  callDate: string; // When consultation occurred (ISO String)
   specialistId: string;
   specialistName: string;
   specialistRole: string;
-  contactTypes: ContactType[]; // Rodzaj kontaktu
-  subjectTargets: SubjectTarget[]; // Kogo dotyczy porada
-  guidanceType: GuidanceType; // Rodzaj poradnictwa
-  guidanceAreas: string[]; // Obszar, którego dotyczy porada
-  adviceDescription: string; // Rodzaj porady (krótki opis, czego dotyczyła)
-  notes?: string; // Uwagi
-  referredTo?: string; // Przekazane do innego specjalisty
-  referredSpecialistId?: string; // ID wybranego dyżurującego
-  referredSpecialistEmail?: string; // E-mail dyżurującego
-  referredNote?: string; // Notatka dla przekazanego specjalisty
+  contactTypes: ContactType[]; // Contact method
+  subjectTargets: SubjectTarget[]; // Who advice concerns
+  guidanceType: GuidanceType; // Guidance type
+  guidanceAreas: string[]; // Guidance area
+  adviceDescription: string; // Advice description / case overview
+  notes?: string; // Notes
+  referredTo?: string; // Referred to another specialist
+  referredSpecialistId?: string; // Assigned specialist ID
+  referredSpecialistEmail?: string; // Specialist email
+  referredNote?: string; // Note for referred specialist
   referredStatus?: "OCZEKUJĄCA" | "PRZYJĘTA" | "ZAKOŃCZONA";
-  attachments?: Attachment[]; // Załączniki (pdf/jpg)
+  attachments?: Attachment[]; // Attachments (pdf/jpg/etc.)
   durationMinutes: number;
   createdAt: string;
   updatedAt?: string;
-  editLogs?: RecordEditLog[]; // Rejestr historii edycji i wprowadzonych zmian
+  editLogs?: RecordEditLog[]; // Edit audit history and field change logs
 }
 
 export interface RecordFieldChange {
@@ -226,8 +226,8 @@ export interface Specialist {
   title: string;
   guidanceType: GuidanceType;
   avatarBg: string;
-  // Zdjęcie profilowe jako data URL (przeskalowane do kwadratu przy zapisie);
-  // brak wartości = inicjały na kolorowym tle avatarBg.
+  // Profile photo as data URL (scaled to square on save);
+  // absence of value = initials on colored avatarBg background.
   avatarUrl?: string;
   email: string;
   isAdmin?: boolean;

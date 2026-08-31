@@ -50,7 +50,7 @@ export function readFileAsDataUrl(file: File): Promise<string> {
 export const AVATAR_MAX_FILE_SIZE = 5 * 1024 * 1024;
 export const AVATAR_DIMENSION = 256;
 
-// Zwraca komunikat błędu albo null, gdy plik nadaje się na awatar.
+// Returns an error message or null if file is valid for an avatar.
 export function validateAvatarFile(file: { type: string; size: number }): string | null {
   if (!file.type.toLowerCase().startsWith("image/")) {
     return "Wybrany plik nie jest obrazem. Dozwolone formaty: JPG, PNG, WEBP.";
@@ -61,8 +61,8 @@ export function validateAvatarFile(file: { type: string; size: number }): string
   return null;
 }
 
-// Kadruje obraz do kwadratu (środek) i skaluje do AVATAR_DIMENSION,
-// zwracając data URL JPEG — na tyle mały, by zmieścić się w localStorage.
+// Crops the image to a center square and scales it to AVATAR_DIMENSION,
+// returning a JPEG data URL — compact enough to fit in localStorage.
 export function processAvatarImage(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const objectUrl = URL.createObjectURL(file);
@@ -82,7 +82,7 @@ export function processAvatarImage(file: File): Promise<string> {
         reject(new Error("Canvas 2D jest niedostępny w tej przeglądarce"));
         return;
       }
-      // JPEG nie obsługuje przezroczystości — białe tło pod np. PNG z alfą.
+      // JPEG does not support transparency — use white background for PNG with alpha.
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, AVATAR_DIMENSION, AVATAR_DIMENSION);
       ctx.drawImage(

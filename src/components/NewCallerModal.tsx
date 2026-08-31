@@ -309,7 +309,7 @@ export const NewCallerModal: React.FC = () => {
             </div>
           </div>
 
-          {/* Posiadanie orzeczenia & Stopień niepełnosprawności */}
+          {/* Disability Certificate Status & Degree */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 bg-slate-50 dark:bg-[#161514] p-3.5 rounded-2xl border border-slate-200 dark:border-[#2C2927]">
             <div>
               <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">

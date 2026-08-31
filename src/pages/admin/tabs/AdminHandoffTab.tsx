@@ -564,7 +564,7 @@ export const AdminHandoffTab: React.FC = () => {
                       </div>
                     </td>
 
-                    {/* Przebieg przekazania: Źródło ➔ Cel */}
+                    {/* Referral workflow: Source ➔ Target */}
                     <td className="py-3 px-2.5">
                       <div className="min-w-0 pr-1 space-y-0.5">
                         <div className="flex items-center space-x-1 text-xs truncate">

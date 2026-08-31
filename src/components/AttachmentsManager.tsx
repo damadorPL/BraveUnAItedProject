@@ -28,7 +28,7 @@ interface Props {
   specialistName: string;
   title?: string;
   readOnly?: boolean;
-  /** Czy pokazywać przycisk usuwania załącznika (domyślnie: !readOnly) */
+  /** Whether to show delete button for attachment (default: !readOnly) */
   canRemove?: boolean;
   compact?: boolean;
   defaultExpanded?: boolean;

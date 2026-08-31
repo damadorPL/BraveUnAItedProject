@@ -415,7 +415,7 @@ export const ContactHistoryView: React.FC<Props> = ({ caller }) => {
                     </div>
                   </li>
 
-                  {/* Punkt 3: Uwagi i zalecenia (jeśli istnieją) */}
+                  {/* Section 3: Notes and recommendations (if present) */}
                   {firstRec?.notes && (
                     <li className="flex items-start gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#296B6E] dark:bg-[#FFB200] shrink-0 mt-1.5" />
@@ -645,7 +645,7 @@ export const ContactHistoryView: React.FC<Props> = ({ caller }) => {
 
                     {/* Problem / Description and Notes */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                      {/* Rodzaj porady (opis, czego dotyczyła) */}
+                      {/* Consultation description / case overview */}
                       <div className="bg-slate-50/80 dark:bg-[#161514] p-3.5 rounded-2xl border border-slate-200/80 dark:border-[#2C2927]">
                         <div className="font-bold text-slate-700 dark:text-slate-300 text-[10px] flex items-center mb-1.5">
                           <FileText className="w-3.5 h-3.5 mr-1 text-slate-500 dark:text-slate-400" />

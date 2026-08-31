@@ -240,7 +240,7 @@ export const EditCallRecordModal: React.FC = () => {
             </div>
           </div>
 
-          {/* 2. Obszar, którego dotyczy porada (Kaskadowy wielokrotny) */}
+          {/* 2. Guidance Area (Cascading multi-select) */}
           <div className="bg-amber-50/60 dark:bg-[#241E15] border border-amber-200/80 dark:border-amber-600/40 rounded-2xl p-3.5">
             <label className="block text-xs font-bold text-[#2D2A28] dark:text-[#FFB200] mb-2">
               2. Obszar, którego dotyczy porada (wybór wielokrotny powiązany z &quot;{guidanceType}&quot;):
@@ -267,9 +267,9 @@ export const EditCallRecordModal: React.FC = () => {
             </div>
           </div>
 
-          {/* 3. Rodzaj kontaktu & Kogo dotyczy porada */}
+          {/* 3. Contact Type & 4. Subject Target */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Rodzaj kontaktu */}
+            {/* Contact Type */}
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5 text-[11px]">
                 3. Rodzaj kontaktu:
@@ -295,7 +295,7 @@ export const EditCallRecordModal: React.FC = () => {
               </div>
             </div>
 
-            {/* Kogo dotyczy porada */}
+            {/* Subject Target */}
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5 text-[11px]">
                 4. Kogo dotyczy porada:
@@ -322,7 +322,7 @@ export const EditCallRecordModal: React.FC = () => {
             </div>
           </div>
 
-          {/* 5. Rodzaj porady (krótki opis, czego dotyczyła) */}
+          {/* 5. Advice Description */}
           <div>
             <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
               5. Rodzaj porady (krótki opis, czego dotyczyła) <span className="text-red-500">*</span>:
@@ -337,7 +337,7 @@ export const EditCallRecordModal: React.FC = () => {
             />
           </div>
 
-          {/* 6. Uwagi */}
+          {/* 6. Notes */}
           <div>
             <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
               6. Uwagi (udzielone zalecenia, wskazówki, notatka):
@@ -351,7 +351,7 @@ export const EditCallRecordModal: React.FC = () => {
             />
           </div>
 
-          {/* 7. Przekazanie do dyżurującego & Czas trwania */}
+          {/* 7. Referral & Duration */}
           <div className="space-y-3">
             <ReferralSelector
               specialists={specialists}
@@ -409,7 +409,7 @@ export const EditCallRecordModal: React.FC = () => {
             />
           </div>
 
-          {/* 9. Załączniki */}
+          {/* 9. Attachments */}
           <div className="pt-2 border-t border-slate-100 dark:border-[#2C2927]">
             <AttachmentsManager
               attachments={attachments}
@@ -419,7 +419,7 @@ export const EditCallRecordModal: React.FC = () => {
             />
           </div>
 
-          {/* 10. Rejestr historii poprzednich edycji */}
+          {/* 10. Previous edit history audit log */}
           {editingRecord.editLogs && editingRecord.editLogs.length > 0 && (
             <div className="pt-2 border-t border-slate-100 dark:border-[#2C2927]">
               <button

@@ -266,7 +266,7 @@ describe("buildSummarySheetData", () => {
     expect(flat).toContain("Inne|1|50%");
     expect(flat).toContain("śląskie|1");
     expect(flat).toContain("mazowieckie|1");
-    // pełna lista województw bez wiersza "brak danych", bo wszyscy mają województwo
+    // Full list of voivodeships without "brak danych" row, because all entries have voivodeships
     expect(flat.some((l) => l.startsWith("brak danych|"))).toBe(false);
   });
 

@@ -3,8 +3,8 @@ import { Caller, CallRecord } from "../types";
 import { buildCallersMap } from "../utils/recordFilters";
 import { computeReportStats } from "../utils/reportStats";
 
-// Okres sprawozdawczy (daty ISO YYYY-MM-DD z filtrów rejestru) — trafia do
-// metadanych arkusza "Podsumowanie", żeby plik sam mówił, czego dotyczy.
+// Reporting period (ISO dates YYYY-MM-DD from record filters) — added to
+// "Podsumowanie" (Summary) sheet metadata to provide clear reporting context.
 export interface ExportPeriod {
   from?: string;
   to?: string;
@@ -19,8 +19,8 @@ export interface ExportOptions {
 
 export type ExportRow = Record<string, string | number>;
 
-// Puste pole zamiast zmyślonej wartości — raport grantowy nie może
-// fabrykować danych, których nie ma w rejestrze.
+// Empty field instead of fabricated values — grant reports must not
+// fabricate data that was not entered in the registry.
 const EMPTY = "";
 
 const PHONE_OR_PESEL_REGEX = /(?:\+?\d[\s-]?){7,13}\d/g;
@@ -36,9 +36,8 @@ function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// Usuwa z tekstu swobodnego dane osobowe: numery telefonów / PESEL, adresy
-// e-mail oraz imiona i nazwiska figurujące w bazie dzwoniących (wraz z prostą
-// odmianą fleksyjną — dopuszczamy do 4 liter końcówki po temacie imienia).
+// Removes personal data from free text: phone / PESEL numbers, email addresses,
+// and caller names found in the database (with inflections up to 4 trailing letters).
 export function anonymizeFreeText(text: string, callers: Caller[]): string {
   if (!text) return text;
 
@@ -64,8 +63,8 @@ export function anonymizeFreeText(text: string, callers: Caller[]): string {
   return result;
 }
 
-// Sortowanie chronologiczne: "Nr porady" ma być stabilny między eksportami
-// tego samego zbioru, a nie zależeć od kolejności wpisywania rekordów.
+// Chronological sorting: "Nr porady" (Consultation #) must remain stable across
+// exports of the same dataset, rather than depending on entry insertion order.
 export function sortRecordsByCallDate(records: CallRecord[]): CallRecord[] {
   const time = (rec: CallRecord): number =>
     rec.callDate ? new Date(rec.callDate).getTime() : Number.POSITIVE_INFINITY;
@@ -154,8 +153,8 @@ function formatPeriodDate(isoDate: string | undefined, fallback: string): string
   return Number.isNaN(parsed.getTime()) ? fallback : parsed.toLocaleDateString("pl-PL");
 }
 
-// Arkusz "Podsumowanie": gotowy raport statystyczny okresu sprawozdawczego —
-// te same wartości, które pokazuje widok statystyk (wspólne computeReportStats).
+// "Podsumowanie" (Summary) sheet: statistical summary of the reporting period —
+// same values displayed by the statistics view (shared computeReportStats).
 export function buildSummarySheetData(
   records: CallRecord[],
   callers: Caller[],
@@ -202,8 +201,7 @@ export function buildSummarySheetData(
   return rows;
 }
 
-// Szerokości kolumn dopasowane do najdłuższej wartości (z limitem, żeby długie
-// opisy porad nie rozciągały arkusza w nieskończoność).
+// Column widths calculated from longest value (with max cap to avoid infinite stretch).
 function columnWidthsFromMatrix(matrix: SummaryCell[][]): { wch: number }[] {
   const widths: number[] = [];
   matrix.forEach((row) => {
@@ -215,13 +213,12 @@ function columnWidthsFromMatrix(matrix: SummaryCell[][]): { wch: number }[] {
   return widths.map((w) => ({ wch: Math.min(Math.max(w + 2, 10), 60) }));
 }
 
-// CSV pod polskiego Excela: separator ";", BOM UTF-8, CRLF, pola w cudzysłowach.
+// CSV for Polish Excel: ";" delimiter, UTF-8 BOM, CRLF, quoted fields.
 export function buildCsvContent(rows: ExportRow[]): string {
   const headers = Object.keys(rows[0]);
   const csvRows: string[] = [];
 
-  // Ochrona przed CSV/formula injection: wartość zaczynającą się znakiem,
-  // który Excel interpretuje jako początek formuły, poprzedzamy apostrofem.
+  // Protect against CSV/formula injection: prefix with single quote if starts with formula trigger.
   const quote = (value: unknown): string => {
     let str = String(value ?? "");
     if (/^[=+\-@\t\r]/.test(str)) {

@@ -20,7 +20,7 @@ export const SearchBar: React.FC = () => {
     { label: "Dąbrowska (Kraków)", query: "Dąbrowska" },
   ];
 
-  // Szybki test jest domyślnie ukryty i widoczny TYLKO dla administratora po włączeniu opcji demo
+  // Quick test is hidden by default and visible ONLY for admin when demo options are enabled
   const isDemoVisible = Boolean(currentSpecialist?.isAdmin && showDemoFeatures);
 
   return (
