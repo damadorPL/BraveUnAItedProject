@@ -11,7 +11,7 @@
     "build:client": "tsc -b && vite build",
     "build:server": "tsc -p tsconfig.server.json",
     "build": "npm run build:client && npm run build:server",
-    "start": "node dist-server/index.js",
+    "start": "node dist-server/server/index.js",
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
     "lint": "oxlint",
