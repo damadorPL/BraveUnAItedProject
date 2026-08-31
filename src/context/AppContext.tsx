@@ -21,6 +21,7 @@ import {
   saveSpecialists,
   resetToSampleData,
   searchCallers,
+  loadAsyncCachedData,
 } from "../services/storage";
 import { api, getStoredToken, setStoredToken } from "../services/api";
 import { computeRecordChanges } from "../utils/auditLogger";
@@ -290,11 +291,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  // Initial load from backend API if available
+  // Initial load from backend API if available, with IndexedDB fast cache hydration
   useEffect(() => {
     let isMounted = true;
     async function initData() {
       try {
+        // Hydrate from async IndexedDB cache if it contains more/newer records
+        loadAsyncCachedData()
+          .then((cached) => {
+            if (isMounted) {
+              if (cached.callers && cached.callers.length > 0) setCallers((prev) => (cached.callers!.length > prev.length ? cached.callers! : prev));
+              if (cached.records && cached.records.length > 0) setRecords((prev) => (cached.records!.length > prev.length ? cached.records! : prev));
+              if (cached.specialists && cached.specialists.length > 0) setSpecialists((prev) => (cached.specialists!.length > prev.length ? cached.specialists! : prev));
+            }
+          })
+          .catch(() => {});
+
         const token = getStoredToken();
         let authenticated = false;
         if (token) {
@@ -342,21 +354,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return searchCallers(searchQuery, callers);
   }, [searchQuery, callers]);
 
+  // High-performance O(1) lookup Map for caller records pre-sorted by date
+  const recordsByCallerId = useMemo(() => {
+    const map = new Map<string, CallRecord[]>();
+    for (let i = 0; i < records.length; i++) {
+      const rec = records[i];
+      if (!rec.callerId) continue;
+      const list = map.get(rec.callerId);
+      if (list) {
+        list.push(rec);
+      } else {
+        map.set(rec.callerId, [rec]);
+      }
+    }
+    for (const list of map.values()) {
+      list.sort((a, b) => new Date(b.callDate || 0).getTime() - new Date(a.callDate || 0).getTime());
+    }
+    return map;
+  }, [records]);
+
+  // High-performance lookup Map for pending referrals by specialist
+  const referredRecordsBySpecialist = useMemo(() => {
+    const map = new Map<string, CallRecord[]>();
+    for (let s = 0; s < specialists.length; s++) {
+      const specId = specialists[s].id;
+      const specReferred = records.filter((r) => isReferredToSpecialist(r, specId, specialists));
+      map.set(specId, specReferred);
+    }
+    return map;
+  }, [records, specialists]);
+
   const getCallerRecords = useCallback(
     (callerId: string) => {
       if (!callerId) return [];
-      return records
-        .filter((r) => r.callerId === callerId)
-        .sort((a, b) => new Date(b.callDate || 0).getTime() - new Date(a.callDate || 0).getTime());
+      return recordsByCallerId.get(callerId) || [];
     },
-    [records]
+    [recordsByCallerId]
   );
 
   const getReferredRecordsForSpecialist = useCallback(
     (specialistId: string) => {
-      return records.filter((r) => isReferredToSpecialist(r, specialistId, specialists));
+      if (!specialistId) return [];
+      return (
+        referredRecordsBySpecialist.get(specialistId) ||
+        records.filter((r) => isReferredToSpecialist(r, specialistId, specialists))
+      );
     },
-    [records, specialists]
+    [referredRecordsBySpecialist, records, specialists]
   );
 
   const markReferralStatus = useCallback(

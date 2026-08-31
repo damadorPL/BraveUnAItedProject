@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { GuidanceType, CallRecord } from "../types";
 import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
+import { getPaginationRange } from "../utils/paginationUtils";
 import { pluralizePorady } from "../utils/pluralization";
 import {
   ExternalLink,
@@ -294,20 +295,30 @@ export const CallRecordsTable: React.FC = () => {
               </button>
 
               <div className="flex items-center space-x-1 px-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
-                  <button
-                    key={pg}
-                    type="button"
-                    onClick={() => setPage(pg)}
-                    className={"w-7 h-7 rounded-xl text-xs font-bold transition-all cursor-pointer " + (
-                      page === pg
-                        ? "bg-[#2D2A28] dark:bg-[#FFB200] text-[#FFB200] dark:text-[#2D2A28] shadow-xs"
-                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/70 dark:hover:bg-[#2A2724]"
-                    )}
-                  >
-                    {pg}
-                  </button>
-                ))}
+                {getPaginationRange(page, totalPages, 1).map((pg, idx) =>
+                  pg === "..." ? (
+                    <span
+                      key={`dots-${idx}`}
+                      className="w-7 h-7 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold"
+                    >
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={pg}
+                      type="button"
+                      onClick={() => setPage(pg)}
+                      className={
+                        "w-7 h-7 rounded-xl text-xs font-bold transition-all cursor-pointer " +
+                        (page === pg
+                          ? "bg-[#2D2A28] dark:bg-[#FFB200] text-[#FFB200] dark:text-[#2D2A28] shadow-xs"
+                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-200/70 dark:hover:bg-[#2A2724]")
+                      }
+                    >
+                      {pg}
+                    </button>
+                  )
+                )}
               </div>
 
               <button

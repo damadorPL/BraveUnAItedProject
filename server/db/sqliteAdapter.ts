@@ -10,7 +10,7 @@ import {
   RecordEditLog,
   AdminOverviewStats,
 } from "../types.js";
-import { DatabaseAdapter } from "./adapter.js";
+import { DatabaseAdapter, CallerQueryOptions, RecordQueryOptions } from "./adapter.js";
 
 export class SQLiteAdapter implements DatabaseAdapter {
   readonly engine = "sqlite" as const;
@@ -275,9 +275,34 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
 
   // Callers
-  async getCallers(): Promise<Caller[]> {
+  async getCallers(options?: CallerQueryOptions): Promise<Caller[]> {
     if (!this.db) throw new Error("DB not open");
-    const rows = this.db.prepare("SELECT * FROM callers ORDER BY lastName ASC, firstName ASC").all() as any[];
+    let query = "SELECT * FROM callers";
+    const conditions: string[] = [];
+    const params: any[] = [];
+
+    if (options?.search) {
+      conditions.push("(firstName LIKE ? OR lastName LIKE ? OR phoneNumber LIKE ? OR city LIKE ?)");
+      const term = `%${options.search}%`;
+      params.push(term, term, term, term);
+    }
+
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ");
+    }
+
+    query += " ORDER BY lastName ASC, firstName ASC";
+
+    if (options?.limit) {
+      query += " LIMIT ?";
+      params.push(options.limit);
+      if (options?.offset) {
+        query += " OFFSET ?";
+        params.push(options.offset);
+      }
+    }
+
+    const rows = this.db.prepare(query).all(...params) as any[];
     return rows.map((r) => this.mapCallerRow(r));
   }
 
@@ -353,9 +378,46 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
 
   // Records
-  async getRecords(): Promise<CallRecord[]> {
+  async getRecords(options?: RecordQueryOptions): Promise<CallRecord[]> {
     if (!this.db) throw new Error("DB not open");
-    const rows = this.db.prepare("SELECT * FROM call_records ORDER BY callDate DESC").all() as any[];
+    let query = "SELECT * FROM call_records";
+    const conditions: string[] = [];
+    const params: any[] = [];
+
+    if (options?.callerId) {
+      conditions.push("callerId = ?");
+      params.push(options.callerId);
+    }
+    if (options?.specialistId) {
+      conditions.push("specialistId = ?");
+      params.push(options.specialistId);
+    }
+    if (options?.guidanceType) {
+      conditions.push("guidanceType = ?");
+      params.push(options.guidanceType);
+    }
+    if (options?.search) {
+      conditions.push("(adviceDescription LIKE ? OR notes LIKE ? OR specialistName LIKE ?)");
+      const term = `%${options.search}%`;
+      params.push(term, term, term);
+    }
+
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ");
+    }
+
+    query += " ORDER BY callDate DESC";
+
+    if (options?.limit) {
+      query += " LIMIT ?";
+      params.push(options.limit);
+      if (options?.offset) {
+        query += " OFFSET ?";
+        params.push(options.offset);
+      }
+    }
+
+    const rows = this.db.prepare(query).all(...params) as any[];
     return rows.map((r) => this.mapRecordRow(r));
   }
 

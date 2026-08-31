@@ -17,8 +17,12 @@ callersRouter.use(authenticateJWT);
 // GET /api/callers
 callersRouter.get("/", async (req, res) => {
   try {
+    const search = req.query.search as string | undefined;
+    const limit = req.query.limit ? Number(req.query.limit) : undefined;
+    const offset = req.query.offset ? Number(req.query.offset) : undefined;
+
     const adapter = await dbManager.getAdapter();
-    const callers = await adapter.getCallers();
+    const callers = await adapter.getCallers({ search, limit, offset });
     res.json(callers);
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Błąd pobierania kontaktów" });

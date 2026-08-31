@@ -18,15 +18,28 @@ recordsRouter.use(authenticateJWT);
 recordsRouter.get("/", async (req, res) => {
   try {
     const callerId = req.query.callerId as string | undefined;
+    const specialistId = req.query.specialistId as string | undefined;
+    const guidanceType = req.query.guidanceType as string | undefined;
+    const search = req.query.search as string | undefined;
+    const limit = req.query.limit ? Number(req.query.limit) : undefined;
+    const offset = req.query.offset ? Number(req.query.offset) : undefined;
+
     const adapter = await dbManager.getAdapter();
 
-    if (callerId) {
+    if (callerId && !limit && !offset && !search && !guidanceType && !specialistId) {
       const records = await adapter.getRecordsByCallerId(callerId);
       res.json(records);
       return;
     }
 
-    const records = await adapter.getRecords();
+    const records = await adapter.getRecords({
+      callerId,
+      specialistId,
+      guidanceType,
+      search,
+      limit,
+      offset,
+    });
     res.json(records);
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Błąd pobierania rejestru porad" });

@@ -7,6 +7,21 @@ import {
   AdminOverviewStats,
 } from "../types.js";
 
+export interface RecordQueryOptions {
+  callerId?: string;
+  specialistId?: string;
+  guidanceType?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface CallerQueryOptions {
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
 export interface DatabaseAdapter {
   readonly engine: DatabaseEngine;
 
@@ -18,14 +33,14 @@ export interface DatabaseAdapter {
   resetToSample(initialCallers: Caller[], initialRecords: CallRecord[], initialSpecialists: Specialist[]): Promise<void>;
 
   // Callers CRUD
-  getCallers(): Promise<Caller[]>;
+  getCallers(options?: CallerQueryOptions): Promise<Caller[]>;
   getCallerById(id: string): Promise<Caller | null>;
   createCaller(caller: Caller): Promise<Caller>;
   updateCaller(caller: Caller): Promise<Caller>;
   deleteCaller(id: string): Promise<boolean>;
 
   // Records CRUD
-  getRecords(): Promise<CallRecord[]>;
+  getRecords(options?: RecordQueryOptions): Promise<CallRecord[]>;
   getRecordById(id: string): Promise<CallRecord | null>;
   getRecordsByCallerId(callerId: string): Promise<CallRecord[]>;
   createRecord(record: CallRecord): Promise<CallRecord>;

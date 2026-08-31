@@ -1,11 +1,13 @@
 import { Caller, CallRecord, Specialist } from "../types";
 import { INITIAL_CALLERS, INITIAL_RECORDS, INITIAL_SPECIALISTS } from "../data/sampleData";
 
-const CALLERS_KEY = "unaited_pfron_callers_v1";
-const RECORDS_KEY = "unaited_pfron_records_v1";
-const SPECIALISTS_KEY = "unaited_pfron_specialists_v1";
-const SESSION_KEY = "unaited_pfron_session_v1";
-const PASSWORDS_KEY = "unaited_pfron_passwords_v1";
+import { idbGet, idbSet, idbClear } from "./indexedDbStorage";
+
+export const CALLERS_KEY = "unaited_pfron_callers_v1";
+export const RECORDS_KEY = "unaited_pfron_records_v1";
+export const SPECIALISTS_KEY = "unaited_pfron_specialists_v1";
+export const SESSION_KEY = "unaited_pfron_session_v1";
+export const PASSWORDS_KEY = "unaited_pfron_passwords_v1";
 
 // Remove Polish diacritics including ł/Ł for ultra-tolerant fuzzy search
 export function normalizeText(str: string): string {
@@ -25,6 +27,7 @@ export function loadCallers(): Caller[] {
     const raw = localStorage.getItem(CALLERS_KEY);
     if (!raw) {
       localStorage.setItem(CALLERS_KEY, JSON.stringify(INITIAL_CALLERS));
+      idbSet(CALLERS_KEY, INITIAL_CALLERS).catch(() => {});
       return INITIAL_CALLERS;
     }
     return JSON.parse(raw);
@@ -35,10 +38,12 @@ export function loadCallers(): Caller[] {
 }
 
 export function saveCallers(callers: Caller[]): void {
+  // Asynchronous persistent write to IndexedDB (no 5MB quota)
+  idbSet(CALLERS_KEY, callers).catch(() => {});
   try {
     localStorage.setItem(CALLERS_KEY, JSON.stringify(callers));
   } catch (err) {
-    console.error("Failed to save callers:", err);
+    console.warn("LocalStorage full, saved in IndexedDB cache:", err);
   }
 }
 
@@ -47,6 +52,7 @@ export function loadRecords(): CallRecord[] {
     const raw = localStorage.getItem(RECORDS_KEY);
     if (!raw) {
       localStorage.setItem(RECORDS_KEY, JSON.stringify(INITIAL_RECORDS));
+      idbSet(RECORDS_KEY, INITIAL_RECORDS).catch(() => {});
       return INITIAL_RECORDS;
     }
     const parsed: CallRecord[] = JSON.parse(raw);
@@ -54,7 +60,10 @@ export function loadRecords(): CallRecord[] {
       // Merge initial records with any user-added records
       const existingIds = new Set(parsed.map((r) => r.id));
       const merged = [...parsed, ...INITIAL_RECORDS.filter((r) => !existingIds.has(r.id))];
-      localStorage.setItem(RECORDS_KEY, JSON.stringify(merged));
+      try {
+        localStorage.setItem(RECORDS_KEY, JSON.stringify(merged));
+      } catch (_) {}
+      idbSet(RECORDS_KEY, merged).catch(() => {});
       return merged;
     }
     return parsed;
@@ -65,10 +74,12 @@ export function loadRecords(): CallRecord[] {
 }
 
 export function saveRecords(records: CallRecord[]): void {
+  // Asynchronous persistent write to IndexedDB (no 5MB quota)
+  idbSet(RECORDS_KEY, records).catch(() => {});
   try {
     localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
   } catch (err) {
-    console.error("Failed to save records:", err);
+    console.warn("LocalStorage full, saved in IndexedDB cache:", err);
   }
 }
 
@@ -77,6 +88,7 @@ export function loadSpecialists(): Specialist[] {
     const raw = localStorage.getItem(SPECIALISTS_KEY);
     if (!raw) {
       localStorage.setItem(SPECIALISTS_KEY, JSON.stringify(INITIAL_SPECIALISTS));
+      idbSet(SPECIALISTS_KEY, INITIAL_SPECIALISTS).catch(() => {});
       return INITIAL_SPECIALISTS;
     }
     const parsed: Specialist[] = JSON.parse(raw);
@@ -85,6 +97,7 @@ export function loadSpecialists(): Specialist[] {
     );
     if (!hasAdminWithTag) {
       localStorage.setItem(SPECIALISTS_KEY, JSON.stringify(INITIAL_SPECIALISTS));
+      idbSet(SPECIALISTS_KEY, INITIAL_SPECIALISTS).catch(() => {});
       return INITIAL_SPECIALISTS;
     }
     return parsed;
@@ -94,11 +107,29 @@ export function loadSpecialists(): Specialist[] {
 }
 
 export function saveSpecialists(specialists: Specialist[]): void {
+  idbSet(SPECIALISTS_KEY, specialists).catch(() => {});
   try {
     localStorage.setItem(SPECIALISTS_KEY, JSON.stringify(specialists));
   } catch (err) {
     console.error("Failed to save specialists:", err);
   }
+}
+
+export async function loadAsyncCachedData(): Promise<{
+  callers?: Caller[];
+  records?: CallRecord[];
+  specialists?: Specialist[];
+}> {
+  const [callers, records, specialists] = await Promise.all([
+    idbGet<Caller[]>(CALLERS_KEY),
+    idbGet<CallRecord[]>(RECORDS_KEY),
+    idbGet<Specialist[]>(SPECIALISTS_KEY),
+  ]);
+  return {
+    callers: callers || undefined,
+    records: records || undefined,
+    specialists: specialists || undefined,
+  };
 }
 
 export function loadSessionSpecialistId(): string | null {
@@ -173,8 +204,13 @@ export function searchCallers(query: string, callers: Caller[]): Caller[] {
 }
 
 export function resetToSampleData(): { callers: Caller[]; records: CallRecord[] } {
-  localStorage.setItem(CALLERS_KEY, JSON.stringify(INITIAL_CALLERS));
-  localStorage.setItem(RECORDS_KEY, JSON.stringify(INITIAL_RECORDS));
-  localStorage.setItem(SPECIALISTS_KEY, JSON.stringify(INITIAL_SPECIALISTS));
+  try {
+    localStorage.setItem(CALLERS_KEY, JSON.stringify(INITIAL_CALLERS));
+    localStorage.setItem(RECORDS_KEY, JSON.stringify(INITIAL_RECORDS));
+    localStorage.setItem(SPECIALISTS_KEY, JSON.stringify(INITIAL_SPECIALISTS));
+  } catch (_) {}
+  idbSet(CALLERS_KEY, INITIAL_CALLERS).catch(() => {});
+  idbSet(RECORDS_KEY, INITIAL_RECORDS).catch(() => {});
+  idbSet(SPECIALISTS_KEY, INITIAL_SPECIALISTS).catch(() => {});
   return { callers: INITIAL_CALLERS, records: INITIAL_RECORDS };
 }

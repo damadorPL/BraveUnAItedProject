@@ -176,5 +176,25 @@ describe("Backend Server & JWT Auth Test Suite", () => {
       expect(res.status).toBe(201);
       expect(res.body.callerId).toBe(caller.id);
     });
+
+    it("GET /api/records with limit and offset should return paginated subset", async () => {
+      const res = await request(app)
+        .get("/api/records?limit=2&offset=0")
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBeLessThanOrEqual(2);
+    });
+
+    it("GET /api/callers with search query should filter callers", async () => {
+      const res = await request(app)
+        .get("/api/callers?search=Kowalski")
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.some((c: any) => c.lastName.includes("Kowalski"))).toBe(true);
+    });
   });
 });

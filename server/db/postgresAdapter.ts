@@ -8,7 +8,7 @@ import {
   RecordEditLog,
   AdminOverviewStats,
 } from "../types.js";
-import { DatabaseAdapter } from "./adapter.js";
+import { DatabaseAdapter, CallerQueryOptions, RecordQueryOptions } from "./adapter.js";
 
 export class PostgresAdapter implements DatabaseAdapter {
   readonly engine = "postgres" as const;
@@ -260,9 +260,34 @@ export class PostgresAdapter implements DatabaseAdapter {
   }
 
   // Callers
-  async getCallers(): Promise<Caller[]> {
+  async getCallers(options?: CallerQueryOptions): Promise<Caller[]> {
     if (!this.pool) throw new Error("PG pool not open");
-    const res = await this.pool.query("SELECT * FROM callers ORDER BY last_name ASC, first_name ASC");
+    let query = "SELECT * FROM callers";
+    const conditions: string[] = [];
+    const params: any[] = [];
+
+    if (options?.search) {
+      params.push(`%${options.search}%`);
+      const idx = params.length;
+      conditions.push(`(first_name ILIKE $${idx} OR last_name ILIKE $${idx} OR phone_number ILIKE $${idx} OR city ILIKE $${idx})`);
+    }
+
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ");
+    }
+
+    query += " ORDER BY last_name ASC, first_name ASC";
+
+    if (options?.limit) {
+      params.push(options.limit);
+      query += ` LIMIT $${params.length}`;
+      if (options?.offset) {
+        params.push(options.offset);
+        query += ` OFFSET $${params.length}`;
+      }
+    }
+
+    const res = await this.pool.query(query, params);
     return res.rows.map((r) => this.mapCallerRow(r));
   }
 
@@ -337,9 +362,46 @@ export class PostgresAdapter implements DatabaseAdapter {
   }
 
   // Records
-  async getRecords(): Promise<CallRecord[]> {
+  async getRecords(options?: RecordQueryOptions): Promise<CallRecord[]> {
     if (!this.pool) throw new Error("PG pool not open");
-    const res = await this.pool.query("SELECT * FROM call_records ORDER BY call_date DESC");
+    let query = "SELECT * FROM call_records";
+    const conditions: string[] = [];
+    const params: any[] = [];
+
+    if (options?.callerId) {
+      params.push(options.callerId);
+      conditions.push(`caller_id = $${params.length}`);
+    }
+    if (options?.specialistId) {
+      params.push(options.specialistId);
+      conditions.push(`specialist_id = $${params.length}`);
+    }
+    if (options?.guidanceType) {
+      params.push(options.guidanceType);
+      conditions.push(`guidance_type = $${params.length}`);
+    }
+    if (options?.search) {
+      params.push(`%${options.search}%`);
+      const idx = params.length;
+      conditions.push(`(advice_description ILIKE $${idx} OR notes ILIKE $${idx} OR specialist_name ILIKE $${idx})`);
+    }
+
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ");
+    }
+
+    query += " ORDER BY call_date DESC";
+
+    if (options?.limit) {
+      params.push(options.limit);
+      query += ` LIMIT $${params.length}`;
+      if (options?.offset) {
+        params.push(options.offset);
+        query += ` OFFSET $${params.length}`;
+      }
+    }
+
+    const res = await this.pool.query(query, params);
     return res.rows.map((r) => this.mapRecordRow(r));
   }
 
