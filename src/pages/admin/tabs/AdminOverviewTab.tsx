@@ -11,9 +11,6 @@ import {
   Activity,
   ArrowRight,
   Sparkles,
-  Server,
-  KeyRound,
-  RefreshCw,
   FileSpreadsheet,
   BarChart3,
 } from "lucide-react";
@@ -25,33 +22,33 @@ interface AdminOverviewTabProps {
 export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab }) => {
   const { callers, records, specialists } = useApp();
   const [stats, setStats] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      const data = await api.admin.getOverview();
-      setStats(data);
-    } catch {
-      // Fallback
-      setStats({
-        totalCallers: callers.length,
-        totalRecords: records.length,
-        totalSpecialists: specialists.length,
-        totalPendingReferrals: records.filter((r) => r.referredStatus === "OCZEKUJĄCA").length,
-        databaseEngine: "sqlite",
-        databaseStatus: "connected",
-        databaseLocation: "data/synapsis.sqlite",
-        recentAuditLogs: [],
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    fetchStats();
-  }, [callers.length, records.length, specialists.length]);
+    let isMounted = true;
+    async function loadStats() {
+      try {
+        const data = await api.admin.getOverview();
+        if (isMounted) setStats(data);
+      } catch {
+        if (isMounted) {
+          setStats({
+            totalCallers: callers.length,
+            totalRecords: records.length,
+            totalSpecialists: specialists.length,
+            totalPendingReferrals: records.filter((r) => r.referredStatus === "OCZEKUJĄCA").length,
+            databaseEngine: "sqlite",
+            databaseStatus: "connected",
+            databaseLocation: "data/synapsis.sqlite",
+            recentAuditLogs: [],
+          });
+        }
+      }
+    }
+    loadStats();
+    return () => {
+      isMounted = false;
+    };
+  }, [callers.length, records, specialists.length]);
 
   return (
     <div className="space-y-6 animate-in fade-in">

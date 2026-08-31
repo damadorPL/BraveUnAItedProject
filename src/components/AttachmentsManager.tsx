@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { Attachment } from "../types";
 import {
   FileText,
@@ -12,10 +12,8 @@ import {
   Eye,
   X,
   File,
-  ExternalLink,
   ZoomIn,
   ZoomOut,
-  Maximize2,
   Table,
   ChevronDown,
 } from "lucide-react";
@@ -41,53 +39,48 @@ export const AttachmentsManager: React.FC<Props> = ({
   title = "Załączniki i dokumentacja",
   readOnly = false,
   canRemove,
-  compact = false,
+  compact: _compact = false,
   defaultExpanded,
 }) => {
   const allowRemove = canRemove ?? !readOnly;
   const [isExpanded, setIsExpanded] = useState(defaultExpanded ?? (attachments.length > 0));
   const [previewAttachment, setPreviewAttachment] = useState<Attachment | null>(null);
-  const [excelPreviewData, setExcelPreviewData] = useState<{ headers: string[]; rows: any[][] } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // When previewing an excel file, parse base64 or create preview
-  useEffect(() => {
-    if (previewAttachment?.type === "excel") {
-      try {
-        if (previewAttachment.dataUrl && previewAttachment.dataUrl.includes("base64,")) {
-          const base64Data = previewAttachment.dataUrl.split("base64,")[1];
-          const workbook = XLSX.read(base64Data, { type: "base64" });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const data: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-          if (data.length > 0) {
-            setExcelPreviewData({
-              headers: data[0].map(String),
-              rows: data.slice(1, 15),
-            });
-            return;
-          }
+  const excelPreviewData = useMemo(() => {
+    if (previewAttachment?.type !== "excel") return null;
+    try {
+      if (previewAttachment.dataUrl && previewAttachment.dataUrl.includes("base64,")) {
+        const base64Data = previewAttachment.dataUrl.split("base64,")[1];
+        const workbook = XLSX.read(base64Data, { type: "base64" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const data: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+        if (data.length > 0) {
+          return {
+            headers: data[0].map(String),
+            rows: data.slice(1, 15),
+          };
         }
-      } catch (err) {
-        console.warn("Could not parse excel dataUrl:", err);
       }
-
-      // Sample fallback spreadsheet preview for demo files
-      setExcelPreviewData({
-        headers: ["Lp.", "Kategoria wsparcia", "Punkty WZON", "Wysokość świadczenia (PLN)", "Status"],
-        rows: [
-          ["1", "Poziom potrzeby wsparcia - najwyższy", "95 - 100 pkt", "3 919 zł", "Przyznane"],
-          ["2", "Poziom potrzeby wsparcia - znaczny", "85 - 94 pkt", "3 135 zł", "Przyznane"],
-          ["3", "Poziom potrzeby wsparcia - umiarkowany", "78 - 84 pkt", "2 351 zł", "Odwołanie w toku"],
-          ["4", "Poziom potrzeby wsparcia - podstawowy", "70 - 77 pkt", "1 568 zł", "Wnioskowane"],
-        ],
-      });
-    } else {
-      setExcelPreviewData(null);
+    } catch (err) {
+      console.warn("Could not parse excel dataUrl:", err);
     }
+
+    // Sample fallback spreadsheet preview for demo files
+    return {
+      headers: ["Lp.", "Kategoria wsparcia", "Punkty WZON", "Wysokość świadczenia (PLN)", "Status"],
+      rows: [
+        ["1", "Poziom potrzeby wsparcia - najwyższy", "95 - 100 pkt", "3 919 zł", "Przyznane"],
+        ["2", "Poziom potrzeby wsparcia - znaczny", "85 - 94 pkt", "3 135 zł", "Przyznane"],
+        ["3", "Poziom potrzeby wsparcia - umiarkowany", "78 - 84 pkt", "2 351 zł", "Odwołanie w toku"],
+        ["4", "Poziom potrzeby wsparcia - podstawowy", "70 - 77 pkt", "1 568 zł", "Wnioskowane"],
+      ],
+    };
   }, [previewAttachment]);
 
   const handleFiles = async (files: FileList | null) => {

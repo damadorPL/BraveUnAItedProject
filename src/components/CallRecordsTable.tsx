@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { GuidanceType, CallRecord } from "../types";
 import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
@@ -34,9 +33,11 @@ export const CallRecordsTable: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
 
-  useEffect(() => {
+  const [prevFilterState, setPrevFilterState] = useState(filterState);
+  if (prevFilterState !== filterState) {
+    setPrevFilterState(filterState);
     setPage(1);
-  }, [filterState]);
+  }
 
   const callersMap = buildCallersMap(callers);
 
@@ -64,7 +65,7 @@ export const CallRecordsTable: React.FC = () => {
     let targetCaller = callersMap.get(rec.callerId);
     if (!targetCaller) {
       targetCaller = {
-        id: rec.callerId || "caller-" + Date.now(),
+        id: rec.callerId || `caller-${rec.id}`,
         firstName: "Kontakt",
         lastName: "Konsultacja #" + rec.id.slice(-4),
         phoneNumber: "Brak numeru",

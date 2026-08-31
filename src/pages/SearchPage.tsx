@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { SearchBar } from "../components/SearchBar";
@@ -19,7 +19,6 @@ import {
   Edit3,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck,
 } from "lucide-react";
 
 export const SearchPage: React.FC = () => {
@@ -38,12 +37,14 @@ export const SearchPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [callerPage, setCallerPage] = useState(1);
-  const [callerPageSize, setCallerPageSize] = useState(12);
+  const callerPageSize = 12;
   const [isReferredModalOpen, setIsReferredModalOpen] = useState(false);
 
-  useEffect(() => {
+  const [prevSearchQuery, setPrevSearchQuery] = useState(searchQuery);
+  if (prevSearchQuery !== searchQuery) {
+    setPrevSearchQuery(searchQuery);
     setCallerPage(1);
-  }, [searchQuery]);
+  }
 
   const totalCallerPages = Math.ceil(filteredCallers.length / callerPageSize) || 1;
   const paginatedCallers = filteredCallers.slice(

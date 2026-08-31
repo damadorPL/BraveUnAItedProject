@@ -3,7 +3,6 @@ import {
   CallRecord,
   Specialist,
   RecordEditLog,
-  FilterState,
 } from "../types";
 import {
   loadCallers as loadLocalCallers,
@@ -168,7 +167,7 @@ export const api = {
         const callers = loadLocalCallers().filter((c) => c.id !== id);
         saveLocalCallers(callers);
         return true;
-      } catch (err) {
+      } catch {
         const callers = loadLocalCallers().filter((c) => c.id !== id);
         saveLocalCallers(callers);
         return true;
@@ -229,7 +228,7 @@ export const api = {
         const records = loadLocalRecords().filter((r) => r.id !== id);
         saveLocalRecords(records);
         return true;
-      } catch (err) {
+      } catch {
         const records = loadLocalRecords().filter((r) => r.id !== id);
         saveLocalRecords(records);
         return true;
@@ -243,7 +242,7 @@ export const api = {
         const specs = await request<Specialist[]>("/auth/specialists");
         saveLocalSpecialists(specs);
         return specs;
-      } catch (err) {
+      } catch {
         try {
           const specs = await request<Specialist[]>("/admin/specialists");
           saveLocalSpecialists(specs);
@@ -334,7 +333,7 @@ export const api = {
         });
         resetLocalData();
         return res;
-      } catch (err) {
+      } catch {
         resetLocalData();
         return { success: true, message: "Zresetowano lokalną bazę danych do danych demo." };
       }
@@ -348,7 +347,7 @@ export const api = {
         });
         clearLocalData(keepSpecialists);
         return res;
-      } catch (err) {
+      } catch {
         clearLocalData(keepSpecialists);
         return {
           success: true,

@@ -79,9 +79,21 @@ describe("pluralizeWpisy, pluralizeKontakty, pluralizeOsoby, pluralizeZnaleziono
     expect(pluralizeZnalezionoOsoby(22)).toBe("22 osoby");
   });
 
-  it("odmienia oczekujące sprawy", () => {
+  it("odmienia zalaczniki i sprawy", () => {
+    expect(pluralizeZalaczniki(1)).toBe("1 załącznik");
+    expect(pluralizeZalaczniki(2)).toBe("2 załączniki");
+    expect(pluralizeZalaczniki(5)).toBe("5 załączników");
+
+    expect(pluralizeSprawy(1)).toBe("1 sprawa");
+    expect(pluralizeSprawy(2)).toBe("2 sprawy");
+    expect(pluralizeSprawy(5)).toBe("5 spraw");
+
     expect(pluralizeOczekujace(1)).toBe("1 oczekująca");
     expect(pluralizeOczekujace(2)).toBe("2 oczekujące");
     expect(pluralizeOczekujace(5)).toBe("5 oczekujących");
+
+    expect(pluralize(1, "jabłko", "jabłka", "jabłek")).toBe("jabłko");
+    expect(pluralize(2, "jabłko", "jabłka", "jabłek")).toBe("jabłka");
+    expect(pluralize(5, "jabłko", "jabłka", "jabłek")).toBe("jabłek");
   });
 });

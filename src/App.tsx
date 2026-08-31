@@ -6,7 +6,8 @@ import {
   Navigate,
   Outlet,
 } from "react-router-dom";
-import { AppProvider, useApp } from "./context/AppContext";
+import { AppProvider } from "./context/AppContext";
+
 import { Header } from "./components/Header";
 import { LoginScreen } from "./components/LoginScreen";
 import { SearchPage } from "./pages/SearchPage";

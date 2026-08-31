@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { Specialist, GUIDANCE_TYPES, GuidanceType } from "../types";
 import { User, Mail, ShieldCheck, Check, X, Briefcase, Award, Palette, Camera, Upload, Trash2 } from "lucide-react";
@@ -14,19 +14,21 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
   const { updateSpecialist } = useApp();
   const currentSpecialist = useCurrentSpecialist();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [title, setTitle] = useState("");
-  const [role, setRole] = useState("");
-  const [guidanceType, setGuidanceType] = useState<GuidanceType>("prawno-obywatelskie");
-  const [avatarBg, setAvatarBg] = useState("bg-blue-600");
-  const [avatarUrl, setAvatarUrl] = useState("");
+  const [name, setName] = useState(currentSpecialist?.name || "");
+  const [email, setEmail] = useState(currentSpecialist?.email || "");
+  const [title, setTitle] = useState(currentSpecialist?.title || "");
+  const [role, setRole] = useState(currentSpecialist?.role || "");
+  const [guidanceType, setGuidanceType] = useState<GuidanceType>(currentSpecialist?.guidanceType || "prawno-obywatelskie");
+  const [avatarBg, setAvatarBg] = useState(currentSpecialist?.avatarBg || "bg-blue-600");
+  const [avatarUrl, setAvatarUrl] = useState(currentSpecialist?.avatarUrl || "");
   const [avatarError, setAvatarError] = useState<string | null>(null);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (currentSpecialist) {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (prevIsOpen !== isOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen && currentSpecialist) {
       setName(currentSpecialist.name || "");
       setEmail(currentSpecialist.email || "");
       setTitle(currentSpecialist.title || "");
@@ -36,7 +38,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
       setAvatarUrl(currentSpecialist.avatarUrl || "");
       setAvatarError(null);
     }
-  }, [currentSpecialist, isOpen]);
+  }
 
   if (!isOpen) return null;
 

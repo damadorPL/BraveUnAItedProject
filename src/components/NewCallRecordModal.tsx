@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import {
   GuidanceType,
@@ -15,19 +15,8 @@ import { ReferralSelector } from "./ReferralSelector";
 import { todayDateInputValue, callDateToIso } from "../services/callDate";
 import {
   X,
-  PlusCircle,
   Clock,
-  User,
-  FileText,
   CheckCircle2,
-  AlertTriangle,
-  Sparkles,
-  Paperclip,
-  Share2,
-  Tag,
-  Phone,
-  Mail,
-  Users,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -44,7 +33,10 @@ export const NewCallRecordModal: React.FC = () => {
   const [guidanceType, setGuidanceType] = useState<GuidanceType>(
     currentSpecialist.guidanceType || "w zakresie psychologii i rehabilitacji społecznej"
   );
-  const [guidanceAreas, setGuidanceAreas] = useState<string[]>([]);
+  const [guidanceAreas, setGuidanceAreas] = useState<string[]>(() => {
+    const areas = GUIDANCE_AREAS_MAP[currentSpecialist.guidanceType || "w zakresie psychologii i rehabilitacji społecznej"];
+    return areas && areas.length > 0 ? [areas[0]] : [];
+  });
   const [contactTypes, setContactTypes] = useState<ContactType[]>(["telefon"]);
   const [subjectTargets, setSubjectTargets] = useState<SubjectTarget[]>(["dziecko"]);
   const [adviceDescription, setAdviceDescription] = useState("");
@@ -57,13 +49,15 @@ export const NewCallRecordModal: React.FC = () => {
   const [durationMinutes, setDurationMinutes] = useState(45);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // When specialist changes or guidanceType changes, reset areas if not valid
-  useEffect(() => {
-    const availableAreas = GUIDANCE_AREAS_MAP[guidanceType] || [];
-    if (availableAreas.length > 0 && guidanceAreas.length === 0) {
+  const handleGuidanceTypeChange = (type: GuidanceType) => {
+    setGuidanceType(type);
+    const availableAreas = GUIDANCE_AREAS_MAP[type] || [];
+    if (availableAreas.length > 0) {
       setGuidanceAreas([availableAreas[0]]);
+    } else {
+      setGuidanceAreas([]);
     }
-  }, [guidanceType]);
+  };
 
   if (!isNewRecordModalOpen || !selectedCaller) return null;
 
@@ -114,7 +108,7 @@ export const NewCallRecordModal: React.FC = () => {
 
     try {
       confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } });
-    } catch (_) {}
+    } catch {}
 
     setIsSubmitting(false);
     setIsNewRecordModalOpen(false);
@@ -171,7 +165,7 @@ export const NewCallRecordModal: React.FC = () => {
                 <button
                   type="button"
                   key={type}
-                  onClick={() => setGuidanceType(type)}
+                  onClick={() => handleGuidanceTypeChange(type)}
                   className={`py-2 px-3 rounded-xl font-bold text-xs border whitespace-nowrap transition-all cursor-pointer ${
                     guidanceType === type
                       ? "bg-[#2D2A28] dark:bg-[#FFB200] text-[#FFB200] dark:text-[#2D2A28] border-[#2D2A28] dark:border-[#FFB200] shadow-sm"

@@ -1,14 +1,11 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef } from "react";
 import { useApp } from "../context/AppContext";
-import { Search, X, UserPlus, Sparkles, Phone, MapPin } from "lucide-react";
+import { Search, X, Sparkles } from "lucide-react";
 
 export const SearchBar: React.FC = () => {
   const {
     searchQuery,
     setSearchQuery,
-    filteredCallers,
-    setIsNewCallerModalOpen,
-    setSelectedCaller,
     callers,
   } = useApp();
 

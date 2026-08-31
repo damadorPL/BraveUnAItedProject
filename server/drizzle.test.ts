@@ -36,4 +36,10 @@ describe("Drizzle ORM & SQLite Adapter Test Suite", () => {
     const results = await adapter.drizzle.select().from(sqliteSpecialists);
     expect(Array.isArray(results)).toBe(true);
   });
+
+  it("should query callers table via Drizzle select", async () => {
+    if (!adapter.drizzle) throw new Error("Drizzle not initialized");
+    const results = await adapter.drizzle.select().from(sqliteCallers);
+    expect(Array.isArray(results)).toBe(true);
+  });
 });

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { INITIAL_RECORDS, INITIAL_SPECIALISTS, INITIAL_CALLERS } from "../data/sampleData";
-import { CallRecord, Specialist } from "../types";
+import { INITIAL_RECORDS, INITIAL_CALLERS } from "../data/sampleData";
+
 
 describe("Handoff and Referral System", () => {
   it("contains initial records with pending referrals for specialists", () => {

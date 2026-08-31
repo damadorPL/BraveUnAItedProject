@@ -1,6 +1,6 @@
 import React from "react";
 import { useApp } from "../context/AppContext";
-import { Mail, CheckCircle2, X, Clock, User, Phone, MapPin, Send } from "lucide-react";
+import { Mail, CheckCircle2, X } from "lucide-react";
 
 export const EmailNotificationModal: React.FC = () => {
   const { activeEmailModal, setActiveEmailModal } = useApp();

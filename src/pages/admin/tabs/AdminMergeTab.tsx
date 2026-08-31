@@ -1,23 +1,16 @@
 import React, { useState, useMemo } from "react";
 import { useApp } from "../../../context/AppContext";
-import { Caller, Voivodeship, DisabilityCertificateStatus, DisabilityDegree } from "../../../types";
+import { Caller } from "../../../types";
 import { api } from "../../../services/api";
 import {
   GitMerge,
   Sparkles,
-  ArrowRight,
   CheckCircle2,
-  AlertCircle,
-  Phone,
-  MapPin,
-  FileText,
-  Trash2,
-  Info,
 } from "lucide-react";
 import { pluralizePorady, pluralizeZalaczniki } from "../../../utils/pluralization";
 
 export const AdminMergeTab: React.FC = () => {
-  const { callers, records, mergeCallers, setEditingCaller } = useApp();
+  const { callers, records, mergeCallers } = useApp();
 
   const [targetCallerId, setTargetCallerId] = useState<string>("");
   const [sourceCallerId, setSourceCallerId] = useState<string>("");

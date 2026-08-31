@@ -8,7 +8,7 @@ import React, {
   useRef,
 } from "react";
 import { Caller, CallRecord, Specialist, FilterState, SyncMessage, Attachment, EmailNotification } from "../types";
-import { createReferralEmailNotification } from "../services/notificationService";
+
 import {
   loadCallers,
   saveCallers,
@@ -145,7 +145,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     dateTo: "",
   });
 
-  const [sentEmails, setSentEmails] = useState<EmailNotification[]>([]);
+  const [sentEmails] = useState<EmailNotification[]>([]);
   const [activeEmailModal, setActiveEmailModal] = useState<EmailNotification | null>(null);
 
   const [editingRecord, setEditingRecord] = useState<CallRecord | null>(null);
@@ -177,7 +177,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         document.documentElement.classList.remove("dark");
         localStorage.setItem("brave_theme_mode", "light");
       }
-    } catch (_) {}
+    } catch {}
   }, [isDarkMode]);
 
   const toggleDarkMode = useCallback(() => {
@@ -255,7 +255,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return () => {
         try {
           bc.close();
-        } catch (_) {}
+        } catch {}
         channelRef.current = null;
       };
     }
@@ -320,7 +320,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             authenticated = true;
           } else if (token.startsWith("offline-mock-token-")) {
             const sessionId = loadSessionSpecialistId();
-            const spec = specialists.find((s) => s.id === sessionId);
+            const allSpecs = loadSpecialists();
+            const spec = allSpecs.find((s) => s.id === sessionId);
             if (spec && isMounted) {
               setCurrentSpecialist(spec);
               authenticated = true;

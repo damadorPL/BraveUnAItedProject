@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import {
   GuidanceType,
@@ -14,7 +14,6 @@ import {
   X,
   Clock,
   CheckCircle2,
-  Share2,
   Trash2,
   ShieldCheck,
   Edit3,
@@ -36,46 +35,57 @@ export const EditCallRecordModal: React.FC = () => {
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
 
-  const [guidanceType, setGuidanceType] = useState<GuidanceType>("w zakresie psychologii i rehabilitacji społecznej");
-  const [guidanceAreas, setGuidanceAreas] = useState<string[]>([]);
-  const [contactTypes, setContactTypes] = useState<ContactType[]>(["telefon"]);
-  const [subjectTargets, setSubjectTargets] = useState<SubjectTarget[]>(["dziecko"]);
-  const [adviceDescription, setAdviceDescription] = useState("");
-  const [notes, setNotes] = useState("");
-  const [referredTo, setReferredTo] = useState("");
-  const [referredSpecialistId, setReferredSpecialistId] = useState("");
-  const [referredNote, setReferredNote] = useState("");
-  const [callDate, setCallDate] = useState<string>(() => todayDateInputValue());
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [durationMinutes, setDurationMinutes] = useState(45);
-  const [specialistId, setSpecialistId] = useState("");
-  const [showEditLogs, setShowEditLogs] = useState(false);
-
-  useEffect(() => {
-    if (editingRecord) {
-      setGuidanceType(editingRecord.guidanceType || "w zakresie psychologii i rehabilitacji społecznej");
-      setGuidanceAreas(editingRecord.guidanceAreas || []);
-      setContactTypes(editingRecord.contactTypes || ["telefon"]);
-      setSubjectTargets(editingRecord.subjectTargets || ["dziecko"]);
-      setAdviceDescription(editingRecord.adviceDescription || "");
-      setNotes(editingRecord.notes || "");
-      setReferredTo(editingRecord.referredTo || "");
-      setReferredSpecialistId(editingRecord.referredSpecialistId || "");
-      setReferredNote(editingRecord.referredNote || "");
-      setAttachments(editingRecord.attachments || []);
-      setDurationMinutes(editingRecord.durationMinutes || 30);
-      setSpecialistId(editingRecord.specialistId || currentSpecialist.id);
-
-      if (editingRecord.callDate) {
-        try {
-          const d = new Date(editingRecord.callDate);
-          setCallDate(d.toISOString().slice(0, 10));
-        } catch (_) {
-          setCallDate(todayDateInputValue());
-        }
+  const [guidanceType, setGuidanceType] = useState<GuidanceType>(
+    editingRecord?.guidanceType || "w zakresie psychologii i rehabilitacji społecznej"
+  );
+  const [guidanceAreas, setGuidanceAreas] = useState<string[]>(editingRecord?.guidanceAreas || []);
+  const [contactTypes, setContactTypes] = useState<ContactType[]>(editingRecord?.contactTypes || ["telefon"]);
+  const [subjectTargets, setSubjectTargets] = useState<SubjectTarget[]>(editingRecord?.subjectTargets || ["dziecko"]);
+  const [adviceDescription, setAdviceDescription] = useState(editingRecord?.adviceDescription || "");
+  const [notes, setNotes] = useState(editingRecord?.notes || "");
+  const [referredTo, setReferredTo] = useState(editingRecord?.referredTo || "");
+  const [referredSpecialistId, setReferredSpecialistId] = useState(editingRecord?.referredSpecialistId || "");
+  const [referredNote, setReferredNote] = useState(editingRecord?.referredNote || "");
+  const [callDate, setCallDate] = useState<string>(() => {
+    if (editingRecord?.callDate) {
+      try {
+        return new Date(editingRecord.callDate).toISOString().slice(0, 10);
+      } catch {
+        return todayDateInputValue();
       }
     }
-  }, [editingRecord, currentSpecialist]);
+    return todayDateInputValue();
+  });
+  const [attachments, setAttachments] = useState<Attachment[]>(editingRecord?.attachments || []);
+  const [durationMinutes, setDurationMinutes] = useState(editingRecord?.durationMinutes || 45);
+  const [specialistId, setSpecialistId] = useState(editingRecord?.specialistId || currentSpecialist.id);
+  const [showEditLogs, setShowEditLogs] = useState(false);
+
+  const [prevRecordId, setPrevRecordId] = useState(editingRecord?.id);
+  if (editingRecord && prevRecordId !== editingRecord.id) {
+    setPrevRecordId(editingRecord.id);
+    setGuidanceType(editingRecord.guidanceType || "w zakresie psychologii i rehabilitacji społecznej");
+    setGuidanceAreas(editingRecord.guidanceAreas || []);
+    setContactTypes(editingRecord.contactTypes || ["telefon"]);
+    setSubjectTargets(editingRecord.subjectTargets || ["dziecko"]);
+    setAdviceDescription(editingRecord.adviceDescription || "");
+    setNotes(editingRecord.notes || "");
+    setReferredTo(editingRecord.referredTo || "");
+    setReferredSpecialistId(editingRecord.referredSpecialistId || "");
+    setReferredNote(editingRecord.referredNote || "");
+    setAttachments(editingRecord.attachments || []);
+    setDurationMinutes(editingRecord.durationMinutes || 30);
+    setSpecialistId(editingRecord.specialistId || currentSpecialist.id);
+
+    if (editingRecord.callDate) {
+      try {
+        const d = new Date(editingRecord.callDate);
+        setCallDate(d.toISOString().slice(0, 10));
+      } catch {
+        setCallDate(todayDateInputValue());
+      }
+    }
+  }
 
   if (!editingRecord) return null;
 

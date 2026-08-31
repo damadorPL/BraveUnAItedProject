@@ -3,10 +3,8 @@ import { useNavigate, useLocation, Navigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import {
   findSpecialistByEmail,
-  verifySpecialistPassword,
   DEMO_PASSWORD,
 } from "../services/auth";
-import { loadPasswordOverrides } from "../services/storage";
 import { api } from "../services/api";
 import { PasswordResetModal } from "./PasswordResetModal";
 import { SpecialistAvatar } from "./SpecialistAvatar";

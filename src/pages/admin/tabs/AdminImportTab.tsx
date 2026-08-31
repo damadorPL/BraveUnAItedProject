@@ -12,12 +12,6 @@ import {
   Download,
   CheckCircle2,
   AlertTriangle,
-  SkipForward,
-  Wand2,
-  HelpCircle,
-  UserX,
-  Users,
-  Layers,
   ArrowRight,
 } from "lucide-react";
 import confetti from "canvas-confetti";
@@ -79,7 +73,7 @@ export const AdminImportTab: React.FC = () => {
 
     try {
       confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
-    } catch (_) {}
+    } catch {}
   };
 
   const handleReset = () => {

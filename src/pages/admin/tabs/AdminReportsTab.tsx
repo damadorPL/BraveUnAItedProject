@@ -1,7 +1,8 @@
 import React from "react";
 import { useApp } from "../../../context/AppContext";
 import { StatsBar } from "../../../components/StatsBar";
-import { Download, BarChart2, FileSpreadsheet, ShieldCheck } from "lucide-react";
+import { BarChart2, FileSpreadsheet } from "lucide-react";
+
 
 export const AdminReportsTab: React.FC = () => {
   const { setIsExportModalOpen } = useApp();

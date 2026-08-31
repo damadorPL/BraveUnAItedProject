@@ -5,15 +5,9 @@ import { SpecialistAvatar } from "./SpecialistAvatar";
 import {
   Share2,
   Mail,
-  CheckCircle2,
   Search,
   X,
-  User,
   ChevronDown,
-  Sparkles,
-  ArrowRight,
-  ShieldCheck,
-  Check,
 } from "lucide-react";
 
 interface Props {

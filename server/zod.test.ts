@@ -38,6 +38,16 @@ describe("Zod Validation Schemas Suite", () => {
     }
   });
 
+  it("callRecordSchema should validate call record payload", () => {
+    const parsed = callRecordSchema.safeParse({
+      callerId: "c-1",
+      guidanceType: "prawno-obywatelskie",
+      adviceDescription: "Opis porady prawnej",
+      durationMinutes: 30,
+    });
+    expect(parsed.success).toBe(true);
+  });
+
   it("specialistSchema should reject emails not ending with @synapsis.org.pl", () => {
     const valid = specialistSchema.safeParse({
       name: "mgr Jan Kowalski",

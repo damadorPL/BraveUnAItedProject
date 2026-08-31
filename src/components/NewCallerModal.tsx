@@ -23,13 +23,7 @@ import { todayDateInputValue, callDateToIso } from "../services/callDate";
 import {
   X,
   UserPlus,
-  Phone,
-  MapPin,
-  Tag,
   CheckCircle2,
-  FileText,
-  Award,
-  Users,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -155,7 +149,7 @@ export const NewCallerModal: React.FC = () => {
 
     try {
       confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
-    } catch (_) {}
+    } catch {}
 
     setSelectedCaller(createdCaller);
     setIsNewCallerModalOpen(false);

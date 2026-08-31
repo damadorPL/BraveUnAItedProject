@@ -10,12 +10,9 @@ import {
   Trash2,
   KeyRound,
   ShieldCheck,
-  Check,
   X,
   Mail,
-  User,
   AlertCircle,
-  Sparkles,
   CheckCircle2,
 } from "lucide-react";
 

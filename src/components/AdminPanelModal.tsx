@@ -11,13 +11,8 @@ import {
   Check,
   X,
   Mail,
-  User,
-  Phone,
-  MapPin,
-  FileText,
   AlertTriangle,
   Sparkles,
-  ArrowRight,
   Info,
 } from "lucide-react";
 import { pluralizePorady, pluralizeZalaczniki } from "../utils/pluralization";

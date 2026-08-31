@@ -7,7 +7,6 @@ import {
   Download,
   ShieldCheck,
   FileSpreadsheet,
-  CheckCircle2,
   Lock,
 } from "lucide-react";
 import confetti from "canvas-confetti";
@@ -37,7 +36,7 @@ export const ExportModal: React.FC = () => {
 
     try {
       confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
-    } catch (_) {}
+    } catch {}
 
     setIsExportModalOpen(false);
   };

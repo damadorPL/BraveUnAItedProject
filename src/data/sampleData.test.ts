@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { INITIAL_CALLERS, INITIAL_RECORDS, INITIAL_SPECIALISTS } from "./sampleData";
-import { GUIDANCE_TYPES, GUIDANCE_AREAS_MAP, VOIVODESHIPS, BENEFICIARY_TYPES } from "../types";
+import { GUIDANCE_TYPES, VOIVODESHIPS, BENEFICIARY_TYPES } from "../types";
+
 
 describe("Sample Data Integrity (71 Records Base)", () => {
   it("should have exactly 71 initial call records", () => {

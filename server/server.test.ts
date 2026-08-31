@@ -3,8 +3,8 @@ import request from "supertest";
 import app from "./index.js";
 import { dbManager } from "./db/index.js";
 import { generateJWT } from "./middleware/auth.js";
-import { SQLiteAdapter } from "./db/sqliteAdapter.js";
 import path from "path";
+
 import fs from "fs";
 
 describe("Backend Server & JWT Auth Test Suite", () => {

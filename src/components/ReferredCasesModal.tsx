@@ -1,18 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import {
   Inbox,
   X,
   Phone,
   MapPin,
-  Clock,
-  User,
-  ArrowRight,
   CheckCircle2,
-  AlertCircle,
   ExternalLink,
   MessageSquare,
-  Sparkles,
   PlusCircle,
 } from "lucide-react";
 
@@ -33,9 +28,11 @@ export const ReferredCasesModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const [activeFilter, setActiveFilter] = useState<"ALL" | "OCZEKUJĄCA" | "ZAKOŃCZONA">("OCZEKUJĄCA");
 
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (prevIsOpen !== isOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) setActiveFilter("OCZEKUJĄCA");
-  }, [isOpen]);
+  }
 
   if (!isOpen) return null;
 

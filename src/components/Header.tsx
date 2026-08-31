@@ -3,11 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { SpecialistAvatar } from "./SpecialistAvatar";
 import {
-  FileSpreadsheet,
   UserPlus,
   Search,
   ListFilter,
-  BarChart3,
   ShieldCheck,
   LogOut,
   Settings,
@@ -32,7 +30,6 @@ export const Header: React.FC = () => {
     selectedCaller,
     setSelectedCaller,
     setIsNewCallerModalOpen,
-    setIsExcelModalOpen,
     isProfileModalOpen,
     setIsProfileModalOpen,
     isAdminPanelOpen,

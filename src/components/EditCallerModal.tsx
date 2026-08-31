@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import {
   Attachment,
@@ -14,7 +14,6 @@ import {
 import { AttachmentsManager } from "./AttachmentsManager";
 import {
   X,
-  UserCheck,
   Phone,
   MapPin,
   Tag,
@@ -38,41 +37,45 @@ export const EditCallerModal: React.FC = () => {
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [voivodeship, setVoivodeship] = useState<Voivodeship>("mazowieckie");
-  const [city, setCity] = useState("");
-  const [beneficiaryTypes, setBeneficiaryTypes] = useState<BeneficiaryType[]>(["rodzic"]);
-  const [hasDisabilityCertificate, setHasDisabilityCertificate] =
-    useState<DisabilityCertificateStatus>("tak");
-  const [disabilityDegree, setDisabilityDegree] = useState<DisabilityDegree>(
-    "orzeczenie o niepełnosprawności"
+  const [firstName, setFirstName] = useState(editingCaller?.firstName || "");
+  const [lastName, setLastName] = useState(editingCaller?.lastName || "");
+  const [phoneNumber, setPhoneNumber] = useState(editingCaller?.phoneNumber || "");
+  const [voivodeship, setVoivodeship] = useState<Voivodeship>(editingCaller?.voivodeship || "mazowieckie");
+  const [city, setCity] = useState(editingCaller?.city || "");
+  const [beneficiaryTypes, setBeneficiaryTypes] = useState<BeneficiaryType[]>(
+    editingCaller?.beneficiaryTypes && editingCaller.beneficiaryTypes.length > 0
+      ? editingCaller.beneficiaryTypes
+      : ["rodzic"]
   );
-  const [tagInput, setTagInput] = useState("");
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [hasDisabilityCertificate, setHasDisabilityCertificate] =
+    useState<DisabilityCertificateStatus>(editingCaller?.hasDisabilityCertificate || "tak");
+  const [disabilityDegree, setDisabilityDegree] = useState<DisabilityDegree>(
+    editingCaller?.disabilityDegree || "orzeczenie o niepełnosprawności"
+  );
+  const [tagInput, setTagInput] = useState((editingCaller?.tags || []).join(", "));
+  const [attachments, setAttachments] = useState<Attachment[]>(editingCaller?.attachments || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (editingCaller) {
-      setFirstName(editingCaller.firstName || "");
-      setLastName(editingCaller.lastName || "");
-      setPhoneNumber(editingCaller.phoneNumber || "");
-      setVoivodeship(editingCaller.voivodeship || "mazowieckie");
-      setCity(editingCaller.city || "");
-      setBeneficiaryTypes(
-        editingCaller.beneficiaryTypes && editingCaller.beneficiaryTypes.length > 0
-          ? editingCaller.beneficiaryTypes
-          : ["rodzic"]
-      );
-      setHasDisabilityCertificate(editingCaller.hasDisabilityCertificate || "tak");
-      setDisabilityDegree(
-        editingCaller.disabilityDegree || "orzeczenie o niepełnosprawności"
-      );
-      setTagInput((editingCaller.tags || []).join(", "));
-      setAttachments(editingCaller.attachments || []);
-    }
-  }, [editingCaller]);
+  const [prevCallerId, setPrevCallerId] = useState(editingCaller?.id);
+  if (editingCaller && prevCallerId !== editingCaller.id) {
+    setPrevCallerId(editingCaller.id);
+    setFirstName(editingCaller.firstName || "");
+    setLastName(editingCaller.lastName || "");
+    setPhoneNumber(editingCaller.phoneNumber || "");
+    setVoivodeship(editingCaller.voivodeship || "mazowieckie");
+    setCity(editingCaller.city || "");
+    setBeneficiaryTypes(
+      editingCaller.beneficiaryTypes && editingCaller.beneficiaryTypes.length > 0
+        ? editingCaller.beneficiaryTypes
+        : ["rodzic"]
+    );
+    setHasDisabilityCertificate(editingCaller.hasDisabilityCertificate || "tak");
+    setDisabilityDegree(
+      editingCaller.disabilityDegree || "orzeczenie o niepełnosprawności"
+    );
+    setTagInput((editingCaller.tags || []).join(", "));
+    setAttachments(editingCaller.attachments || []);
+  }
 
   if (!editingCaller) return null;
 
@@ -124,7 +127,7 @@ export const EditCallerModal: React.FC = () => {
 
     try {
       confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
-    } catch (_) {}
+    } catch {}
 
     setIsSubmitting(false);
     setEditingCaller(null);

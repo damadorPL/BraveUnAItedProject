@@ -6,18 +6,12 @@ import {
   Activity,
   History,
   Clock,
-  User,
   Search,
-  Filter,
-  Eye,
-  FileText,
-  Calendar,
 } from "lucide-react";
 
 export const AdminAuditLogsTab: React.FC = () => {
   const { records } = useApp();
   const [logs, setLogs] = useState<RecordEditLog[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLog, setSelectedLog] = useState<RecordEditLog | null>(null);
 
@@ -25,7 +19,6 @@ export const AdminAuditLogsTab: React.FC = () => {
   useEffect(() => {
     async function loadLogs() {
       try {
-        setLoading(true);
         const apiLogs = await api.admin.getAuditLogs(200);
         if (apiLogs && apiLogs.length > 0) {
           setLogs(apiLogs);
@@ -44,7 +37,6 @@ export const AdminAuditLogsTab: React.FC = () => {
       }
       collected.sort((a, b) => new Date(b.editedAt).getTime() - new Date(a.editedAt).getTime());
       setLogs(collected);
-      setLoading(false);
     }
 
     loadLogs();

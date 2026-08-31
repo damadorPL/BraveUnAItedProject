@@ -1,6 +1,6 @@
 import React from "react";
 import { CallRecord, RecordEditLog } from "../types";
-import { History, X, Clock, User, ArrowRight, ShieldCheck, FileText } from "lucide-react";
+import { History, X, Clock } from "lucide-react";
 
 interface Props {
   record: CallRecord | null;

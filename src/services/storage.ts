@@ -1,7 +1,8 @@
 import { Caller, CallRecord, Specialist } from "../types";
 import { INITIAL_CALLERS, INITIAL_RECORDS, INITIAL_SPECIALISTS } from "../data/sampleData";
 
-import { idbGet, idbSet, idbClear } from "./indexedDbStorage";
+import { idbGet, idbSet } from "./indexedDbStorage";
+
 
 export const CALLERS_KEY = "unaited_pfron_callers_v1";
 export const RECORDS_KEY = "unaited_pfron_records_v1";
@@ -62,7 +63,7 @@ export function loadRecords(): CallRecord[] {
       const merged = [...parsed, ...INITIAL_RECORDS.filter((r) => !existingIds.has(r.id))];
       try {
         localStorage.setItem(RECORDS_KEY, JSON.stringify(merged));
-      } catch (_) {}
+      } catch {}
       idbSet(RECORDS_KEY, merged).catch(() => {});
       return merged;
     }
@@ -101,7 +102,7 @@ export function loadSpecialists(): Specialist[] {
       return INITIAL_SPECIALISTS;
     }
     return parsed;
-  } catch (err) {
+  } catch {
     return INITIAL_SPECIALISTS;
   }
 }
@@ -208,7 +209,7 @@ export function resetToSampleData(): { callers: Caller[]; records: CallRecord[] 
     localStorage.setItem(CALLERS_KEY, JSON.stringify(INITIAL_CALLERS));
     localStorage.setItem(RECORDS_KEY, JSON.stringify(INITIAL_RECORDS));
     localStorage.setItem(SPECIALISTS_KEY, JSON.stringify(INITIAL_SPECIALISTS));
-  } catch (_) {}
+  } catch {}
   idbSet(CALLERS_KEY, INITIAL_CALLERS).catch(() => {});
   idbSet(RECORDS_KEY, INITIAL_RECORDS).catch(() => {});
   idbSet(SPECIALISTS_KEY, INITIAL_SPECIALISTS).catch(() => {});
@@ -235,7 +236,7 @@ export function clearDemoData(keepSpecialists: boolean = false): {
     localStorage.setItem(CALLERS_KEY, JSON.stringify([]));
     localStorage.setItem(RECORDS_KEY, JSON.stringify([]));
     localStorage.setItem(SPECIALISTS_KEY, JSON.stringify(retainedSpecialists));
-  } catch (_) {}
+  } catch {}
 
   idbSet(CALLERS_KEY, []).catch(() => {});
   idbSet(RECORDS_KEY, []).catch(() => {});

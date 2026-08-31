@@ -1,6 +1,6 @@
 import React from "react";
 import { useApp } from "../context/AppContext";
-import { Radio, X, Sparkles, CheckCircle2 } from "lucide-react";
+import { Radio, X } from "lucide-react";
 
 export const LiveSyncBanner: React.FC = () => {
   const { liveNotification, dismissNotification } = useApp();

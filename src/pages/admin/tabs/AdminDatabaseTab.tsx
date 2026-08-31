@@ -8,19 +8,16 @@ import {
   CheckCircle2,
   AlertCircle,
   HardDrive,
-  FileCode,
   RotateCcw,
   Trash2,
   ShieldCheck,
   Zap,
   Layers,
-  ArrowRight,
 } from "lucide-react";
 
 export const AdminDatabaseTab: React.FC = () => {
   const { resetDatabase, clearDatabase } = useApp();
 
-  const [currentConfig, setCurrentConfig] = useState<any>(null);
   const [engine, setEngine] = useState<"sqlite" | "postgres">("sqlite");
   const [sqlitePath, setSqlitePath] = useState("data/synapsis.sqlite");
   const [postgresUrl, setPostgresUrl] = useState("postgres://postgres:postgres@localhost:5432/brave_synapsis");
@@ -32,25 +29,33 @@ export const AdminDatabaseTab: React.FC = () => {
 
   const fetchConfig = async () => {
     try {
-      setLoading(true);
       const data = await api.admin.getDbConfig();
-      setCurrentConfig(data);
       if (data.engine) setEngine(data.engine);
       if (data.sqlitePath) setSqlitePath(data.sqlitePath);
       if (data.postgresUrl) setPostgresUrl(data.postgresUrl);
     } catch {
-      setCurrentConfig({
-        engine: "sqlite",
-        sqlitePath: "data/synapsis.sqlite",
-        status: "connected",
-      });
-    } finally {
-      setLoading(false);
+      // Fallback
     }
   };
 
   useEffect(() => {
-    fetchConfig();
+    let isMounted = true;
+    async function loadConfig() {
+      try {
+        const data = await api.admin.getDbConfig();
+        if (isMounted) {
+          if (data.engine) setEngine(data.engine);
+          if (data.sqlitePath) setSqlitePath(data.sqlitePath);
+          if (data.postgresUrl) setPostgresUrl(data.postgresUrl);
+        }
+      } catch {
+        // Fallback
+      }
+    }
+    loadConfig();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleTestConnection = async () => {
