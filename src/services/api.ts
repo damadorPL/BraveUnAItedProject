@@ -57,7 +57,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       const body = await res.json();
       if (body.error) errorMsg = body.error;
     } catch {}
-    throw new Error(errorMsg);
+    const err: any = new Error(errorMsg);
+    err.status = res.status;
+    throw err;
   }
 
   return res.json() as Promise<T>;
@@ -89,8 +91,11 @@ export const api = {
     async me(): Promise<{ user: Specialist } | null> {
       try {
         return await request<{ user: Specialist }>("/auth/me");
-      } catch {
-        return null;
+      } catch (err: any) {
+        if (err?.status === 401 || err?.status === 403) {
+          return null; // Explicit invalid/expired token
+        }
+        throw err; // Network or other temporary server error
       }
     },
 

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useApp } from "../../../context/AppContext";
 import { Caller } from "../../../types";
+import { ConfirmModal } from "../../../components/ConfirmModal";
 import { api } from "../../../services/api";
 import {
   GitMerge,
@@ -18,6 +19,16 @@ export const AdminMergeTab: React.FC = () => {
   const [mergeSearchSource, setMergeSearchSource] = useState<string>("");
   const [mergeSuccessMessage, setMergeSuccessMessage] = useState<string | null>(null);
   const [isMerging, setIsMerging] = useState(false);
+
+  // Confirm modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: React.ReactNode;
+    confirmText?: string;
+    variant?: "danger" | "warning" | "primary";
+    onConfirm: () => void;
+  } | null>(null);
 
   // Potential duplicates detection
   const potentialDuplicates = useMemo(() => {
@@ -91,38 +102,40 @@ export const AdminMergeTab: React.FC = () => {
       );
   }, [callers, targetCallerId, mergeSearchSource]);
 
-  const handleExecuteMerge = async () => {
+  const handleExecuteMerge = () => {
     if (!targetCaller || !sourceCaller) return;
 
-    if (
-      !window.confirm(
-        `Czy na pewno chcesz przenieść całą historię porad (${sourceRecords.length}) z kartoteki "${sourceCaller.firstName} ${sourceCaller.lastName}" do "${targetCaller.firstName} ${targetCaller.lastName}" i trwale usunąć profil źródłowy?`
-      )
-    ) {
-      return;
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: "Scalanie kartotek",
+      variant: "warning",
+      confirmText: "Scal kartoteki",
+      description: `Czy na pewno chcesz przenieść całą historię porad (${sourceRecords.length}) z kartoteki "${sourceCaller.firstName} ${sourceCaller.lastName}" do "${targetCaller.firstName} ${targetCaller.lastName}" i trwale usunąć profil źródłowy?`,
+      onConfirm: async () => {
+        setConfirmModal(null);
+        try {
+          setIsMerging(true);
+          // Attempt backend merge API call
+          try {
+            await api.admin.mergeCallers(sourceCaller.id, targetCaller.id);
+          } catch (err) {
+            console.warn("Backend merge failed, merging locally in AppContext:", err);
+          }
 
-    try {
-      setIsMerging(true);
-      // Attempt backend merge API call
-      try {
-        await api.admin.mergeCallers(sourceCaller.id, targetCaller.id);
-      } catch (err) {
-        console.warn("Backend merge failed, merging locally in AppContext:", err);
-      }
+          // AppContext update
+          mergeCallers(sourceCaller.id, targetCaller.id);
 
-      // AppContext update
-      mergeCallers(sourceCaller.id, targetCaller.id);
+          setMergeSuccessMessage(
+            `Pomyślnie scalono kontakt. Wszystkie ${sourceRecords.length} porad i załączniki zostały przeniesione do kartoteki ${targetCaller.firstName} ${targetCaller.lastName}.`
+          );
 
-      setMergeSuccessMessage(
-        `Pomyślnie scalono kontakt. Wszystkie ${sourceRecords.length} porad i załączniki zostały przeniesione do kartoteki ${targetCaller.firstName} ${targetCaller.lastName}.`
-      );
-
-      setSourceCallerId("");
-      setTimeout(() => setMergeSuccessMessage(null), 6000);
-    } finally {
-      setIsMerging(false);
-    }
+          setSourceCallerId("");
+          setTimeout(() => setMergeSuccessMessage(null), 6000);
+        } finally {
+          setIsMerging(false);
+        }
+      },
+    });
   };
 
   return (
@@ -192,7 +205,7 @@ export const AdminMergeTab: React.FC = () => {
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#2D2A28] pb-3">
             <div>
               <span className="text-[10px] uppercase font-black tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md">
-                KROK 1 • Kartoteka Docelowa (Pozostaje w bazie)
+                KROK 1 • Kartoteka docelowa (pozostaje w bazie)
               </span>
               <h3 className="text-sm font-black text-slate-900 dark:text-white mt-1">
                 {targetCaller ? `${targetCaller.firstName} ${targetCaller.lastName}` : "Wskaż kontakt docelowy"}
@@ -258,7 +271,7 @@ export const AdminMergeTab: React.FC = () => {
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#2D2A28] pb-3">
             <div>
               <span className="text-[10px] uppercase font-black tracking-wider text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-md">
-                KROK 2 • Kartoteka Źródłowa (Do scalenia i usunięcia)
+                KROK 2 • Kartoteka źródłowa (do scalenia i usunięcia)
               </span>
               <h3 className="text-sm font-black text-slate-900 dark:text-white mt-1">
                 {sourceCaller ? `${sourceCaller.firstName} ${sourceCaller.lastName}` : "Wskaż kontakt źródłowy"}
@@ -342,6 +355,20 @@ export const AdminMergeTab: React.FC = () => {
             <span>{isMerging ? "Scalanie..." : "Zatwierdź i scal kartoteki"}</span>
           </button>
         </div>
+      )}
+
+      {/* Reusable Confirm Modal */}
+      {confirmModal && (
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          title={confirmModal.title}
+          description={confirmModal.description}
+          variant={confirmModal.variant}
+          confirmText={confirmModal.confirmText}
+          isLoading={isMerging}
+          onConfirm={confirmModal.onConfirm}
+          onClose={() => setConfirmModal(null)}
+        />
       )}
     </div>
   );

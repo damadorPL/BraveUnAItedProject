@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useApp } from "../../../context/AppContext";
+import { ConfirmModal } from "../../../components/ConfirmModal";
 import { api } from "../../../services/api";
 import {
   Database,
@@ -16,7 +17,7 @@ import {
 } from "lucide-react";
 
 export const AdminDatabaseTab: React.FC = () => {
-  const { resetDatabase, clearDatabase } = useApp();
+  const { resetDatabase, clearDatabase, showDemoFeatures, setShowDemoFeatures } = useApp();
 
   const [engine, setEngine] = useState<"sqlite" | "postgres">("sqlite");
   const [sqlitePath, setSqlitePath] = useState("data/synapsis.sqlite");
@@ -26,6 +27,16 @@ export const AdminDatabaseTab: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [actionMessage, setActionMessage] = useState<{ success: boolean; text: string } | null>(null);
+
+  // Reusable Confirm Modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: React.ReactNode;
+    confirmText?: string;
+    variant?: "danger" | "warning" | "primary";
+    onConfirm: () => void;
+  } | null>(null);
 
   const fetchConfig = async () => {
     try {
@@ -105,52 +116,60 @@ export const AdminDatabaseTab: React.FC = () => {
     }
   };
 
-  const handleResetDatabase = async () => {
-    if (
-      !window.confirm(
-        "Czy na pewno chcesz przywrócić bazę danych do początkowego zestawu testowego (71 porad i kartoteki Fundacji SYNAPSIS)? Wszystkie wprowadzone ręcznie dane zostaną zastąpione."
-      )
-    ) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const res = await api.admin.resetDb();
-      resetDatabase();
-      setActionMessage({ success: true, text: res.message || "Baza danych została zresetowana." });
-      setTimeout(() => setActionMessage(null), 5000);
-    } catch (err: any) {
-      setActionMessage({ success: false, text: err.message || "Błąd resetowania bazy" });
-    } finally {
-      setLoading(false);
-    }
+  const handleResetDatabase = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Przywrócenie danych demonstracyjnych",
+      variant: "warning",
+      confirmText: "Przywróć dane demo",
+      description: "Czy na pewno chcesz przywrócić bazę danych do początkowego zestawu testowego (71 porad i kartoteki Fundacji SYNAPSIS)? Wszystkie wprowadzone ręcznie dane zostaną zastąpione danymi wzorcowymi.",
+      onConfirm: async () => {
+        setConfirmModal(null);
+        try {
+          setLoading(true);
+          const res = await api.admin.resetDb();
+          resetDatabase();
+          setActionMessage({ success: true, text: res.message || "Baza danych została zresetowana." });
+          setTimeout(() => setActionMessage(null), 5000);
+        } catch (err: any) {
+          setActionMessage({ success: false, text: err.message || "Błąd resetowania bazy" });
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 
-  const handleClearDatabase = async () => {
+  const handleClearDatabase = () => {
     const promptMsg = keepSpecialists
-      ? "Czy na pewno chcesz WYCZYŚCIĆ bazę danych? Wszystkie kartoteki i porady zostaną usunięte. Zdefiniowane konta specjalistów oraz konto Administratora zostaną ZACHOWANE."
-      : "Czy na pewno chcesz WYCZYŚCIĆ bazę danych do stanu produkcyjnego? Wszystkie kartoteki, porady oraz konta demo zostaną usunięte. Konto Administratora (admin@synapsis.org.pl) zostanie BEZPIECZNIE ZACHOWANE do logowania.";
+      ? "Czy na pewno chcesz WYCZYŚCIĆ bazę danych? Wszystkie kartoteki i porady zostaną bezpowrotnie usunięte. Zdefiniowane konta specjalistów oraz konto Administratora zostaną ZACHOWANE."
+      : "Czy na pewno chcesz WYCZYŚCIĆ bazę danych do czystego stanu produkcyjnego? Wszystkie kartoteki, porady oraz konta demonstracyjne zostaną usunięte. Główne konto Administratora (admin@synapsis.org.pl) zostanie bezpiecznie zachowane do logowania.";
 
-    if (!window.confirm(promptMsg)) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const res = await api.admin.clearDb(keepSpecialists);
-      clearDatabase(keepSpecialists);
-      setActionMessage({ success: true, text: res.message || "Baza danych została wyczyszczona." });
-      setTimeout(() => setActionMessage(null), 6000);
-    } catch (err: any) {
-      let text = err.message || "Błąd czyszczenia bazy danych";
-      if (text.includes("Brak tokenu") || text.includes("Wymagana autoryzacja") || text.includes("401")) {
-        text = "Wymagana autoryzacja sesji administratora. Zaloguj się ponownie przez ekran logowania.";
-      }
-      setActionMessage({ success: false, text });
-    } finally {
-      setLoading(false);
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: "Wyczyszczenie bazy danych",
+      variant: "danger",
+      confirmText: "Wyczyść bazę danych",
+      description: promptMsg,
+      onConfirm: async () => {
+        setConfirmModal(null);
+        try {
+          setLoading(true);
+          const res = await api.admin.clearDb(keepSpecialists);
+          clearDatabase(keepSpecialists);
+          setActionMessage({ success: true, text: res.message || "Baza danych została wyczyszczona." });
+          setTimeout(() => setActionMessage(null), 6000);
+        } catch (err: any) {
+          let text = err.message || "Błąd czyszczenia bazy danych";
+          if (text.includes("Brak tokenu") || text.includes("Wymagana autoryzacja") || text.includes("401")) {
+            text = "Wymagana autoryzacja sesji administratora. Zaloguj się ponownie przez ekran logowania.";
+          }
+          setActionMessage({ success: false, text });
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 
   return (
@@ -351,6 +370,41 @@ export const AdminDatabaseTab: React.FC = () => {
         </div>
       </form>
 
+      {/* Demo Features Settings */}
+      <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center space-x-2 text-xs font-bold text-slate-900 dark:text-white">
+            <Zap className="w-4 h-4 text-amber-500" />
+            <span>Opcje demonstracyjne i Szybki test w wyszukiwarce</span>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xl">
+            Włącza pomocnicze chipy szybkiego wyszukiwania przykładowych spraw w głównej wyszukiwarce. Opcja jest domyślnie wyłączona i widoczna wyłącznie dla kont administratora.
+          </p>
+        </div>
+
+        <div className="flex items-center space-x-3 shrink-0">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            {showDemoFeatures ? "Włączone" : "Wyłączone"}
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowDemoFeatures(!showDemoFeatures)}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
+              showDemoFeatures ? "bg-[#FFB200]" : "bg-slate-300 dark:bg-slate-700"
+            }`}
+            role="switch"
+            aria-checked={showDemoFeatures}
+          >
+            <span
+              aria-hidden="true"
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                showDemoFeatures ? "translate-x-5" : "translate-x-0"
+              }`}
+            />
+          </button>
+        </div>
+      </div>
+
       {/* Danger Zone: Operations */}
       <div className="space-y-4 pt-2">
         <h3 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -362,7 +416,7 @@ export const AdminDatabaseTab: React.FC = () => {
           <div className="flex items-center space-x-2.5 text-rose-700 dark:text-rose-400">
             <Trash2 className="w-5 h-5" />
             <h3 className="text-sm font-black">
-              Wycyszczenie Bazy / Usunięcie Danych Demonstracyjnych (Stan produkcyjny)
+              Wyczyszczenie bazy / usunięcie danych demonstracyjnych (stan produkcyjny)
             </h3>
           </div>
 
@@ -406,7 +460,7 @@ export const AdminDatabaseTab: React.FC = () => {
           <div className="flex items-center space-x-2 text-slate-700 dark:text-slate-300">
             <RotateCcw className="w-5 h-5" />
             <h3 className="text-sm font-black">
-              Przywrócenie Wzorcowego Zestawu Demonstracyjnego
+              Przywrócenie wzorcowego zestawu demonstracyjnego
             </h3>
           </div>
 
@@ -425,6 +479,20 @@ export const AdminDatabaseTab: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Confirm Modal */}
+      {confirmModal && (
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          title={confirmModal.title}
+          description={confirmModal.description}
+          variant={confirmModal.variant}
+          confirmText={confirmModal.confirmText}
+          isLoading={loading}
+          onConfirm={confirmModal.onConfirm}
+          onClose={() => setConfirmModal(null)}
+        />
+      )}
     </div>
   );
 };

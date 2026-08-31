@@ -41,9 +41,13 @@ export const LoginScreen: React.FC = () => {
     [specialists, email]
   );
 
-  // If already authenticated, redirect to destination
+  // If already authenticated, redirect to destination safely
   if (currentSpecialist) {
-    return <Navigate to={from} replace />;
+    let target = from;
+    if (!currentSpecialist.isAdmin && (target.startsWith("/admin") || target.startsWith("/unauthorized") || target.startsWith("/stats"))) {
+      target = "/search";
+    }
+    return <Navigate to={target} replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,7 +62,31 @@ export const LoginScreen: React.FC = () => {
       const response = await api.auth.login(email.trim(), password);
       setError(null);
       login(response.user);
-      navigate(from, { replace: true });
+
+      // Deterministic navigation: regular users never get redirected to /admin or /unauthorized
+      let targetPath = from;
+      if (!response.user.isAdmin) {
+        if (
+          !targetPath ||
+          targetPath === "/login" ||
+          targetPath === "/" ||
+          targetPath.startsWith("/admin") ||
+          targetPath.startsWith("/unauthorized")
+        ) {
+          targetPath = "/search";
+        }
+      } else {
+        if (
+          !targetPath ||
+          targetPath === "/login" ||
+          targetPath === "/" ||
+          targetPath.startsWith("/unauthorized")
+        ) {
+          targetPath = "/search";
+        }
+      }
+
+      navigate(targetPath, { replace: true });
     } catch (err: any) {
       setError(err.message || "Nieprawidłowe dane logowania. Spróbuj ponownie.");
     }
@@ -220,11 +248,11 @@ export const LoginScreen: React.FC = () => {
         {/* Demo hint */}
         <div className="mt-6 pt-4 border-t border-slate-100 text-[11px] text-slate-600">
           <p>
-            Wersja demonstracyjna — hasło dla wszystkich kont:{" "}
+            Wersja demonstracyjna (hasło dla wszystkich kont:{" "}
             <code className="font-mono font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded-md">
               {DEMO_PASSWORD}
-            </code>{" "}
-            (o ile nie zostało zmienione przez reset hasła)
+            </code>
+            , o ile nie zostało zmienione przez reset hasła)
           </p>
           <button
             type="button"

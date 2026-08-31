@@ -17,6 +17,7 @@ import {
   X,
   Clock,
   CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { fireConfetti } from "../utils/confetti";
 
@@ -29,6 +30,8 @@ export const NewCallRecordModal: React.FC = () => {
     specialists,
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
+
+  const [formError, setFormError] = useState<string | null>(null);
 
   const [guidanceType, setGuidanceType] = useState<GuidanceType>(
     currentSpecialist.guidanceType || "w zakresie psychologii i rehabilitacji społecznej"
@@ -82,9 +85,10 @@ export const NewCallRecordModal: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!adviceDescription.trim()) {
-      alert("Proszę wpisać krótki opis, czego dotyczyła porada.");
+      setFormError("Proszę wpisać krótki opis, czego dotyczyła porada.");
       return;
     }
+    setFormError(null);
 
     setIsSubmitting(true);
     addNewRecord({
@@ -155,6 +159,13 @@ export const NewCallRecordModal: React.FC = () => {
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-xs">
+          {formError && (
+            <div className="flex items-center space-x-2 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 px-4 py-3 rounded-2xl text-xs font-semibold animate-in fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
+
           {/* 1. Rodzaj poradnictwa */}
           <div>
             <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5">

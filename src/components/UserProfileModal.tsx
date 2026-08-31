@@ -44,7 +44,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
 
   const colorOptions = [
     { label: "Bursztynowy (Synapsis)", class: "bg-amber-600" },
-    { label: "Morski Turkus", class: "bg-teal-600" },
+    { label: "Morski turkus", class: "bg-teal-600" },
     { label: "Błękitny", class: "bg-blue-600" },
     { label: "Granatowy", class: "bg-indigo-600" },
     { label: "Fioletowy", class: "bg-purple-600" },

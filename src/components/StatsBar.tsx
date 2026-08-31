@@ -256,33 +256,72 @@ export const StatsBar: React.FC = () => {
         </div>
 
         {/* Regions Box */}
-        <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-5 shadow-xs">
-          <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>Zasięg geograficzny — porady wg województw</span>
-          </h3>
+        <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3.5">
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span>Zasięg geograficzny: porady wg województw</span>
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-800 shrink-0">
+                16 województw
+              </span>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-1.5">
-            {stats.voivodeshipRows.map(({ name, count, percent }) => (
-              <div
-                key={name}
-                className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-[#2C2927] last:border-b-0"
-              >
-                <span className={count > 0 ? "font-semibold text-slate-800 dark:text-slate-200" : "text-slate-400 dark:text-slate-600"}>
-                  {name === "brak" ? "brak danych" : name}
-                </span>
-                <span
-                  className={
-                    count > 0 ? "font-bold text-indigo-600 dark:text-[#FFB200]" : "text-slate-300 dark:text-slate-700 font-medium"
-                  }
-                >
-                  {pluralizePorady(count)}
-                  {count > 0 && (
-                    <span className="font-medium text-slate-400 dark:text-slate-500 ml-1">({percent}%)</span>
-                  )}
-                </span>
-              </div>
-            ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {stats.voivodeshipRows.map(({ name, count, percent }) => {
+                const displayName =
+                  name === "brak" ? "Brak danych" : name.charAt(0).toUpperCase() + name.slice(1);
+
+                return (
+                  <div
+                    key={name}
+                    className={`flex items-center justify-between px-3 py-2 rounded-xl border text-xs transition-all ${
+                      count > 0
+                        ? "bg-slate-50/80 dark:bg-[#252018]/60 border-slate-200/80 dark:border-[#383431] shadow-2xs"
+                        : "bg-transparent border-slate-100/80 dark:border-[#262422] opacity-50"
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2 min-w-0 pr-2">
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                          count > 0
+                            ? "bg-indigo-600 dark:bg-[#FFB200]"
+                            : "bg-slate-300 dark:bg-slate-700"
+                        }`}
+                      />
+                      <span
+                        className={`truncate ${
+                          count > 0
+                            ? "font-semibold text-slate-800 dark:text-slate-100"
+                            : "text-slate-400 dark:text-slate-500"
+                        }`}
+                        title={displayName}
+                      >
+                        {displayName}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center space-x-1.5 shrink-0 ml-auto">
+                      <span
+                        className={`font-bold font-mono whitespace-nowrap text-xs ${
+                          count > 0
+                            ? "text-indigo-600 dark:text-[#FFB200]"
+                            : "text-slate-400 dark:text-slate-600 font-normal"
+                        }`}
+                      >
+                        {count} {pluralizePorady(count)}
+                      </span>
+                      {count > 0 && (
+                        <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                          ({percent}%)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           <div className="mt-4 pt-3 border-t border-slate-100 dark:border-[#2C2927] text-[11px] text-slate-400 dark:text-slate-500">

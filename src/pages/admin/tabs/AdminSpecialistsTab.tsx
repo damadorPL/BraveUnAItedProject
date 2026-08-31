@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useApp, useCurrentSpecialist } from "../../../context/AppContext";
 import { Specialist, GUIDANCE_TYPES, GuidanceType } from "../../../types";
 import { SpecialistAvatar } from "../../../components/SpecialistAvatar";
+import { ConfirmModal } from "../../../components/ConfirmModal";
 import { api } from "../../../services/api";
 import {
   Users,
@@ -10,13 +11,39 @@ import {
   Trash2,
   KeyRound,
   ShieldCheck,
+  UserCheck,
   X,
-  Mail,
   AlertCircle,
   CheckCircle2,
+  Search,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
 } from "lucide-react";
 
 export const ALLOWED_EMAIL_DOMAIN = "synapsis.org.pl";
+
+type SortField = "name" | "title" | "guidanceType" | "isAdmin";
+type SortDirection = "asc" | "desc";
+
+// Colored guidance badge styling matching central system
+const getGuidanceBadgeStyle = (type?: GuidanceType) => {
+  switch (type) {
+    case "prawno-obywatelskie":
+      return "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60";
+    case "w zakresie psychologii i rehabilitacji społecznej":
+      return "bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/60";
+    case "Parent to Parent":
+      return "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60";
+    case "społeczne":
+      return "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/60";
+    default:
+      return "bg-slate-50 dark:bg-[#282522] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#383431]";
+  }
+};
 
 export const AdminSpecialistsTab: React.FC = () => {
   const { specialists, addSpecialist, updateSpecialist, deleteSpecialist } = useApp();
@@ -37,6 +64,27 @@ export const AdminSpecialistsTab: React.FC = () => {
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Search, Filter & Sort state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterRole, setFilterRole] = useState<"all" | "admin" | "consultant">("all");
+  const [filterGuidance, setFilterGuidance] = useState<string>("all");
+  const [sortField, setSortField] = useState<SortField>("name");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  // Confirmation modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: React.ReactNode;
+    confirmText?: string;
+    variant?: "danger" | "warning" | "primary";
+    onConfirm: () => void;
+  } | null>(null);
 
   // Password reset modal state
   const [resetModalSpec, setResetModalSpec] = useState<Specialist | null>(null);
@@ -68,6 +116,7 @@ export const AdminSpecialistsTab: React.FC = () => {
     setIsAdding(false);
     setSuccessMessage(null);
     setErrorMessage(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -124,56 +173,166 @@ export const AdminSpecialistsTab: React.FC = () => {
     }
   };
 
-  const handleDelete = async (spec: Specialist) => {
+  const handleDelete = (spec: Specialist) => {
     if (spec.id === currentSpecialist.id) {
-      alert("Nie możesz usunąć własnego konta.");
+      setErrorMessage("Nie możesz usunąć własnego konta.");
+      setTimeout(() => setErrorMessage(null), 4000);
       return;
     }
     if (spec.id === "spec-admin") {
-      alert("Nie można usunąć głównego konta administratora.");
+      setErrorMessage("Nie można usunąć głównego konta administratora.");
+      setTimeout(() => setErrorMessage(null), 4000);
       return;
     }
 
-    if (
-      !window.confirm(
-        `Czy na pewno chcesz usunąć specjalistę ${spec.name} (${spec.email})?`
-      )
-    ) {
-      return;
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: "Usuwanie specjalisty",
+      variant: "danger",
+      confirmText: "Usuń konto",
+      description: `Czy na pewno chcesz bezpowrotnie usunąć konto specjalisty ${spec.name} (${spec.email})?`,
+      onConfirm: async () => {
+        setConfirmModal(null);
+        try {
+          await api.admin.deleteSpecialist(spec.id);
+          deleteSpecialist(spec.id);
+          setSuccessMessage(`Usunięto konto specjalisty ${spec.name}`);
+          setTimeout(() => setSuccessMessage(null), 4000);
+        } catch (err: any) {
+          setErrorMessage(err.message || "Błąd usuwania specjalisty");
+        }
+      },
+    });
+  };
 
-    try {
-      await api.admin.deleteSpecialist(spec.id);
-      deleteSpecialist(spec.id);
-      setSuccessMessage(`Usunięto konto specjalisty ${spec.name}`);
-      setTimeout(() => setSuccessMessage(null), 4000);
-    } catch (err: any) {
-      setErrorMessage(err.message || "Błąd usuwania specjalisty");
+  const handleResetPassword = (spec: Specialist) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Resetowanie hasła",
+      variant: "warning",
+      confirmText: "Zresetuj hasło",
+      description: `Czy na pewno chcesz zresetować hasło dla specjalisty ${spec.name} (${spec.email})?\n\nDotychczasowe hasło przestanie działać i zostanie wygenerowane nowe hasło tymczasowe.`,
+      onConfirm: async () => {
+        setConfirmModal(null);
+        try {
+          const res = await api.admin.resetSpecialistPassword(spec.id);
+          setResetModalSpec(spec);
+          setTempPasswordGenerated(res.temporaryPassword || "Synapsis2026!");
+        } catch (err: any) {
+          setErrorMessage(err.message || "Błąd podczas resetowania hasła");
+          setTimeout(() => setErrorMessage(null), 4000);
+        }
+      },
+    });
+  };
+
+  // Filtered specialists
+  const filteredSpecialists = useMemo(() => {
+    return specialists.filter((spec) => {
+      // Search query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchName = spec.name.toLowerCase().includes(q);
+        const matchEmail = spec.email.toLowerCase().includes(q);
+        const matchTitle = (spec.title || "").toLowerCase().includes(q);
+        const matchRole = (spec.role || "").toLowerCase().includes(q);
+        const matchGuidance = (spec.guidanceType || "").toLowerCase().includes(q);
+        const matchId = (spec.id || "").toLowerCase().includes(q);
+        if (!matchName && !matchEmail && !matchTitle && !matchRole && !matchGuidance && !matchId) {
+          return false;
+        }
+      }
+
+      // Role filter
+      if (filterRole === "admin" && !spec.isAdmin) return false;
+      if (filterRole === "consultant" && spec.isAdmin) return false;
+
+      // Guidance filter
+      if (filterGuidance !== "all" && spec.guidanceType !== filterGuidance) return false;
+
+      return true;
+    });
+  }, [specialists, searchQuery, filterRole, filterGuidance]);
+
+  // Sorted specialists
+  const sortedSpecialists = useMemo(() => {
+    const list = [...filteredSpecialists];
+    list.sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
+        case "name":
+          comparison = a.name.localeCompare(b.name, "pl");
+          break;
+        case "title":
+          comparison = `${a.title} ${a.role}`.localeCompare(`${b.title} ${b.role}`, "pl");
+          break;
+        case "guidanceType":
+          comparison = (a.guidanceType || "").localeCompare(b.guidanceType || "", "pl");
+          break;
+        case "isAdmin":
+          comparison = (b.isAdmin ? 1 : 0) - (a.isAdmin ? 1 : 0);
+          break;
+      }
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+    return list;
+  }, [filteredSpecialists, sortField, sortDirection]);
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(sortedSpecialists.length / pageSize));
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const paginatedSpecialists = useMemo(() => {
+    const start = (safeCurrentPage - 1) * pageSize;
+    return sortedSpecialists.slice(start, start + pageSize);
+  }, [sortedSpecialists, safeCurrentPage, pageSize]);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
     }
   };
 
-  const handleResetPassword = async (spec: Specialist) => {
-    try {
-      const res = await api.admin.resetSpecialistPassword(spec.id);
-      setResetModalSpec(spec);
-      setTempPasswordGenerated(res.temporaryPassword || "Synapsis2026!");
-    } catch (err: any) {
-      alert(err.message || "Błąd podczas resetowania hasła");
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setFilterRole("all");
+    setFilterGuidance("all");
+  };
+
+  const isFiltered = searchQuery.trim() !== "" || filterRole !== "all" || filterGuidance !== "all";
+
+  const renderSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="w-3.5 h-3.5 opacity-30 group-hover:opacity-70 transition-opacity" />;
     }
+    return sortDirection === "asc" ? (
+      <ArrowUp className="w-3.5 h-3.5 text-amber-600 dark:text-[#FFB200]" />
+    ) : (
+      <ArrowDown className="w-3.5 h-3.5 text-amber-600 dark:text-[#FFB200]" />
+    );
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in">
-      {/* Header Actions */}
+    <div className="space-y-4 sm:space-y-5 animate-in fade-in">
+      {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-            <span>Zespół Dyżurujących Specjalistów</span>
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Zarządzaj kontami, uprawnieniami administratora i hasłami dostępowymi
-          </p>
+        <div className="flex items-center space-x-3">
+          <div className="p-2.5 bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 rounded-2xl border border-purple-200 dark:border-purple-800/60">
+            <Users className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <span>Zespół dyżurujących specjalistów</span>
+              <span className="text-xs bg-slate-100 dark:bg-[#2A2724] text-slate-700 dark:text-slate-300 font-bold px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-[#383431]">
+                {specialists.length}
+              </span>
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Zarządzaj kontami, rolami, uprawnieniami administratora i hasłami dostępowymi
+            </p>
+          </div>
         </div>
 
         {!isAdding && !editingSpec && (
@@ -183,7 +342,7 @@ export const AdminSpecialistsTab: React.FC = () => {
               resetForm();
               setIsAdding(true);
             }}
-            className="flex items-center space-x-1.5 px-4 py-2 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
+            className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-2xl text-xs font-black shadow-xs hover:shadow transition-all cursor-pointer w-full sm:w-auto shrink-0"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Dodaj nowego specjalistę</span>
@@ -206,7 +365,7 @@ export const AdminSpecialistsTab: React.FC = () => {
         </div>
       )}
 
-      {/* Add / Edit Form */}
+      {/* Add / Edit Form Modal/Panel */}
       {(isAdding || editingSpec) && (
         <form
           onSubmit={handleSave}
@@ -214,12 +373,12 @@ export const AdminSpecialistsTab: React.FC = () => {
         >
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#2D2A28]">
             <h3 className="text-sm font-black text-slate-900 dark:text-white">
-              {editingSpec ? `Edycja specjalisty: ${editingSpec.name}` : "Rejestracja nowego specjalisty"}
+              {editingSpec ? `Edycja profilu: ${editingSpec.name}` : "Rejestracja nowego specjalisty"}
             </h3>
             <button
               type="button"
               onClick={resetForm}
-              className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg"
+              className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#2D2A28] transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -228,7 +387,7 @@ export const AdminSpecialistsTab: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Imię i nazwisko z tytułem
+                Imię i nazwisko z tytułem *
               </label>
               <input
                 type="text"
@@ -236,13 +395,13 @@ export const AdminSpecialistsTab: React.FC = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="np. mgr Anna Kowalska"
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 dark:border-[#383431] bg-white dark:bg-[#252018] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#383431] bg-slate-50 dark:bg-[#141312] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
               />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Służbowy adres e-mail
+                Służbowy adres e-mail *
               </label>
               <input
                 type="email"
@@ -250,13 +409,13 @@ export const AdminSpecialistsTab: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={`uzytkownik@${ALLOWED_EMAIL_DOMAIN}`}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 dark:border-[#383431] bg-white dark:bg-[#252018] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#383431] bg-slate-50 dark:bg-[#141312] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
               />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Tytuł zawodowy
+                Tytuł zawodowy *
               </label>
               <input
                 type="text"
@@ -264,21 +423,21 @@ export const AdminSpecialistsTab: React.FC = () => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="np. Psycholog / Prawnik"
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 dark:border-[#383431] bg-white dark:bg-[#252018] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#383431] bg-slate-50 dark:bg-[#141312] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
               />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Rola / Stanowisko
+                Rola / Stanowisko *
               </label>
               <input
                 type="text"
                 required
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                placeholder="np. Konsultant ds. Prawnych"
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 dark:border-[#383431] bg-white dark:bg-[#252018] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
+                placeholder="np. Konsultant ds. prawnych"
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#383431] bg-slate-50 dark:bg-[#141312] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
               />
             </div>
 
@@ -289,10 +448,10 @@ export const AdminSpecialistsTab: React.FC = () => {
               <select
                 value={guidance}
                 onChange={(e) => setGuidance(e.target.value as GuidanceType)}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 dark:border-[#383431] bg-white dark:bg-[#252018] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#383431] bg-slate-50 dark:bg-[#141312] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200] cursor-pointer"
               >
                 {GUIDANCE_TYPES.map((g) => (
-                  <option key={g} value={g}>
+                  <option key={g} value={g} className="dark:bg-[#1E1C1A]">
                     {g}
                   </option>
                 ))}
@@ -308,7 +467,7 @@ export const AdminSpecialistsTab: React.FC = () => {
                 value={customPassword}
                 onChange={(e) => setCustomPassword(e.target.value)}
                 placeholder={editingSpec ? "Pozostaw puste, aby nie zmieniać" : "Domyślne: synapsis2026"}
-                className="w-full text-xs px-3 py-2 rounded-xl border border-slate-300 dark:border-[#383431] bg-white dark:bg-[#252018] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
+                className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#383431] bg-slate-50 dark:bg-[#141312] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
               />
             </div>
           </div>
@@ -319,15 +478,15 @@ export const AdminSpecialistsTab: React.FC = () => {
                 type="checkbox"
                 checked={isAdmin}
                 onChange={(e) => setIsAdmin(e.target.checked)}
-                className="rounded text-amber-600 focus:ring-amber-500 w-4 h-4"
+                className="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
               />
-              <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
+              <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-rose-500" />
                 <span>Uprawnienia administratora (dostęp do panelu /admin)</span>
               </span>
             </label>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
               <button
                 type="button"
                 onClick={resetForm}
@@ -346,117 +505,499 @@ export const AdminSpecialistsTab: React.FC = () => {
         </form>
       )}
 
-      {/* Specialists Table */}
-      <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-[#252018] border-b border-slate-200 dark:border-[#383431] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-              <tr>
-                <th className="py-3.5 px-4">Specjalista</th>
-                <th className="py-3.5 px-4">Służbowy e-mail</th>
-                <th className="py-3.5 px-4">Tytuł i rola</th>
-                <th className="py-3.5 px-4">Obszar poradnictwa</th>
-                <th className="py-3.5 px-4">Uprawnienia</th>
-                <th className="py-3.5 px-4 text-right">Akcje</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-[#2C2927]">
-              {specialists.map((spec) => (
-                <tr
-                  key={spec.id}
-                  className="hover:bg-slate-50/70 dark:hover:bg-[#24211E] transition-colors"
-                >
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center space-x-3">
-                      <SpecialistAvatar
-                        name={spec.name}
-                        avatarBg={spec.avatarBg}
-                        avatarUrl={spec.avatarUrl}
-                        className="w-8 h-8 rounded-xl text-xs font-black shrink-0"
-                      />
-                      <div>
-                        <div className="font-bold text-slate-900 dark:text-white">
+      {/* Search & Filters Toolbar */}
+      <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-2xl p-3 sm:p-3.5 shadow-xs space-y-2.5">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
+          {/* Search Box */}
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Szukaj po nazwisku, e-mailu, roli, ID..."
+              className="w-full pl-9 pr-8 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white p-0.5 rounded-lg cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Role Filter */}
+          <div className="w-full md:w-44 shrink-0">
+            <select
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value as any)}
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-[#FFB200] cursor-pointer"
+            >
+              <option value="all">Wszystkie uprawnienia</option>
+              <option value="admin">Administratorzy</option>
+              <option value="consultant">Konsultanci</option>
+            </select>
+          </div>
+
+          {/* Guidance Area Filter */}
+          <div className="w-full md:w-56 shrink-0">
+            <select
+              value={filterGuidance}
+              onChange={(e) => setFilterGuidance(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-[#FFB200] cursor-pointer"
+            >
+              <option value="all">Wszystkie obszary porad</option>
+              {GUIDANCE_TYPES.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Filter Counters & Quick Reset */}
+        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 px-1 pt-0.5">
+          <div className="flex items-center space-x-2">
+            <span>
+              Wyniki: <strong className="text-slate-900 dark:text-white font-bold">{sortedSpecialists.length}</strong> z {specialists.length} specjalistów
+            </span>
+            {isFiltered && (
+              <span className="bg-amber-100 dark:bg-[#2C2417] text-amber-900 dark:text-amber-300 font-bold px-1.5 py-0.2 rounded-md border border-amber-300 dark:border-amber-800">
+                Filtrowanie aktywne
+              </span>
+            )}
+          </div>
+
+          {isFiltered && (
+            <button
+              type="button"
+              onClick={clearAllFilters}
+              className="flex items-center space-x-1 font-bold text-amber-600 dark:text-[#FFB200] hover:underline cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Wyczyść filtry</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* 1. Mobile Cards View (< md screens: No horizontal scrollbars!) */}
+      <div className="md:hidden space-y-3">
+        {paginatedSpecialists.length === 0 ? (
+          <div className="bg-white dark:bg-[#1E1C1A] rounded-2xl border border-slate-200 dark:border-[#383431] p-8 text-center shadow-xs">
+            <Users className="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+            <p className="font-bold text-xs text-slate-800 dark:text-slate-200">
+              Brak pasujących specjalistów
+            </p>
+            {isFiltered && (
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="mt-2 px-3 py-1 bg-[#FFB200] text-[#2D2A28] rounded-xl text-xs font-bold shadow-xs cursor-pointer inline-flex items-center space-x-1"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Wyczyść filtry</span>
+              </button>
+            )}
+          </div>
+        ) : (
+          paginatedSpecialists.map((spec) => {
+            const isCurrent = spec.id === currentSpecialist.id;
+            return (
+              <div
+                key={spec.id}
+                className={`bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-2xl p-4 shadow-xs space-y-3 ${
+                  isCurrent ? "ring-2 ring-[#FFB200]/50 bg-amber-50/20 dark:bg-[#252018]/50" : ""
+                }`}
+              >
+                {/* Top: Avatar, Name, Email, Status Badge */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <SpecialistAvatar
+                      name={spec.name}
+                      avatarBg={spec.avatarBg}
+                      avatarUrl={spec.avatarUrl}
+                      className="w-10 h-10 rounded-xl text-xs font-black shadow-xs shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-sm text-slate-900 dark:text-white leading-tight">
                           {spec.name}
-                        </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                          ID: {spec.id}
-                        </div>
+                        </span>
+                        {isCurrent && (
+                          <span className="text-[9px] bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-[#FFDF06] font-bold px-1.5 py-0.2 rounded-md border border-amber-300 dark:border-amber-700/80 shrink-0">
+                            Twoje konto
+                          </span>
+                        )}
                       </div>
+                      <a
+                        href={`mailto:${spec.email}`}
+                        className="text-[11px] text-slate-500 dark:text-slate-400 font-mono block truncate hover:text-amber-600 dark:hover:text-[#FFB200] transition-colors"
+                      >
+                        {spec.email}
+                      </a>
                     </div>
-                  </td>
+                  </div>
 
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center space-x-1.5 text-slate-700 dark:text-slate-300 font-mono">
-                      <Mail className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{spec.email}</span>
-                    </div>
-                  </td>
-
-                  <td className="py-3.5 px-4">
-                    <div className="font-semibold text-slate-800 dark:text-slate-200">
-                      {spec.title}
-                    </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                      {spec.role}
-                    </div>
-                  </td>
-
-                  <td className="py-3.5 px-4">
-                    <span className="text-[11px] bg-slate-100 dark:bg-[#282522] text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-full font-medium">
-                      {spec.guidanceType}
-                    </span>
-                  </td>
-
-                  <td className="py-3.5 px-4">
+                  <div className="shrink-0">
                     {spec.isAdmin ? (
-                      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg text-[10px] font-black bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
                         <ShieldCheck className="w-3 h-3" />
-                        <span>Administrator</span>
+                        <span>Admin</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-[#282522] text-slate-600 dark:text-slate-400">
+                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-[#282522] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#383431]">
+                        <UserCheck className="w-3 h-3 text-slate-400" />
                         <span>Konsultant</span>
                       </span>
                     )}
-                  </td>
+                  </div>
+                </div>
 
-                  <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end space-x-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleResetPassword(spec)}
-                        title="Zresetuj hasło"
-                        className="p-1.5 text-slate-500 hover:text-amber-600 dark:hover:text-[#FFB200] hover:bg-slate-100 dark:hover:bg-[#2C2927] rounded-lg transition-colors cursor-pointer"
-                      >
-                        <KeyRound className="w-4 h-4" />
-                      </button>
+                {/* Details: Role & Guidance area */}
+                <div className="bg-slate-50 dark:bg-[#161514] rounded-xl p-2.5 text-xs space-y-1.5 border border-slate-100 dark:border-[#2C2927]">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500">Rola / Stanowisko:</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200 text-right">
+                      {spec.title} {spec.role && spec.role.toLowerCase() !== spec.title.toLowerCase() ? `(${spec.role})` : ""}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500">Obszar porad:</span>
+                    <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-md border ${getGuidanceBadgeStyle(spec.guidanceType)}`}>
+                      {spec.guidanceType}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400 font-mono text-[10px]">ID:</span>
+                    <span className="text-slate-400 font-mono text-[10px]">{spec.id}</span>
+                  </div>
+                </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleStartEdit(spec)}
-                        title="Edytuj profil"
-                        className="p-1.5 text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-[#2C2927] rounded-lg transition-colors cursor-pointer"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(spec)}
-                        disabled={spec.id === "spec-admin" || spec.id === currentSpecialist.id}
-                        title="Usuń specjalistę"
-                        className="p-1.5 text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-[#2C2927] rounded-lg transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                {/* Mobile Action Buttons */}
+                <div className="flex items-center justify-end space-x-2 pt-1 border-t border-slate-100 dark:border-[#2C2927]">
+                  <button
+                    type="button"
+                    onClick={() => handleResetPassword(spec)}
+                    className="flex-1 py-2 px-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-[#FFB200] hover:bg-amber-100 text-xs font-bold border border-amber-200/80 dark:border-amber-900/50 flex items-center justify-center space-x-1 transition-colors cursor-pointer"
+                  >
+                    <KeyRound className="w-3.5 h-3.5" />
+                    <span>Hasło</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleStartEdit(spec)}
+                    className="flex-1 py-2 px-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400 hover:bg-blue-100 text-xs font-bold border border-blue-200/80 dark:border-blue-900/50 flex items-center justify-center space-x-1 transition-colors cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Edytuj</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(spec)}
+                    disabled={spec.id === "spec-admin" || spec.id === currentSpecialist.id}
+                    className="py-2 px-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-400 hover:bg-rose-100 text-xs font-bold border border-rose-200/80 dark:border-rose-900/50 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-25 disabled:cursor-not-allowed"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
+
+      {/* 2. Desktop Table View (>= md screens) */}
+      <div className="hidden md:block bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-2xl overflow-hidden shadow-xs">
+        <table className="w-full text-left text-xs border-collapse">
+          <thead className="bg-slate-50/90 dark:bg-[#252018] border-b border-slate-200 dark:border-[#383431] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px] select-none">
+            <tr>
+              {/* Specjalista */}
+              <th
+                onClick={() => handleSort("name")}
+                className="py-3 px-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap"
+              >
+                <div className="flex items-center space-x-1">
+                  <span>Specjalista i kontakt</span>
+                  {renderSortIcon("name")}
+                </div>
+              </th>
+
+              {/* Tytuł i rola */}
+              <th
+                onClick={() => handleSort("title")}
+                className="py-3 px-3 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap"
+              >
+                <div className="flex items-center space-x-1">
+                  <span>Rola i stanowisko</span>
+                  {renderSortIcon("title")}
+                </div>
+              </th>
+
+              {/* Obszar poradnictwa */}
+              <th
+                onClick={() => handleSort("guidanceType")}
+                className="py-3 px-3 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap"
+              >
+                <div className="flex items-center space-x-1">
+                  <span>Obszar poradnictwa</span>
+                  {renderSortIcon("guidanceType")}
+                </div>
+              </th>
+
+              {/* Uprawnienia */}
+              <th
+                onClick={() => handleSort("isAdmin")}
+                className="py-3 px-3 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap"
+              >
+                <div className="flex items-center space-x-1">
+                  <span>Uprawnienia</span>
+                  {renderSortIcon("isAdmin")}
+                </div>
+              </th>
+
+              {/* Akcje */}
+              <th className="py-3 px-4 text-right whitespace-nowrap">
+                <span>Akcje</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-[#2C2927]">
+            {paginatedSpecialists.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="text-center py-10 text-slate-500 dark:text-slate-400">
+                  <Users className="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+                  <p className="font-bold text-xs text-slate-800 dark:text-slate-200">
+                    Brak pasujących specjalistów
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Dla podanych kryteriów wyszukiwania nie ma żadnych wyników.
+                  </p>
+                  {isFiltered && (
+                    <button
+                      type="button"
+                      onClick={clearAllFilters}
+                      className="mt-2.5 px-3 py-1 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-bold shadow-xs cursor-pointer inline-flex items-center space-x-1"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Wyczyść filtry</span>
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ) : (
+              paginatedSpecialists.map((spec) => {
+                const isCurrent = spec.id === currentSpecialist.id;
+                return (
+                  <tr
+                    key={spec.id}
+                    className={`hover:bg-slate-50/70 dark:hover:bg-[#24211E] transition-colors ${
+                      isCurrent ? "bg-amber-50/30 dark:bg-[#252018]/60" : ""
+                    }`}
+                  >
+                    {/* Specjalista i kontakt */}
+                    <td className="py-3 px-4">
+                      <div className="flex items-center space-x-3">
+                        <SpecialistAvatar
+                          name={spec.name}
+                          avatarBg={spec.avatarBg}
+                          avatarUrl={spec.avatarUrl}
+                          className="w-9 h-9 rounded-xl text-xs font-black shadow-xs shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white leading-tight">
+                              {spec.name}
+                            </span>
+                            {isCurrent && (
+                              <span className="text-[9px] bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-[#FFDF06] font-bold px-1.5 py-0.2 rounded-md border border-amber-300 dark:border-amber-700/80">
+                                Twoje konto
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-2 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            <a
+                              href={`mailto:${spec.email}`}
+                              className="font-mono hover:text-amber-600 dark:hover:text-[#FFB200] transition-colors"
+                            >
+                              {spec.email}
+                            </a>
+                            <span className="text-slate-300 dark:text-slate-600">•</span>
+                            <span className="font-mono text-[10px] text-slate-400">ID: {spec.id}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Rola i stanowisko */}
+                    <td className="py-3 px-3">
+                      <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">
+                        {spec.title}
+                      </div>
+                      {spec.role && spec.role.toLowerCase() !== spec.title.toLowerCase() && (
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
+                          {spec.role}
+                        </div>
+                      )}
+                    </td>
+
+                    {/* Obszar poradnictwa */}
+                    <td className="py-3 px-3">
+                      <span
+                        className={`inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-xl border leading-snug ${getGuidanceBadgeStyle(
+                          spec.guidanceType
+                        )}`}
+                      >
+                        {spec.guidanceType}
+                      </span>
+                    </td>
+
+                    {/* Uprawnienia */}
+                    <td className="py-3 px-3 whitespace-nowrap">
+                      {spec.isAdmin ? (
+                        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl text-[11px] font-black bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>Administrator</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-slate-100 dark:bg-[#282522] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#383431]">
+                          <UserCheck className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Konsultant</span>
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Akcje */}
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end space-x-1">
+                        <button
+                          type="button"
+                          onClick={() => handleResetPassword(spec)}
+                          title="Zresetuj hasło specjalisty"
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-amber-700 dark:hover:text-[#FFB200] hover:bg-amber-100/70 dark:hover:bg-amber-950/50 transition-colors cursor-pointer"
+                        >
+                          <KeyRound className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleStartEdit(spec)}
+                          title="Edytuj profil specjalisty"
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-blue-100/70 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(spec)}
+                          disabled={spec.id === "spec-admin" || spec.id === currentSpecialist.id}
+                          title={
+                            spec.id === "spec-admin"
+                              ? "Nie można usunąć głównego konta administratora"
+                              : spec.id === currentSpecialist.id
+                              ? "Nie możesz usunąć własnego konta"
+                              : "Usuń konto specjalisty"
+                          }
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-100/70 dark:hover:bg-rose-950/50 transition-colors cursor-pointer disabled:opacity-25 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination & Summary Footer */}
+      {sortedSpecialists.length > 0 && (
+        <div className="bg-slate-50 dark:bg-[#252018] border border-slate-200 dark:border-[#383431] rounded-2xl px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="flex items-center space-x-3 text-slate-600 dark:text-slate-400 flex-wrap gap-y-1">
+            <span>
+              Pozycje{" "}
+              <strong className="text-slate-900 dark:text-white font-bold">
+                {(safeCurrentPage - 1) * pageSize + 1}
+              </strong>
+              -
+              <strong className="text-slate-900 dark:text-white font-bold">
+                {Math.min(safeCurrentPage * pageSize, sortedSpecialists.length)}
+              </strong>{" "}
+              z{" "}
+              <strong className="text-slate-900 dark:text-white font-bold">
+                {sortedSpecialists.length}
+              </strong>
+            </span>
+
+            <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">•</span>
+
+            <div className="flex items-center space-x-1.5">
+              <span>Pokaż:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-lg px-2 py-0.5 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-[#FFB200] cursor-pointer"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center space-x-1">
+              <button
+                type="button"
+                disabled={safeCurrentPage === 1}
+                onClick={() => setCurrentPage(Math.max(1, safeCurrentPage - 1))}
+                className="px-2.5 py-1 bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#2C2927] disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center space-x-0.5 cursor-pointer"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Poprzednia</span>
+              </button>
+
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      safeCurrentPage === pageNum
+                        ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
+                        : "bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#2C2927]"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                disabled={safeCurrentPage === totalPages}
+                onClick={() => setCurrentPage(Math.min(totalPages, safeCurrentPage + 1))}
+                className="px-2.5 py-1 bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#2C2927] disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center space-x-0.5 cursor-pointer"
+              >
+                <span className="hidden sm:inline">Następna</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Password Reset Result Modal */}
       {resetModalSpec && (
@@ -494,6 +1035,19 @@ export const AdminSpecialistsTab: React.FC = () => {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Reusable Confirm Modal */}
+      {confirmModal && (
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          title={confirmModal.title}
+          description={confirmModal.description}
+          variant={confirmModal.variant}
+          confirmText={confirmModal.confirmText}
+          onConfirm={confirmModal.onConfirm}
+          onClose={() => setConfirmModal(null)}
+        />
       )}
     </div>
   );

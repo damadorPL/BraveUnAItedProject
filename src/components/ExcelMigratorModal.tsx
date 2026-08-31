@@ -102,7 +102,7 @@ export const ExcelMigratorModal: React.FC = () => {
               <FileSpreadsheet className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Migrator Danych z Pliku Excel / CSV</h2>
+              <h2 className="text-lg font-bold text-white">Migrator danych z pliku Excel / CSV</h2>
               <p className="text-xs text-slate-300">
                 Import dotychczasowego arkusza fundacji i automatyczne zasilenie kartotek
               </p>
@@ -134,7 +134,7 @@ export const ExcelMigratorModal: React.FC = () => {
               className="flex items-center space-x-1.5 px-3 py-1.5 bg-white dark:bg-[#1E1C1A] hover:bg-slate-100 dark:hover:bg-[#2A2724] text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-[#383431] rounded-xl font-semibold shadow-xs transition-colors shrink-0 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>Pobierz Szablon (.xlsx)</span>
+              <span>Pobierz szablon (.xlsx)</span>
             </button>
           </div>
 
@@ -277,7 +277,7 @@ export const ExcelMigratorModal: React.FC = () => {
                     <div className="bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-900/50 rounded-xl p-3 space-y-2">
                       <div className="flex items-center space-x-1.5 font-bold text-purple-900 dark:text-purple-300">
                         <HelpCircle className="w-3.5 h-3.5" />
-                        <span>Niejednoznaczne wartości — potwierdź dopasowanie:</span>
+                        <span>Niejednoznaczne wartości: potwierdź dopasowanie</span>
                       </div>
                       {migrationResult.valueReviews.map((rev) => (
                         <div
@@ -323,7 +323,7 @@ export const ExcelMigratorModal: React.FC = () => {
                             {dup.rowNumbers.length > 0 && (
                               <span className="text-slate-500 dark:text-slate-400"> (wiersz {dup.rowNumbers.join(", ")})</span>
                             )}{" "}
-                            — w bazie istnieje: <b>{dup.existingCallerName}</b>
+                            (w bazie istnieje: <b>{dup.existingCallerName}</b>)
                           </div>
                           <div className="flex items-center gap-4 mt-1.5">
                             <label className="flex items-center gap-1.5 cursor-pointer">
@@ -336,7 +336,7 @@ export const ExcelMigratorModal: React.FC = () => {
                                 }
                               />
                               <span className="font-semibold text-slate-800 dark:text-slate-200">
-                                To ta sama osoba — scal z istniejącą kartoteką
+                                To ta sama osoba: scal z istniejącą kartoteką
                               </span>
                             </label>
                             <label className="flex items-center gap-1.5 cursor-pointer">
@@ -351,7 +351,7 @@ export const ExcelMigratorModal: React.FC = () => {
                                   }))
                                 }
                               />
-                              <span className="font-semibold text-slate-800 dark:text-slate-200">To inna osoba — utwórz nową</span>
+                              <span className="font-semibold text-slate-800 dark:text-slate-200">To inna osoba: utwórz nową</span>
                             </label>
                           </div>
                         </div>
@@ -371,7 +371,7 @@ export const ExcelMigratorModal: React.FC = () => {
                             <tr>
                               <th className="py-2 px-3">Osoba kontaktowa</th>
                               <th className="py-2 px-3">Województwo</th>
-                              <th className="py-2 px-3">Rodzaj Poradnictwa</th>
+                              <th className="py-2 px-3">Rodzaj poradnictwa</th>
                               <th className="py-2 px-3">Obszar</th>
                               <th className="py-2 px-3">Opis</th>
                             </tr>

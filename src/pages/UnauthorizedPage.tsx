@@ -10,7 +10,7 @@ export const UnauthorizedPage: React.FC = () => {
       </div>
 
       <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-        403 – Brak uprawnień administratora
+        403: Brak uprawnień administratora
       </h1>
 
       <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 max-w-md">
