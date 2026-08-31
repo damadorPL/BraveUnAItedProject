@@ -66,9 +66,9 @@ export const AdminAuditLogsTab: React.FC = () => {
     <div className="space-y-6 animate-in fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
             <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <span>Centralny Dziennik Zmian (Audit Logs)</span>
+            <span>Centralny dziennik zmian</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Śledzenie modyfikacji porad, kartotek i operacji specjalistów w czasie rzeczywistym
@@ -99,11 +99,10 @@ export const AdminAuditLogsTab: React.FC = () => {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 dark:bg-[#252018] border-b border-slate-200 dark:border-[#383431] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
                 <tr>
-                  <th className="py-3.5 px-4">Czas Zdarzenia</th>
-                  <th className="py-3.5 px-4">Użytkownik / Rola</th>
-                  <th className="py-3.5 px-4">ID Rekordu</th>
-                  <th className="py-3.5 px-4">Podsumowanie Zmiany</th>
-                  <th className="py-3.5 px-4 text-center">Liczba Pól</th>
+                  <th className="py-3.5 px-4">Data i godzina</th>
+                  <th className="py-3.5 px-4">Osoba edytująca</th>
+                  <th className="py-3.5 px-4">Porada (ID)</th>
+                  <th className="py-3.5 px-4">Zakres modyfikacji</th>
                   <th className="py-3.5 px-4 text-right">Szczegóły</th>
                 </tr>
               </thead>

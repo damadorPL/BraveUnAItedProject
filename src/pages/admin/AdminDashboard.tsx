@@ -3,6 +3,7 @@ import { useCurrentSpecialist } from "../../context/AppContext";
 import { AdminOverviewTab } from "./tabs/AdminOverviewTab";
 import { AdminSpecialistsTab } from "./tabs/AdminSpecialistsTab";
 import { AdminMergeTab } from "./tabs/AdminMergeTab";
+import { AdminImportTab } from "./tabs/AdminImportTab";
 import { AdminAuditLogsTab } from "./tabs/AdminAuditLogsTab";
 import { AdminDatabaseTab } from "./tabs/AdminDatabaseTab";
 import {
@@ -10,6 +11,7 @@ import {
   LayoutDashboard,
   Users,
   GitMerge,
+  FileSpreadsheet,
   Activity,
   Database,
   ArrowLeft,
@@ -17,7 +19,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-type AdminTab = "overview" | "specialists" | "merge" | "audit" | "database";
+type AdminTab = "overview" | "specialists" | "merge" | "import" | "audit" | "database";
 
 export const AdminDashboard: React.FC = () => {
   const currentSpecialist = useCurrentSpecialist();
@@ -33,18 +35,18 @@ export const AdminDashboard: React.FC = () => {
             className="text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 font-semibold transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Baza Porad</span>
+            <span>Baza porad</span>
           </Link>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
           <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-rose-500" />
-            <span>Panel Administratora Systemu</span>
+            <span>Panel administratora</span>
           </span>
         </div>
 
         <div className="flex items-center space-x-2">
           <span className="px-2.5 py-1 bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 rounded-full text-[10px] font-black border border-rose-200 dark:border-rose-800">
-            Konto Admin: {currentSpecialist.name}
+            Administrator: {currentSpecialist.name}
           </span>
         </div>
       </div>
@@ -64,7 +66,7 @@ export const AdminDashboard: React.FC = () => {
               }`}
             >
               <LayoutDashboard className="w-4 h-4 shrink-0" />
-              <span>Pulpit Główny</span>
+              <span>Pulpit główny</span>
             </button>
 
             <button
@@ -77,7 +79,7 @@ export const AdminDashboard: React.FC = () => {
               }`}
             >
               <Users className="w-4 h-4 shrink-0" />
-              <span>Specjaliści i Role</span>
+              <span>Specjaliści i role</span>
             </button>
 
             <button
@@ -90,7 +92,20 @@ export const AdminDashboard: React.FC = () => {
               }`}
             >
               <GitMerge className="w-4 h-4 shrink-0" />
-              <span>Scalanie Duplikatów</span>
+              <span>Scalanie duplikatów</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("import")}
+              className={`w-full flex items-center space-x-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "import"
+                  ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#282522] hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <FileSpreadsheet className="w-4 h-4 shrink-0 text-emerald-500" />
+              <span>Import z pliku Excel</span>
             </button>
 
             <button
@@ -103,7 +118,7 @@ export const AdminDashboard: React.FC = () => {
               }`}
             >
               <Activity className="w-4 h-4 shrink-0" />
-              <span>Dziennik Zmian (Audit)</span>
+              <span>Dziennik zmian</span>
             </button>
 
             <button
@@ -116,7 +131,7 @@ export const AdminDashboard: React.FC = () => {
               }`}
             >
               <Database className="w-4 h-4 shrink-0" />
-              <span>Baza Danych (DB)</span>
+              <span>Baza danych i silnik</span>
             </button>
           </div>
         </aside>
@@ -126,6 +141,7 @@ export const AdminDashboard: React.FC = () => {
           {activeTab === "overview" && <AdminOverviewTab onSelectTab={(tab) => setActiveTab(tab)} />}
           {activeTab === "specialists" && <AdminSpecialistsTab />}
           {activeTab === "merge" && <AdminMergeTab />}
+          {activeTab === "import" && <AdminImportTab />}
           {activeTab === "audit" && <AdminAuditLogsTab />}
           {activeTab === "database" && <AdminDatabaseTab />}
         </div>

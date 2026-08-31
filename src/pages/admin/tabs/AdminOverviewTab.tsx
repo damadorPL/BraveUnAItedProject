@@ -14,10 +14,11 @@ import {
   Server,
   KeyRound,
   RefreshCw,
+  FileSpreadsheet,
 } from "lucide-react";
 
 interface AdminOverviewTabProps {
-  onSelectTab: (tab: "specialists" | "merge" | "audit" | "database") => void;
+  onSelectTab: (tab: "specialists" | "merge" | "import" | "audit" | "database") => void;
 }
 
 export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab }) => {
@@ -115,7 +116,7 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
               {stats?.totalPendingReferrals ?? 0}
             </h3>
             <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-1">
-              Kolejka Handoff
+              Kolejka konsultacji
             </p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
@@ -135,7 +136,7 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
               </div>
               <div>
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Silnik Bazy Danych
+                  Silnik bazy danych
                 </h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   Obsługa SQLite oraz PostgreSQL
@@ -152,22 +153,22 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
           <div className="space-y-2.5 text-xs">
             <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-[#2D2A28]">
               <span className="text-slate-500 dark:text-slate-400">Aktywny silnik:</span>
-              <span className="font-mono font-black uppercase text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-[#282522] px-2 py-0.5 rounded">
+              <span className="font-mono font-bold uppercase text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-[#282522] px-2 py-0.5 rounded">
                 {stats?.databaseEngine || "sqlite"}
               </span>
             </div>
 
             <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-[#2D2A28]">
-              <span className="text-slate-500 dark:text-slate-400">Ścieżka / Połączenie:</span>
+              <span className="text-slate-500 dark:text-slate-400">Ścieżka / połączenie:</span>
               <span className="font-mono text-slate-700 dark:text-slate-300 truncate max-w-[280px]">
                 {stats?.databaseLocation || "data/synapsis.sqlite"}
               </span>
             </div>
 
             <div className="flex justify-between py-1.5">
-              <span className="text-slate-500 dark:text-slate-400">Automatyczne migracje:</span>
+              <span className="text-slate-500 dark:text-slate-400">Automatyczna synchronizacja schematu:</span>
               <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                Włączone (Active Schema Sync)
+                Włączona (Drizzle ORM)
               </span>
             </div>
           </div>
@@ -191,10 +192,10 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
               </div>
               <div>
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Bezpieczeństwo & Autoryzacja JWT
+                  Bezpieczeństwo i autoryzacja JWT
                 </h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Ochrona tras administracyjnych i API
+                  Ochrona tras administracyjnych i punktów końcowych API
                 </p>
               </div>
             </div>
@@ -213,7 +214,7 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
             </div>
 
             <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-[#2D2A28]">
-              <span className="text-slate-500 dark:text-slate-400">Blokada tras (Admin Guard):</span>
+              <span className="text-slate-500 dark:text-slate-400">Ochrona uprawnień administratora:</span>
               <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                 Aktywna (/admin/*, /api/admin/*)
               </span>
@@ -222,7 +223,7 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
             <div className="flex justify-between py-1.5">
               <span className="text-slate-500 dark:text-slate-400">Szyfrowanie haseł:</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">
-                SHA-256 Digest / Password Overrides
+                SHA-256 / bezpieczny hash
               </span>
             </div>
           </div>
@@ -243,7 +244,7 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">
           Szybkie akcje administracyjne
         </h4>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           <button
             type="button"
             onClick={() => onSelectTab("specialists")}
@@ -278,6 +279,22 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
 
           <button
             type="button"
+            onClick={() => onSelectTab("import")}
+            className="p-4 bg-white dark:bg-[#1E1C1A] hover:bg-slate-50 dark:hover:bg-[#282522] border border-slate-200 dark:border-[#383431] rounded-2xl text-left transition-all group cursor-pointer shadow-2xs"
+          >
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+              <FileSpreadsheet className="w-4 h-4" />
+            </div>
+            <div className="font-bold text-xs text-slate-900 dark:text-white">
+              Import z pliku Excel
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              Zasilaj bazę z zewnętrznych arkuszy kalkulacyjnych
+            </p>
+          </button>
+
+          <button
+            type="button"
             onClick={() => onSelectTab("audit")}
             className="p-4 bg-white dark:bg-[#1E1C1A] hover:bg-slate-50 dark:hover:bg-[#282522] border border-slate-200 dark:border-[#383431] rounded-2xl text-left transition-all group cursor-pointer shadow-2xs"
           >
@@ -285,7 +302,7 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
               <Activity className="w-4 h-4" />
             </div>
             <div className="font-bold text-xs text-slate-900 dark:text-white">
-              Dziennik zmian (Audit Logs)
+              Dziennik zmian
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               Przeglądaj pełną historię modyfikacji porad i kartotek

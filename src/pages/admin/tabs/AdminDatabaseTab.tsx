@@ -114,9 +114,9 @@ export const AdminDatabaseTab: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in">
       <div>
-        <h2 className="text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
           <Database className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-          <span>Konfiguracja Baz Danych (SQLite & PostgreSQL)</span>
+          <span>Konfiguracja baz danych (SQLite i PostgreSQL)</span>
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           Wybierz aktywny silnik bazy danych, skonfiguruj parametry połączenia lub przywróć dane początkowe
@@ -157,7 +157,7 @@ export const AdminDatabaseTab: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                  SQLite (Lokalna Baza Plikowa)
+                  SQLite (lokalna baza plikowa)
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   Zero-config • szybki odczyt lokalny
@@ -190,7 +190,7 @@ export const AdminDatabaseTab: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                  PostgreSQL (Relacyjny Serwer Bazy)
+                  PostgreSQL (relacyjny serwer bazodanowy)
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   Wysoka wydajność • produkcyjna linia wsparcia

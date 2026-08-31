@@ -326,7 +326,7 @@ export const AdminSpecialistsTab: React.FC = () => {
               />
               <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
                 <ShieldCheck className="w-4 h-4 text-rose-500" />
-                <span>Uprawnienia Administratora (Dostęp do panelu /admin)</span>
+                <span>Uprawnienia administratora (dostęp do panelu /admin)</span>
               </span>
             </label>
 
@@ -356,10 +356,10 @@ export const AdminSpecialistsTab: React.FC = () => {
             <thead className="bg-slate-50 dark:bg-[#252018] border-b border-slate-200 dark:border-[#383431] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="py-3.5 px-4">Specjalista</th>
-                <th className="py-3.5 px-4">Służbowy E-mail</th>
-                <th className="py-3.5 px-4">Tytuł & Rola</th>
-                <th className="py-3.5 px-4">Obszar Poradnictwa</th>
-                <th className="py-3.5 px-4">Status Uprawnień</th>
+                <th className="py-3.5 px-4">Służbowy e-mail</th>
+                <th className="py-3.5 px-4">Tytuł i rola</th>
+                <th className="py-3.5 px-4">Obszar poradnictwa</th>
+                <th className="py-3.5 px-4">Uprawnienia</th>
                 <th className="py-3.5 px-4 text-right">Akcje</th>
               </tr>
             </thead>

@@ -135,9 +135,9 @@ export const AdminMergeTab: React.FC = () => {
   return (
     <div className="space-y-6 animate-in fade-in">
       <div>
-        <h2 className="text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
           <GitMerge className="w-5 h-5 text-amber-600 dark:text-[#FFB200]" />
-          <span>Wykrywanie i Scalanie Duplikatów Kartotek</span>
+          <span>Wykrywanie i scalanie duplikatów kartotek</span>
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           Łącz zdublowane wpisy kontaktów z bezpiecznym przeniesieniem całej historii konsultacji i załączników

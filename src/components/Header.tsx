@@ -187,33 +187,20 @@ export const Header: React.FC = () => {
               <span>Nowy kontakt</span>
             </button>
 
-            {/* Excel Importer */}
-            {currentSpecialist.isAdmin && (
-              <button
-                type="button"
-                onClick={() => setIsExcelModalOpen(true)}
-                className="flex items-center space-x-1 px-2 py-1.5 rounded-xl text-xs font-semibold bg-[#242220] hover:bg-[#34302E] text-slate-200 border border-[#3E3A37] transition-colors cursor-pointer whitespace-nowrap"
-                title="Migracja z pliku Excel"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>Import</span>
-              </button>
-            )}
-
             {/* Admin Panel Button */}
             {currentSpecialist.isAdmin && (
               <button
                 type="button"
                 onClick={handleAdminClick}
-                className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap shadow-xs ${
+                className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-xs ${
                   location.pathname.startsWith("/admin")
                     ? "bg-[#FFB200] text-[#2D2A28]"
                     : "bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50"
                 }`}
-                title="Panel Administratora: scalanie kontaktów, zarządzanie dyżurującymi, bazy danych"
+                title="Panel administratora: specjaliści, scalanie kontaktów, import Excel, bazy danych"
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Admin Dashboard</span>
+                <span>Panel administratora</span>
               </button>
             )}
 
@@ -531,35 +518,21 @@ export const Header: React.FC = () => {
                 setIsMobileMenuOpen(false);
                 setIsNewCallerModalOpen(true);
               }}
-              className="w-full flex items-center space-x-2.5 px-3.5 py-2.5 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-xs transition-colors cursor-pointer"
+              className="w-full flex items-center space-x-2.5 px-3.5 py-2.5 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
               <span>Zarejestruj nową osobę</span>
             </button>
 
             {currentSpecialist.isAdmin && (
-              <>
-                <button
-                  type="button"
-                  onClick={handleAdminClick}
-                  className="w-full flex items-center space-x-2.5 px-3.5 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                >
-                  <ShieldCheck className="w-4 h-4 text-amber-400" />
-                  <span>Panel Administratora (Dashboard, Bazy, Scalanie)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    setIsExcelModalOpen(true);
-                  }}
-                  className="w-full flex items-center space-x-2.5 px-3.5 py-2.5 bg-[#1E1C1A] hover:bg-[#2D2A28] text-slate-200 border border-[#3E3A37] rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                >
-                  <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-                  <span>Importuj bazę z pliku Excel</span>
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={handleAdminClick}
+                className="w-full flex items-center space-x-2.5 px-3.5 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+              >
+                <ShieldCheck className="w-4 h-4 text-amber-400" />
+                <span>Panel administratora</span>
+              </button>
             )}
 
             <button
