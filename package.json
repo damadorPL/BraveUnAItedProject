@@ -16,6 +16,7 @@
     "db:generate": "drizzle-kit generate",
     "lint": "oxlint",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -37,6 +38,7 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/better-sqlite3": "^9.6.0",
     "@types/canvas-confetti": "^1.9.0",

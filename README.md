@@ -72,7 +72,7 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 - **Bezpieczeństwo**: [JSON Web Token (JWT)](https://jwt.io/), [SHA-256 / Crypto]
 - **Style**: [Tailwind CSS 4](https://tailwindcss.com/)
 - **Ikony**: [Lucide React](https://lucide.dev/) (wersja `^1.38.0`)
-- **Testy**: [Vitest](https://vitest.dev/), [Supertest](https://github.com/ladjs/supertest) (24 pliki testowe, 155 testów, 100% passed)
+- **Testy**: [Vitest](https://vitest.dev/) (24 pliki testowe, 155 testów jednostkowych i integracyjnych), [Playwright](https://playwright.dev/) (testy funkcjonalne E2E w przeglądarce), [Supertest](https://github.com/ladjs/supertest)
 
 ---
 
@@ -157,12 +157,17 @@ npm run dev:backend   # Uruchamia serwer Express z tsx watch
 npm run dev:frontend  # Uruchamia Vite dev server
 ```
 
-### 3. Testy jednostkowe i integracyjne
+### 3. Testy jednostkowe i integracyjne (Vitest)
 ```bash
 npm test
 ```
 
-### 4. Budowanie wersji produkcyjnej
+### 4. Testy funkcjonalne E2E w przeglądarce (Playwright)
+```bash
+npm run test:e2e
+```
+
+### 5. Budowanie wersji produkcyjnej
 ```bash
 npm run build
 ```

@@ -33,5 +33,7 @@ data/uploads/*
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
-*.sw?
+# Test outputs
+test-results/
+playwright-report/
+blob-report/
