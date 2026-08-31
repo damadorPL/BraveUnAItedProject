@@ -16,8 +16,10 @@ dist-ssr
 .env.*
 !.env.example
 
-# Local SQLite databases
+# Local SQLite databases and uploads
 data/*.sqlite*
+data/uploads/*
+!data/uploads/.gitkeep
 !data/.gitkeep
 
 # LibreOffice lock files

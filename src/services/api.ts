@@ -3,6 +3,7 @@ import {
   CallRecord,
   Specialist,
   RecordEditLog,
+  Attachment,
 } from "../types";
 import {
   loadCallers as loadLocalCallers,
@@ -355,6 +356,75 @@ export const api = {
             ? "Wyczyszczono lokalną bazę danych. Zachowano konta specjalistów i administratora."
             : "Wyczyszczono lokalne dane demonstracyjne. Zachowano konto Administratora.",
         };
+      }
+    },
+  },
+
+  attachments: {
+    async upload(file: File, specialistName: string, description?: string): Promise<Attachment> {
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        if (specialistName) formData.append("specialistName", specialistName);
+        if (description) formData.append("description", description);
+
+        const token = getStoredToken();
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const res = await fetch("/api/attachments/upload", {
+          method: "POST",
+          headers,
+          body: formData,
+        });
+
+        if (!res.ok) {
+          let errorMsg = `Błąd przesyłania pliku (${res.status})`;
+          try {
+            const body = await res.json();
+            if (body.error) errorMsg = body.error;
+          } catch {}
+          throw new Error(errorMsg);
+        }
+
+        const data = await res.json();
+        return data.attachment;
+      } catch (err) {
+        // Fallback for offline mode if backend is not started
+        console.warn("Backend attachment upload failed, falling back to local processing:", err);
+        const { createAttachmentFromFile } = await import("../utils/fileUtils");
+        return createAttachmentFromFile(file, specialistName, description);
+      }
+    },
+
+    getViewUrl(attachment: Attachment): string {
+      if (attachment.dataUrl) return attachment.dataUrl;
+      const token = getStoredToken();
+      const tokenQuery = token ? `?token=${encodeURIComponent(token)}` : "";
+      return attachment.url ? `${attachment.url}${tokenQuery}` : `/api/attachments/${attachment.id}${tokenQuery}`;
+    },
+
+    getDownloadUrl(attachment: Attachment): string {
+      if (attachment.dataUrl) return attachment.dataUrl;
+      const token = getStoredToken();
+      const params = new URLSearchParams();
+      if (token) params.set("token", token);
+      params.set("download", "1");
+      if (attachment.name) params.set("filename", attachment.name);
+      const base = attachment.url || `/api/attachments/${attachment.id}`;
+      return `${base}?${params.toString()}`;
+    },
+
+    async delete(id: string): Promise<boolean> {
+      try {
+        const res = await request<{ success: boolean; deleted: boolean }>(`/attachments/${id}`, {
+          method: "DELETE",
+        });
+        return res.deleted;
+      } catch {
+        return false;
       }
     },
   },

@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_ENGINE=${DATABASE_ENGINE:-sqlite}
+      - SQLITE_PATH=/app/data/synapsis.sqlite
+      - DATABASE_URL=${DATABASE_URL:-}
+      - ATTACHMENTS_DIR=/app/data/uploads/attachments
+      - JWT_SECRET=${JWT_SECRET:-synapsis-jwt-production-secret}
+    volumes:
+      # Persistent volume managed by Coolify - saves SQLite database and uploaded attachments
+      - synapsis_storage:/app/data
+
+volumes:
+  synapsis_storage:
+    name: synapsis_storage

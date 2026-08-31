@@ -17,7 +17,8 @@ import {
   Table,
   ChevronDown,
 } from "lucide-react";
-import { formatFileSize, createAttachmentFromFile } from "../utils/fileUtils";
+import { formatFileSize } from "../utils/fileUtils";
+import { api, getStoredToken } from "../services/api";
 
 interface Props {
   attachments: Attachment[];
@@ -58,7 +59,27 @@ export const AttachmentsManager: React.FC<Props> = ({
 
     async function loadExcelPreview() {
       try {
-        if (previewAttachment?.dataUrl && previewAttachment.dataUrl.includes("base64,")) {
+        if (previewAttachment?.url) {
+          const token = getStoredToken();
+          const res = await fetch(previewAttachment.url, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+          if (res.ok) {
+            const arrayBuffer = await res.arrayBuffer();
+            const XLSX = await import("xlsx");
+            const workbook = XLSX.read(arrayBuffer, { type: "array" });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const data: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+            if (!isCancelled && data.length > 0) {
+              setExcelPreviewData({
+                headers: data[0].map(String),
+                rows: data.slice(1, 15),
+              });
+              return;
+            }
+          }
+        } else if (previewAttachment?.dataUrl && previewAttachment.dataUrl.includes("base64,")) {
           const base64Data = previewAttachment.dataUrl.split("base64,")[1];
           const XLSX = await import("xlsx");
           const workbook = XLSX.read(base64Data, { type: "base64" });
@@ -74,7 +95,7 @@ export const AttachmentsManager: React.FC<Props> = ({
           }
         }
       } catch (err) {
-        console.warn("Could not parse excel dataUrl:", err);
+        console.warn("Could not parse excel data:", err);
       }
 
       if (!isCancelled) {
@@ -104,13 +125,13 @@ export const AttachmentsManager: React.FC<Props> = ({
       const newAtts: Attachment[] = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const att = await createAttachmentFromFile(file, specialistName);
+        const att = await api.attachments.upload(file, specialistName);
         newAtts.push(att);
       }
       onChange([...attachments, ...newAtts]);
     } catch (err) {
       console.error("Błąd podczas wgrywania pliku:", err);
-      alert("Wystąpił błąd podczas odczytu pliku.");
+      alert("Wystąpił błąd podczas wgrywania pliku.");
     } finally {
       setIsUploading(false);
     }
@@ -119,6 +140,7 @@ export const AttachmentsManager: React.FC<Props> = ({
   const handleRemove = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (window.confirm("Czy na pewno chcesz usunąć ten załącznik?")) {
+      api.attachments.delete(id).catch((err) => console.warn("Failed to delete attachment from server:", err));
       onChange(attachments.filter((a) => a.id !== id));
       if (previewAttachment?.id === id) setPreviewAttachment(null);
     }
@@ -126,10 +148,12 @@ export const AttachmentsManager: React.FC<Props> = ({
 
   const handleDownload = (att: Attachment, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (att.dataUrl) {
+    if (att.url || att.dataUrl) {
+      const downloadUrl = api.attachments.getDownloadUrl(att);
       const link = document.createElement("a");
-      link.href = att.dataUrl;
+      link.href = downloadUrl;
       link.download = att.name;
+      link.target = "_blank";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -420,7 +444,7 @@ export const AttachmentsManager: React.FC<Props> = ({
               {previewAttachment.type === "image" && (
                 <div className="w-full flex items-center justify-center overflow-auto p-2">
                   <img
-                    src={previewAttachment.dataUrl || "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&q=80&w=800"}
+                    src={api.attachments.getViewUrl(previewAttachment)}
                     alt={previewAttachment.name}
                     style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
                     className="max-h-[58vh] max-w-full rounded-2xl object-contain shadow-lg transition-transform duration-150 border border-slate-200 dark:border-[#383431] bg-white dark:bg-[#1E1C1A]"
@@ -431,9 +455,9 @@ export const AttachmentsManager: React.FC<Props> = ({
               {/* 2. PDF Viewer */}
               {previewAttachment.type === "pdf" && (
                 <div className="w-full h-full flex flex-col items-center">
-                  {previewAttachment.dataUrl && previewAttachment.dataUrl.includes("application/pdf") ? (
+                  {previewAttachment.url || (previewAttachment.dataUrl && previewAttachment.dataUrl.includes("application/pdf")) ? (
                     <iframe
-                      src={previewAttachment.dataUrl}
+                      src={api.attachments.getViewUrl(previewAttachment)}
                       title={previewAttachment.name}
                       className="w-full h-[60vh] rounded-2xl border border-slate-200 dark:border-[#383431] shadow-sm bg-white dark:bg-[#1E1C1A]"
                     />

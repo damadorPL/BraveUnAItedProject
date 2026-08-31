@@ -42,32 +42,46 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 - **Wyszukiwanie wielokryterialne**: po imieniu, nazwisku, odwróconej kolejności (*Nazwisko Imię*), numerze telefonu oraz miejscowości/województwie.
 
 ### 6. 📋 Kartoteka Kontaktu i Oś Czasu Porad (Timeline)
-- Pełna historia konsultacji z podziałem na rodzaj kontaktu, beneficjenta, orzeczenie o niepełnosprawności, kategorie poradnictwa oraz zarządzanie załącznikami (PDF, skany, obrazy).
+- Pełna historia konsultacji z podziałem na rodzaj kontaktu, beneficjenta, orzeczenie o niepełnosprawności, kategorie poradnictwa oraz zarządzanie załącznikami.
 
-### 7. 🔄 System Przekazywania Spraw & Handoff (Referral System)
+### 7. 📎 Wydajny Magazyn Załączników na Dysku & Wolumenie
+- **Optymalizacja bazy danych**: pliki załączników (PDF, skany, zdjęcia, arkusze Excel) nie są zapisywane jako ciężki Base64 w kolumnach JSON bazy, lecz bezpośrednio na dysku w katalogu `data/uploads/attachments/` (lub ścieżce `ATTACHMENTS_DIR`).
+- **Endpointy API (`/api/attachments`)**: bezpieczny upload `multipart/form-data` do 50 MB, streaming plików, bezpośredni podgląd w przeglądarce i pobieranie z autoryzacją JWT.
+- **Automatyczna migracja**: serwer automatycznie konwertuje starsze załączniki Base64 z bazy SQLite/PostgreSQL na fizyczne pliki na dysku przy starcie.
+
+### 8. 🔄 System Przekazywania Spraw & Handoff (Referral System)
 - Ekran powitalny z oczekującymi sprawami, dynamiczny wybór konsultanta, powiadomienia e-mail i automatyczne oznaczanie spraw jako zakończone po udzieleniu porady.
 
-### 8. 📊 Raporty PFRON & Eksport Danych
+### 9. 📊 Raporty PFRON & Eksport Danych
 - Eksport XLSX (Excel) z rejestrem i arkuszem podsumowania wskaźników grantowych, eksport CSV z anonimizacją RODO.
+
+### 10. 🐳 Konteneryzacja Docker & Wdrożenie Coolify
+- **Wielostopniowy Dockerfile**: optymalny obraz produkcyjny Node 22 Alpine.
+- **Wspólny Persistent Storage**: montowanie `/app/data` zabezpiecza i trwale przechowuje **zarówno bazę SQLite (`synapsis.sqlite`), jak i wszystkie załączniki (`uploads/attachments`)**.
+- **Gotowy szablon Coolify (`docker-compose.coolify.yml`)**: bezproblemowy deploy w środowisku Coolify z nazwanym wolumenem.
 
 ---
 
 ## 🛠️ Stos Technologiczny
 
 - **Frontend**: [React 19](https://react.dev/), [React Router](https://reactrouter.com/), [TypeScript](https://www.typescriptlang.org/)
-- **Backend**: [Node.js](https://nodejs.org/), [Express](https://expressjs.com/), [TypeScript](https://www.typescriptlang.org/)
+- **Backend**: [Node.js](https://nodejs.org/), [Express](https://expressjs.com/), [TypeScript](https://www.typescriptlang.org/), [Multer](https://github.com/expressjs/multer)
 - **ORM & Walidacja**: [Drizzle ORM](https://orm.drizzle.team/), [Zod](https://zod.dev/), [Drizzle Zod](https://orm.drizzle.team/docs/zod)
 - **Bazy Danych**: [SQLite (better-sqlite3)](https://github.com/WiseLibs/better-sqlite3), [PostgreSQL (pg)](https://node-postgres.com/)
+- **Konteneryzacja & Hosting**: [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/), [Coolify](https://coolify.io/)
 - **Bezpieczeństwo**: [JSON Web Token (JWT)](https://jwt.io/), [SHA-256 / Crypto]
 - **Style**: [Tailwind CSS 4](https://tailwindcss.com/)
 - **Ikony**: [Lucide React](https://lucide.dev/) (wersja `^1.38.0`)
-- **Testy**: [Vitest](https://vitest.dev/), [Supertest](https://github.com/ladjs/supertest) (21 plików testowych, 132 testy, 100% passed)
+- **Testy**: [Vitest](https://vitest.dev/), [Supertest](https://github.com/ladjs/supertest) (24 pliki testowe, 156 testów, 100% passed)
 
 ---
 
 ## 📁 Struktura Projektu
 
 ```text
+├── Dockerfile                  # Wielostopniowy obraz produkcyjny
+├── docker-compose.yml          # Konfiguracja Docker Compose z wolumenem danych
+├── docker-compose.coolify.yml  # Gotowy szablon dla wdrożenia w Coolify
 ├── server/                     # Backend TypeScript API & Baza Danych
 │   ├── db/
 │   │   ├── adapter.ts          # Interfejs DatabaseAdapter
@@ -78,14 +92,19 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 │   │   └── auth.ts             # Middleware JWT (authenticateJWT, requireAdmin)
 │   ├── routes/
 │   │   ├── admin.ts            # Punkty końcowe administratora (/api/admin/*)
+│   │   ├── attachments.ts      # Obsługa plików i załączników (/api/attachments/*)
 │   │   ├── auth.ts             # Logowanie i sesje JWT (/api/auth/*)
 │   │   ├── callers.ts          # Kartoteki kontaktów (/api/callers/*)
 │   │   └── records.ts          # Rejestr porad (/api/records/*)
+│   ├── storage/
+│   │   └── attachmentStorage.ts # Dyskowa obsługa załączników i migracja Base64
+│   ├── attachments.test.ts     # Testy integracyjne załączników i magazynu dyskowego
 │   ├── index.ts                # Główny serwer Express
 │   ├── server.test.ts          # Testy integracyjne backendu i JWT
 │   └── types.ts                # Typy backendowe i JWT
 ├── src/
 │   ├── components/             # Komponenty interfejsu użytkownika
+│   │   ├── AttachmentsManager.tsx # Menadżer załączników (upload, podgląd, pobieranie)
 │   │   ├── Header.tsx          # Główny nagłówek z nawigacją tras URL
 │   │   ├── LoginScreen.tsx     # Ekran logowania z autoryzacją JWT
 │   │   ├── ProtectedRoute.tsx  # Strażnik tras URL i uprawnień admina
@@ -104,7 +123,7 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 │   ├── context/
 │   │   └── AppContext.tsx      # Globalny stan z synchronizacją z API i JWT
 │   ├── services/
-│   │   ├── api.ts              # Klient HTTP z tokenami JWT
+│   │   ├── api.ts              # Klient HTTP z tokenami JWT i uploadem załączników
 │   │   ├── auth.ts             # Usługa autoryzacji
 │   │   └── storage.ts          # Usługa magazynu lokalnego
 │   └── types/
@@ -145,6 +164,24 @@ npm test
 npm run build
 ```
 Kompiluje frontend (`dist/`) oraz backend (`dist-server/`).
+
+---
+
+## 🐳 Uruchomienie w Dockerze & Coolify
+
+### 1. Docker Compose (Standalone)
+Uruchomienie kompletnej aplikacji w kontenerze z trwałym montowaniem bazy SQLite i załączników (`./data:/app/data`):
+```bash
+docker compose up --build -d
+```
+Aplikacja będzie dostępna pod adresem `http://localhost:3001`.
+
+### 2. Wdrożenie na platformie Coolify
+1. W Coolify utwórz **New Resource -> Application** i połącz repozytorium.
+2. Jako konfigurację wskaż **Docker Compose** (`docker-compose.coolify.yml`).
+3. Coolify utworzy nazwany wolumen `synapsis_storage` montowany do `/app/data` (zapewniający brak utraty danych i plików przy restartach/redeployu).
+4. Skonfiguruj zmienne środowiskowe (`JWT_SECRET`, `NODE_ENV=production`, `PORT=3001`).
+5. Uruchom wdrożenie przyciskiem **Deploy**.
 
 ---
 

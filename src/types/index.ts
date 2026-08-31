@@ -138,7 +138,9 @@ export interface Attachment {
   size: number;
   type: AttachmentType;
   mimeType: string;
+  url?: string;
   dataUrl?: string;
+  storageFilename?: string;
   uploadedAt: string;
   uploadedBySpecialistName?: string;
   description?: string;

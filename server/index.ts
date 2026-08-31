@@ -10,14 +10,19 @@ import { authRouter } from "./routes/auth.js";
 import { callersRouter } from "./routes/callers.js";
 import { recordsRouter } from "./routes/records.js";
 import { adminRouter } from "./routes/admin.js";
+import { attachmentsRouter } from "./routes/attachments.js";
+import {
+  initAttachmentStorage,
+  migrateLegacyBase64Attachments,
+} from "./storage/attachmentStorage.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Health Check
 app.get("/api/health", async (_req, res) => {
@@ -40,6 +45,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/callers", callersRouter);
 app.use("/api/records", recordsRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/attachments", attachmentsRouter);
 
 // Serve frontend static build in production
 const distPath = path.resolve(process.cwd(), "dist");
@@ -67,6 +73,20 @@ async function startServer() {
     console.log("Initializing database connection...");
     await dbManager.init();
     console.log(`Database initialized with engine: ${dbManager.getConfig().engine}`);
+
+    // Initialize attachments storage directory
+    const attachmentsDir = initAttachmentStorage();
+    console.log(`Attachment storage initialized at: ${attachmentsDir}`);
+
+    // Run legacy base64 attachments migration in background
+    const adapter = await dbManager.getAdapter();
+    migrateLegacyBase64Attachments(adapter).then(({ migratedCount }) => {
+      if (migratedCount > 0) {
+        console.log(`Successfully migrated ${migratedCount} legacy base64 attachments to disk.`);
+      }
+    }).catch((e) => {
+      console.warn("Legacy attachment migration failed:", e);
+    });
 
     app.listen(PORT, () => {
       console.log(`🚀 SYNAPSIS Backend Server running on http://localhost:${PORT}`);

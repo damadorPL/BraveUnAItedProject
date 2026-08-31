@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: synapsis-app
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_ENGINE=sqlite
+      - SQLITE_PATH=/app/data/synapsis.sqlite
+      - ATTACHMENTS_DIR=/app/data/uploads/attachments
+      - JWT_SECRET=synapsis-production-secret-key-change-me
+    volumes:
+      # Persistent storage for both SQLite database and attachments
+      - ./data:/app/data
