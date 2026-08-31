@@ -166,7 +166,7 @@ export const Header: React.FC = () => {
               type="button"
               onClick={() => setIsNewCallerModalOpen(true)}
               className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] shadow-xs hover:shadow transition-all cursor-pointer whitespace-nowrap"
-              title="Zarejestruj nowy kontakt"
+              title="Nowy kontakt"
             >
               <UserPlus className="w-3.5 h-3.5 shrink-0" />
               <span>Nowy kontakt</span>
@@ -277,7 +277,7 @@ export const Header: React.FC = () => {
               type="button"
               onClick={() => setIsNewCallerModalOpen(true)}
               className="flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] shadow-xs cursor-pointer"
-              title="Zarejestruj nową osobę"
+              title="Nowy kontakt"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Nowy kontakt</span>
@@ -488,7 +488,7 @@ export const Header: React.FC = () => {
               className="w-full flex items-center space-x-2.5 px-3.5 py-2.5 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
-              <span>Zarejestruj nową osobę</span>
+              <span>Nowy kontakt</span>
             </button>
 
             {currentSpecialist.isAdmin && (

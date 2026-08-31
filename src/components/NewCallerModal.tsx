@@ -186,10 +186,7 @@ export const NewCallerModal: React.FC = () => {
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-white">Zarejestruj nowy kontakt</h2>
-              <p className="text-xs text-slate-300">
-                Pola zgodne z oficjalnym wzorcem linii wsparcia fundacji
-              </p>
+              <h2 className="text-lg font-black text-white">Nowy kontakt</h2>
             </div>
           </div>
 

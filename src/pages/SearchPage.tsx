@@ -201,7 +201,7 @@ export const SearchPage: React.FC = () => {
               className="flex items-center space-x-1 text-xs font-bold text-[#2D2A28] dark:text-[#FFDF06] bg-[#FFB200]/25 dark:bg-[#FFB200]/20 hover:bg-[#FFB200]/45 border border-[#FFB200]/40 px-3 py-1.5 rounded-xl transition-colors cursor-pointer"
             >
               <UserPlus className="w-3.5 h-3.5" />
-              <span>Zarejestruj nową osobę</span>
+              <span>Nowy kontakt</span>
             </button>
           </div>
 

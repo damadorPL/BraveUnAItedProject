@@ -61,9 +61,13 @@ export const AdminDatabaseTab: React.FC = () => {
       });
       setTestResult(res);
     } catch (err: any) {
+      let msg = err.message || "Błąd podczas testu połączenia.";
+      if (msg.includes("Brak tokenu") || msg.includes("Wymagana autoryzacja") || msg.includes("401")) {
+        msg = "Wymagana autoryzacja sesji administratora. Zaloguj się ponownie przez ekran logowania.";
+      }
       setTestResult({
         success: false,
-        message: err.message || "Błąd podczas testu połączenia.",
+        message: msg,
       });
     } finally {
       setLoading(false);
@@ -83,7 +87,11 @@ export const AdminDatabaseTab: React.FC = () => {
       setActionMessage({ success: res.success, text: res.message });
       await fetchConfig();
     } catch (err: any) {
-      setActionMessage({ success: false, text: err.message || "Błąd przełączania bazy" });
+      let text = err.message || "Błąd przełączania bazy";
+      if (text.includes("Brak tokenu") || text.includes("Wymagana autoryzacja") || text.includes("401")) {
+        text = "Wymagana autoryzacja sesji administratora. Zaloguj się ponownie przez ekran logowania.";
+      }
+      setActionMessage({ success: false, text });
     } finally {
       setLoading(false);
     }

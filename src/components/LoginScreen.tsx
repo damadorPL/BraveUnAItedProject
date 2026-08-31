@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate, useLocation, Navigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import {
   findSpecialistByEmail,
@@ -23,7 +24,10 @@ import {
 } from "lucide-react";
 
 export const LoginScreen: React.FC = () => {
-  const { specialists, login } = useApp();
+  const { currentSpecialist, specialists, login } = useApp();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as any)?.from?.pathname || "/search";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,6 +43,11 @@ export const LoginScreen: React.FC = () => {
     [specialists, email]
   );
 
+  // If already authenticated, redirect to destination
+  if (currentSpecialist) {
+    return <Navigate to={from} replace />;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -51,6 +60,7 @@ export const LoginScreen: React.FC = () => {
       const response = await api.auth.login(email.trim(), password);
       setError(null);
       login(response.user);
+      navigate(from, { replace: true });
     } catch (err: any) {
       setError(err.message || "Nieprawidłowe dane logowania. Spróbuj ponownie.");
     }
@@ -236,6 +246,7 @@ export const LoginScreen: React.FC = () => {
                     type="button"
                     onClick={() => {
                       setEmail(s.email);
+                      setPassword(DEMO_PASSWORD);
                       setError(null);
                     }}
                     className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-50 text-left transition-colors cursor-pointer"

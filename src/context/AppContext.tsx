@@ -123,7 +123,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [specialists, setSpecialists] = useState<Specialist[]>(() => loadSpecialists());
   const [currentSpecialist, setCurrentSpecialist] = useState<Specialist | null>(() => {
     const sessionId = loadSessionSpecialistId();
-    if (!sessionId) return null;
+    const token = getStoredToken();
+    if (!sessionId || !token) return null;
     return specialists.find((s) => s.id === sessionId) ?? null;
   });
 
@@ -315,7 +316,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setCurrentSpecialist(me.user);
             saveSessionSpecialistId(me.user.id);
             authenticated = true;
+          } else if (token.startsWith("offline-mock-token-")) {
+            const sessionId = loadSessionSpecialistId();
+            const spec = specialists.find((s) => s.id === sessionId);
+            if (spec && isMounted) {
+              setCurrentSpecialist(spec);
+              authenticated = true;
+            }
+          } else {
+            setStoredToken(null);
+            clearSession();
+            if (isMounted) setCurrentSpecialist(null);
           }
+        } else {
+          clearSession();
+          if (isMounted) setCurrentSpecialist(null);
         }
         await syncData(authenticated);
       } catch (err) {
