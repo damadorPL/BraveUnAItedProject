@@ -5,7 +5,6 @@ import { SpecialistAvatar } from "./SpecialistAvatar";
 import {
   FileSpreadsheet,
   UserPlus,
-  RotateCcw,
   Search,
   ListFilter,
   BarChart3,
@@ -40,7 +39,6 @@ export const Header: React.FC = () => {
     setIsAdminPanelOpen,
     isDarkMode,
     toggleDarkMode,
-    resetDatabase,
     getReferredRecordsForSpecialist,
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
@@ -188,20 +186,6 @@ export const Header: React.FC = () => {
                 <span>Panel administratora</span>
               </button>
             )}
-
-            {/* Reset Demo Button */}
-            <button
-              type="button"
-              onClick={() => {
-                if (window.confirm("Czy na pewno chcesz przywrócić początkową bazę danych demo?")) {
-                  resetDatabase();
-                }
-              }}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-[#34302E] border border-[#3E3A37] transition-colors cursor-pointer shrink-0"
-              title="Przywróć dane demo"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
 
             {/* Logged-in Specialist Profile */}
             <div className="border-l border-[#3E3A37] pl-2 ml-0.5 flex items-center space-x-1.5">
@@ -501,20 +485,6 @@ export const Header: React.FC = () => {
                 <span>Panel administratora</span>
               </button>
             )}
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsMobileMenuOpen(false);
-                if (window.confirm("Czy na pewno chcesz przywrócić początkową bazę danych demo?")) {
-                  resetDatabase();
-                }
-              }}
-              className="w-full flex items-center space-x-2.5 px-3.5 py-2 text-slate-300 hover:text-white text-xs font-semibold cursor-pointer pt-1"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Przywróć bazę demo</span>
-            </button>
           </div>
         </div>
       )}
