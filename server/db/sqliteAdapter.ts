@@ -110,7 +110,21 @@ export class SQLiteAdapter implements DatabaseAdapter {
         summary TEXT NOT NULL,
         changes TEXT NOT NULL
       );
+    `);
 
+    // Ensure existing initial specialists get avatarUrl if empty
+    try {
+      const updateAvatarStmt = this.db.prepare(
+        "UPDATE specialists SET avatarUrl = ? WHERE id = ? AND (avatarUrl IS NULL OR avatarUrl = '')"
+      );
+      for (const s of INITIAL_SPECIALISTS) {
+        if (s.avatarUrl) {
+          updateAvatarStmt.run(s.avatarUrl, s.id);
+        }
+      }
+    } catch {}
+
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS passwords (
         specialistId TEXT PRIMARY KEY,
         passwordHash TEXT NOT NULL,

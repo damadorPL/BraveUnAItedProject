@@ -81,7 +81,23 @@ export function loadSpecialists(): Specialist[] {
       idbSet(SPECIALISTS_KEY, INITIAL_SPECIALISTS).catch(() => {});
       return INITIAL_SPECIALISTS;
     }
-    return JSON.parse(raw);
+    const parsed: Specialist[] = JSON.parse(raw);
+    let changed = false;
+    const merged = parsed.map((s) => {
+      if (!s.avatarUrl) {
+        const init = INITIAL_SPECIALISTS.find((is) => is.id === s.id);
+        if (init?.avatarUrl) {
+          changed = true;
+          return { ...s, avatarUrl: init.avatarUrl };
+        }
+      }
+      return s;
+    });
+    if (changed) {
+      localStorage.setItem(SPECIALISTS_KEY, JSON.stringify(merged));
+      idbSet(SPECIALISTS_KEY, merged).catch(() => {});
+    }
+    return merged;
   } catch {
     return INITIAL_SPECIALISTS;
   }

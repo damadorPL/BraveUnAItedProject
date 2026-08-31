@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { useApp, useCurrentSpecialist } from "../../../context/AppContext";
 import { Specialist, GUIDANCE_TYPES, GuidanceType } from "../../../types";
 import { SpecialistAvatar } from "../../../components/SpecialistAvatar";
 import { ConfirmModal } from "../../../components/ConfirmModal";
 import { api } from "../../../services/api";
+import { validateAvatarFile, processAvatarImage } from "../../../utils/fileUtils";
 import {
   Users,
   PlusCircle,
@@ -19,9 +20,23 @@ import {
   ChevronLeft,
   ChevronRight,
   RotateCcw,
+  Camera,
+  Upload,
+  Check,
 } from "lucide-react";
 
 export const ALLOWED_EMAIL_DOMAIN = "synapsis.org.pl";
+
+const AVATAR_COLOR_OPTIONS = [
+  { label: "Bursztynowy (Synapsis)", class: "bg-amber-600" },
+  { label: "Morski turkus", class: "bg-teal-600" },
+  { label: "Błękitny", class: "bg-blue-600" },
+  { label: "Granatowy", class: "bg-indigo-600" },
+  { label: "Fioletowy", class: "bg-purple-600" },
+  { label: "Szmaragdowy", class: "bg-emerald-600" },
+  { label: "Różany (Admin)", class: "bg-rose-600" },
+  { label: "Grafitowy", class: "bg-slate-700" },
+];
 
 type SortField = "name" | "title" | "guidanceType" | "isAdmin";
 type SortDirection = "asc" | "desc";
@@ -57,7 +72,10 @@ export const AdminSpecialistsTab: React.FC = () => {
   const [guidance, setGuidance] = useState<GuidanceType>("prawno-obywatelskie");
   const [isAdmin, setIsAdmin] = useState(false);
   const [avatarBg, setAvatarBg] = useState("bg-blue-600");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarError, setAvatarError] = useState<string | null>(null);
   const [customPassword, setCustomPassword] = useState("");
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -87,6 +105,26 @@ export const AdminSpecialistsTab: React.FC = () => {
   const [resetModalSpec, setResetModalSpec] = useState<Specialist | null>(null);
   const [tempPasswordGenerated, setTempPasswordGenerated] = useState<string | null>(null);
 
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    const validationError = validateAvatarFile(file);
+    if (validationError) {
+      setAvatarError(validationError);
+      return;
+    }
+
+    try {
+      const processed = await processAvatarImage(file);
+      setAvatarUrl(processed);
+      setAvatarError(null);
+    } catch {
+      setAvatarError("Nie udało się przetworzyć zdjęcia. Spróbuj wybrać inny plik.");
+    }
+  };
+
   const resetForm = () => {
     setName("");
     setEmail("");
@@ -95,6 +133,8 @@ export const AdminSpecialistsTab: React.FC = () => {
     setGuidance("prawno-obywatelskie");
     setIsAdmin(false);
     setAvatarBg("bg-blue-600");
+    setAvatarUrl("");
+    setAvatarError(null);
     setCustomPassword("");
     setIsAdding(false);
     setEditingSpec(null);
@@ -108,7 +148,9 @@ export const AdminSpecialistsTab: React.FC = () => {
     setRole(spec.role);
     setGuidance(spec.guidanceType);
     setIsAdmin(Boolean(spec.isAdmin));
-    setAvatarBg(spec.avatarBg);
+    setAvatarBg(spec.avatarBg || "bg-blue-600");
+    setAvatarUrl(spec.avatarUrl || "");
+    setAvatarError(null);
     setCustomPassword("");
     setIsAdding(false);
     setSuccessMessage(null);
@@ -137,6 +179,7 @@ export const AdminSpecialistsTab: React.FC = () => {
           guidanceType: guidance,
           isAdmin,
           avatarBg,
+          avatarUrl: avatarUrl.trim() || undefined,
         };
 
         await api.admin.updateSpecialist(editingSpec.id, {
@@ -155,6 +198,7 @@ export const AdminSpecialistsTab: React.FC = () => {
           guidanceType: guidance,
           isAdmin,
           avatarBg,
+          avatarUrl: avatarUrl.trim() || undefined,
           initialPassword: customPassword.trim() || undefined,
         };
 
@@ -580,6 +624,116 @@ export const AdminSpecialistsTab: React.FC = () => {
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#383431] bg-slate-50 dark:bg-[#141312] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
               />
             </div>
+
+            {/* Awatar i zdjęcie profilowe */}
+            <div className="sm:col-span-2 lg:col-span-3 bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#2C2927] rounded-2xl p-4 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center space-x-3.5">
+                  <div className="relative shrink-0">
+                    <SpecialistAvatar
+                      name={name || "Nowy Specjalista"}
+                      avatarBg={avatarBg}
+                      avatarUrl={avatarUrl || undefined}
+                      className="w-14 h-14 rounded-2xl text-base font-black shadow-sm ring-2 ring-slate-200 dark:ring-[#383431]"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <Camera className="w-3.5 h-3.5 text-[#296B6E] dark:text-[#FFB200]" />
+                      <span>Zdjęcie profilowe / Awatar specjalisty</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {avatarUrl
+                        ? "Zdjęcie profilowe jest przypisane i widoczne na liście zespołu oraz w systemie."
+                        : "Brak zdjęcia — system wyświetla kolorowy identyfikator z inicjałami."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    className="px-3.5 py-2 bg-white dark:bg-[#2C2927] hover:bg-slate-100 dark:hover:bg-[#383431] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#383431] rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-amber-600 dark:text-[#FFB200]" />
+                    <span>{avatarUrl ? "Zmień plik" : "Wgraj zdjęcie"}</span>
+                  </button>
+
+                  {avatarUrl && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAvatarUrl("");
+                        setAvatarError(null);
+                      }}
+                      className="px-3.5 py-2 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-950/70 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/50 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Usuń zdjęcie</span>
+                    </button>
+                  )}
+
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarFileChange}
+                    className="hidden"
+                    aria-label="Wybierz plik ze zdjęciem profilowym"
+                  />
+                </div>
+              </div>
+
+              {avatarError && (
+                <p className="text-[11px] font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{avatarError}</span>
+                </p>
+              )}
+
+              <div className="pt-2 border-t border-slate-200/70 dark:border-[#262320] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                {/* Optional URL input */}
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                    Lub wklej bezpośredni adres URL zdjęcia:
+                  </label>
+                  <input
+                    type="url"
+                    value={avatarUrl}
+                    onChange={(e) => {
+                      setAvatarUrl(e.target.value);
+                      setAvatarError(null);
+                    }}
+                    placeholder="https://domena.pl/zdjecie.jpg"
+                    className="w-full text-xs px-3 py-1.5 rounded-xl border border-slate-300 dark:border-[#383431] bg-white dark:bg-[#1E1C1A] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
+                  />
+                </div>
+
+                {/* Color swatches */}
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                    Kolor identyfikatora (gdy brak zdjęcia):
+                  </label>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {AVATAR_COLOR_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.class}
+                        type="button"
+                        onClick={() => setAvatarBg(opt.class)}
+                        className={`w-6 h-6 rounded-lg ${opt.class} flex items-center justify-center transition-all cursor-pointer ${
+                          avatarBg === opt.class ? "ring-2 ring-offset-2 ring-[#FFB200] scale-110 shadow-xs" : "opacity-75 hover:opacity-100"
+                        }`}
+                        title={opt.label}
+                      >
+                        {avatarBg === opt.class && <Check className="w-3 h-3 text-white" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="pt-2 flex items-center justify-between flex-wrap gap-3">
@@ -617,9 +771,9 @@ export const AdminSpecialistsTab: React.FC = () => {
 
       {/* Search & Filters Toolbar */}
       <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-2xl p-3 sm:p-3.5 shadow-xs space-y-2.5">
-        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5">
           {/* Search Box */}
-          <div className="relative flex-1">
+          <div className="relative sm:col-span-2 lg:col-span-4">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
@@ -640,7 +794,7 @@ export const AdminSpecialistsTab: React.FC = () => {
           </div>
 
           {/* Role Filter */}
-          <div className="w-full md:w-44 shrink-0">
+          <div className="lg:col-span-2">
             <select
               value={filterRole}
               onChange={(e) => setFilterRole(e.target.value as any)}
@@ -653,7 +807,7 @@ export const AdminSpecialistsTab: React.FC = () => {
           </div>
 
           {/* Guidance Area Filter */}
-          <div className="w-full md:w-56 shrink-0">
+          <div className="lg:col-span-3">
             <select
               value={filterGuidance}
               onChange={(e) => setFilterGuidance(e.target.value)}
@@ -669,7 +823,7 @@ export const AdminSpecialistsTab: React.FC = () => {
           </div>
 
           {/* Sort Option */}
-          <div className="w-full md:w-48 shrink-0">
+          <div className="lg:col-span-3">
             <select
               value={`${sortField}-${sortDirection}`}
               onChange={(e) => {
@@ -689,7 +843,7 @@ export const AdminSpecialistsTab: React.FC = () => {
         </div>
 
         {/* Filter Counters & Quick Reset */}
-        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 px-1 pt-0.5">
+        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 px-1 pt-0.5 flex-wrap gap-2">
           <div className="flex items-center space-x-2">
             <span>
               Wyniki: <strong className="text-slate-900 dark:text-white font-bold">{sortedSpecialists.length}</strong> z {specialists.length} specjalistów
@@ -750,7 +904,7 @@ export const AdminSpecialistsTab: React.FC = () => {
                       name={spec.name}
                       avatarBg={spec.avatarBg}
                       avatarUrl={spec.avatarUrl}
-                      className="w-10 h-10 rounded-xl text-xs font-black shadow-xs shrink-0"
+                      className="w-11 h-11 rounded-2xl text-xs font-black shadow-xs ring-1 ring-slate-200/80 dark:ring-[#383431] shrink-0"
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
@@ -918,7 +1072,7 @@ export const AdminSpecialistsTab: React.FC = () => {
                           name={spec.name}
                           avatarBg={spec.avatarBg}
                           avatarUrl={spec.avatarUrl}
-                          className="w-9 h-9 rounded-xl text-xs font-black shadow-xs shrink-0"
+                          className="w-10 h-10 rounded-2xl text-xs font-black shadow-xs ring-1 ring-slate-200/80 dark:ring-[#383431] shrink-0"
                         />
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">

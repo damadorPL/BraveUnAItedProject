@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { Specialist, GUIDANCE_TYPES, GuidanceType, Caller } from "../types";
 import { ConfirmModal } from "./ConfirmModal";
+import { validateAvatarFile, processAvatarImage } from "../utils/fileUtils";
 import {
   ShieldCheck,
   Users,
@@ -15,6 +16,8 @@ import {
   AlertTriangle,
   Sparkles,
   Info,
+  Camera,
+  Upload,
 } from "lucide-react";
 import { pluralizePorady, pluralizeZalaczniki } from "../utils/pluralization";
 import { SpecialistAvatar } from "./SpecialistAvatar";
@@ -25,6 +28,17 @@ interface AdminPanelModalProps {
 }
 
 export const ALLOWED_EMAIL_DOMAIN = "synapsis.org.pl";
+
+const AVATAR_COLOR_OPTIONS = [
+  { label: "Bursztynowy (Synapsis)", class: "bg-amber-600" },
+  { label: "Morski turkus", class: "bg-teal-600" },
+  { label: "Błękitny", class: "bg-blue-600" },
+  { label: "Granatowy", class: "bg-indigo-600" },
+  { label: "Fioletowy", class: "bg-purple-600" },
+  { label: "Szmaragdowy", class: "bg-emerald-600" },
+  { label: "Różany (Admin)", class: "bg-rose-600" },
+  { label: "Grafitowy", class: "bg-slate-700" },
+];
 
 export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClose }) => {
   const {
@@ -58,8 +72,31 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
   const [specGuidance, setSpecGuidance] = useState<GuidanceType>("prawno-obywatelskie");
   const [specIsAdmin, setSpecIsAdmin] = useState(false);
   const [specAvatarBg, setSpecAvatarBg] = useState("bg-blue-600");
+  const [specAvatarUrl, setSpecAvatarUrl] = useState("");
+  const [specAvatarError, setSpecAvatarError] = useState<string | null>(null);
   const [specSuccessMessage, setSpecSuccessMessage] = useState<string | null>(null);
   const [specEmailError, setSpecEmailError] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    const validationError = validateAvatarFile(file);
+    if (validationError) {
+      setSpecAvatarError(validationError);
+      return;
+    }
+
+    try {
+      const processed = await processAvatarImage(file);
+      setSpecAvatarUrl(processed);
+      setSpecAvatarError(null);
+    } catch {
+      setSpecAvatarError("Nie udało się przetworzyć zdjęcia. Spróbuj wybrać inny plik.");
+    }
+  };
 
   // Confirm modal state
   const [confirmModal, setConfirmModal] = useState<{
@@ -189,6 +226,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
         guidanceType: specGuidance,
         isAdmin: specIsAdmin,
         avatarBg: specAvatarBg,
+        avatarUrl: specAvatarUrl.trim() || undefined,
       });
       setSpecSuccessMessage(`Zaktualizowano dane konsultanta: ${specName}`);
       setEditingSpecialist(null);
@@ -201,6 +239,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
         guidanceType: specGuidance,
         isAdmin: specIsAdmin,
         avatarBg: specAvatarBg,
+        avatarUrl: specAvatarUrl.trim() || undefined,
       });
       setSpecSuccessMessage(`Dodano nowego konsultanta: ${specName}`);
       setIsAddingSpecialist(false);
@@ -214,6 +253,8 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
     setSpecGuidance("prawno-obywatelskie");
     setSpecIsAdmin(false);
     setSpecAvatarBg("bg-blue-600");
+    setSpecAvatarUrl("");
+    setSpecAvatarError(null);
 
     setTimeout(() => setSpecSuccessMessage(null), 3000);
   };
@@ -229,6 +270,8 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
     setSpecGuidance(spec.guidanceType);
     setSpecIsAdmin(!!spec.isAdmin);
     setSpecAvatarBg(spec.avatarBg || "bg-blue-600");
+    setSpecAvatarUrl(spec.avatarUrl || "");
+    setSpecAvatarError(null);
   };
 
   const handleAdminCheckboxChange = (checked: boolean) => {
@@ -754,6 +797,99 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                   </div>
                 </div>
 
+                {/* Awatar i zdjęcie profilowe */}
+                <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-xl p-3.5 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="relative shrink-0">
+                        <SpecialistAvatar
+                          name={specName || "Nowy Specjalista"}
+                          avatarBg={specAvatarBg}
+                          avatarUrl={specAvatarUrl || undefined}
+                          className="w-12 h-12 rounded-xl text-sm font-black shadow-xs ring-1 ring-slate-200 dark:ring-[#383431]"
+                        />
+                        {specAvatarUrl && (
+                          <span
+                            title="Zdjęcie przypisane"
+                            className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-[#1E1C1A] rounded-full flex items-center justify-center shadow-xs"
+                          >
+                            <Camera className="w-2 h-2 text-white" />
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                          <Camera className="w-3.5 h-3.5 text-amber-600 dark:text-[#FFB200]" />
+                          <span>Zdjęcie profilowe / Awatar</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          {specAvatarUrl ? "Zdjęcie profilowe jest przypisane." : "Inicjały na kolorowym tle."}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => avatarInputRef.current?.click()}
+                        className="px-3 py-1.5 bg-slate-100 dark:bg-[#2C2927] hover:bg-slate-200 dark:hover:bg-[#383431] text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>{specAvatarUrl ? "Zmień plik" : "Wgraj zdjęcie"}</span>
+                      </button>
+                      {specAvatarUrl && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSpecAvatarUrl("");
+                            setSpecAvatarError(null);
+                          }}
+                          className="px-3 py-1.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/50 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Usuń</span>
+                        </button>
+                      )}
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarFileChange}
+                        className="hidden"
+                        aria-label="Wybierz plik ze zdjęciem profilowym"
+                      />
+                    </div>
+                  </div>
+
+                  {specAvatarError && (
+                    <p className="text-[11px] font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{specAvatarError}</span>
+                    </p>
+                  )}
+
+                  <div className="pt-2 border-t border-slate-100 dark:border-[#2C2927] flex items-center justify-between flex-wrap gap-2 text-xs">
+                    <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                      Kolor identyfikatora (gdy brak zdjęcia):
+                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {AVATAR_COLOR_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.class}
+                          type="button"
+                          onClick={() => setSpecAvatarBg(opt.class)}
+                          className={`w-5 h-5 rounded-md ${opt.class} flex items-center justify-center transition-all cursor-pointer ${
+                            specAvatarBg === opt.class ? "ring-2 ring-offset-1 ring-[#FFB200] scale-110" : "opacity-75 hover:opacity-100"
+                          }`}
+                          title={opt.label}
+                        >
+                          {specAvatarBg === opt.class && <Check className="w-2.5 h-2.5 text-white" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-[#2C2927]">
                   <label className="flex items-center space-x-2 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer">
                     <input
@@ -802,7 +938,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                           name={spec.name}
                           avatarBg={spec.avatarBg}
                           avatarUrl={spec.avatarUrl}
-                          className="w-9 h-9 rounded-xl font-bold text-xs shrink-0 shadow-xs"
+                          className="w-10 h-10 rounded-xl font-bold text-xs shrink-0 shadow-xs ring-1 ring-slate-200/80 dark:ring-[#383431]"
                         />
                         <div>
                           <div className="font-extrabold text-slate-900 dark:text-white text-xs flex items-center gap-1.5">

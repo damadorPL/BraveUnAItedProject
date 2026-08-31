@@ -205,4 +205,41 @@ describe("Admin Functionality: Contact Merging Logic", () => {
     expect(nextRecords).toHaveLength(1);
     expect(nextRecords[0].id).toBe("rec-2");
   });
+
+  it("should distinguish specialists with avatars from specialists without avatars", () => {
+    const specialistsWithMixedAvatars: Specialist[] = [
+      {
+        id: "spec-1",
+        name: "mgr Joanna Mrożek",
+        role: "Psycholog",
+        title: "Psycholog",
+        guidanceType: "w zakresie psychologii i rehabilitacji społecznej",
+        avatarBg: "bg-purple-600",
+        avatarUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200",
+        email: "j.mrozek@synapsis.org.pl",
+        isAdmin: false,
+      },
+      {
+        id: "spec-2",
+        name: "dr Barbara Wiśniewska",
+        role: "Doradca P2P",
+        title: "Pedagog",
+        guidanceType: "Parent to Parent",
+        avatarBg: "bg-emerald-600",
+        email: "b.wisniewska@synapsis.org.pl",
+        isAdmin: false,
+      },
+    ];
+
+    const withAvatar = specialistsWithMixedAvatars.filter((s) => Boolean(s.avatarUrl));
+    const withoutAvatar = specialistsWithMixedAvatars.filter((s) => !s.avatarUrl);
+
+    expect(withAvatar).toHaveLength(1);
+    expect(withAvatar[0].name).toBe("mgr Joanna Mrożek");
+    expect(withAvatar[0].avatarUrl).toContain("unsplash.com");
+
+    expect(withoutAvatar).toHaveLength(1);
+    expect(withoutAvatar[0].name).toBe("dr Barbara Wiśniewska");
+    expect(withoutAvatar[0].avatarUrl).toBeUndefined();
+  });
 });
