@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import {
   Voivodeship,
@@ -38,6 +39,7 @@ export const NewCallerModal: React.FC = () => {
     specialists,
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
+  const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState(() => searchQuery || "");
@@ -153,6 +155,7 @@ export const NewCallerModal: React.FC = () => {
 
     setSelectedCaller(createdCaller);
     setIsNewCallerModalOpen(false);
+    navigate(`/callers/${createdCaller.id}`);
 
     // Reset
     setFirstName("");

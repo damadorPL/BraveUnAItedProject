@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { GuidanceType, CallRecord } from "../types";
 import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
@@ -45,6 +46,7 @@ export const CallRecordsTable: React.FC = () => {
     canEditRecord,
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
+  const navigate = useNavigate();
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
@@ -88,6 +90,7 @@ export const CallRecordsTable: React.FC = () => {
       };
     }
     setSelectedCaller(targetCaller);
+    navigate(`/callers/${targetCaller.id}`);
   };
 
   return (

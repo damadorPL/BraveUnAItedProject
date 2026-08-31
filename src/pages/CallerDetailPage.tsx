@@ -9,7 +9,9 @@ export const CallerDetailPage: React.FC = () => {
   const { callers, selectedCaller, setSelectedCaller } = useApp();
   const navigate = useNavigate();
 
-  const caller = callers.find((c) => c.id === id);
+  const caller =
+    callers.find((c) => c.id === id) ||
+    (selectedCaller?.id === id ? selectedCaller : undefined);
 
   useEffect(() => {
     if (caller && (!selectedCaller || selectedCaller.id !== caller.id)) {

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import {
   Inbox,
@@ -25,6 +26,7 @@ export const ReferredCasesModal: React.FC<Props> = ({ isOpen, onClose }) => {
     markReferralStatus,
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
+  const navigate = useNavigate();
 
   const [activeFilter, setActiveFilter] = useState<"ALL" | "OCZEKUJĄCA" | "ZAKOŃCZONA">("OCZEKUJĄCA");
 
@@ -49,6 +51,7 @@ export const ReferredCasesModal: React.FC<Props> = ({ isOpen, onClose }) => {
     if (caller) {
       setSelectedCaller(caller);
       onClose();
+      navigate(`/callers/${callerId}`);
     }
   };
 
@@ -141,11 +144,31 @@ export const ReferredCasesModal: React.FC<Props> = ({ isOpen, onClose }) => {
         <div className="p-6 overflow-y-auto space-y-4 bg-slate-100/50 dark:bg-[#141312] flex-1">
           {filteredCases.length === 0 ? (
             <div className="bg-white dark:bg-[#1E1C1A] rounded-3xl border border-slate-200 dark:border-[#383431] p-12 text-center shadow-xs">
-              <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Brak oczekujących spraw do załatwienia</h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-md mx-auto">
-                Nie masz obecnie żadnych przekazanych konsultacji wymagających Twojej interwencji.
-              </p>
+              {activeFilter === "OCZEKUJĄCA" ? (
+                <>
+                  <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Brak oczekujących spraw do załatwienia</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-md mx-auto">
+                    Nie masz obecnie żadnych przekazanych konsultacji wymagających Twojej interwencji.
+                  </p>
+                </>
+              ) : activeFilter === "ZAKOŃCZONA" ? (
+                <>
+                  <Inbox className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-3" />
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Brak zakończonych spraw</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-md mx-auto">
+                    Żadna z przekazanych konsultacji nie została jeszcze oznaczona jako zakończona.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Inbox className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-3" />
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Brak przekazanych spraw</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-md mx-auto">
+                    Nie masz obecnie żadnych spraw przekazanych do Twojej konsultacji.
+                  </p>
+                </>
+              )}
             </div>
           ) : (
             filteredCases.map((rec) => {

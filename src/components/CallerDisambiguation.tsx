@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Caller } from "../types";
 import { useApp } from "../context/AppContext";
 import {
@@ -17,6 +18,7 @@ interface Props {
 
 export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
   const { setSelectedCaller, getCallerRecords, setIsNewCallerModalOpen, searchQuery } = useApp();
+  const navigate = useNavigate();
 
   return (
     <div className="bg-amber-50/70 dark:bg-[#251F14] border border-amber-200 dark:border-amber-600/40 rounded-3xl p-5 mb-6 shadow-xs">
@@ -56,7 +58,10 @@ export const CallerDisambiguation: React.FC<Props> = ({ callers }) => {
           return (
             <div
               key={caller.id}
-              onClick={() => setSelectedCaller(caller)}
+              onClick={() => {
+                setSelectedCaller(caller);
+                navigate(`/callers/${caller.id}`);
+              }}
               className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] hover:border-[#FFB200] dark:hover:border-[#FFB200] rounded-3xl p-5 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group"
             >
               <div>
