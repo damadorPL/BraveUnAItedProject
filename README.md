@@ -1,4 +1,4 @@
-# Baza Porad – Fundacja SYNAPSIS (UnAIted)
+# Baza Porad - Fundacja SYNAPSIS (UnAIted)
 
 > **Centralny system rejestracji poradnictwa, kartotek kontaktów i sprawozdawczości PFRON dla dyżurujących specjalistów.**
 
@@ -6,9 +6,9 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 
 ---
 
-## 🌟 Kluczowe Funkcjonalności
+## 🌟 Kluczowe funkcjonalności
 
-### 1. 🌐 Trasy URL (URL Routes & Deep Linking)
+### 1. 🌐 Trasy URL (routing i deep linking)
 - **Klient-side Routing (`react-router-dom`)**:
   - `/login`: ekran logowania ze wsparciem autoryzacji JWT i opcjonalnym trybem demonstracyjnym (Demo Mode).
   - `/search` lub `/`: szybka wyszukiwarka kontaktów, ujednoznacznianie i baner przekazań Handoff.
@@ -18,57 +18,57 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
   - `/admin/*`: dedykowany, pełnoekranowy panel administratora chroniony strażnikiem uprawnień (`AdminRoute`).
   - `/unauthorized`: strona błędu 403 w przypadku braku uprawnień administratora.
 
-### 2. 🛡️ Dedykowany Panel Administratora (`/admin`)
-- **Pulpit Główny (Overview)**: wskaźniki KPI bazy, stan silnika bazy danych, status połączenia oraz szybkie skróty.
-- **Specjaliści i Uprawnienia**: pełne zarządzanie kontami specjalistów (CRUD), nadawanie ról, przypisywanie obszarów poradnictwa, zabezpieczone oknem potwierdzenia (`ConfirmModal`) nadawanie/odbieranie uprawnień administratora oraz zabezpieczenia przed odebraniem uprawnień samemu sobie lub głównemu kontu systemowemu.
-- **Wykrywanie i Scalanie Duplikatów (Merge Tool)**: algorytm wyszukiwania powtórzonych kartotek z porównaniem pól i automatycznym przeniesieniem całej historii konsultacji i załączników.
-- **Centralny Dziennik Zmian (Audit Logs)**: pełny rejestr modyfikacji porad z podglądem różnic (diff przed/po).
-- **Zarządzanie Bazami Danych (DB Manager)**: przełączanie silnika bazy danych, testowanie połączeń, migracje schematu oraz przełącznik trybu demo.
+### 2. 🛡️ Panel administratora (`/admin`)
+- **Pulpit główny (Overview)**: wskaźniki KPI bazy, stan silnika bazy danych, status połączenia oraz szybkie skróty.
+- **Specjaliści i uprawnienia**: pełne zarządzanie kontami specjalistów (CRUD), nadawanie ról, przypisywanie obszarów poradnictwa, zabezpieczone oknem potwierdzenia (`ConfirmModal`) nadawanie/odbieranie uprawnień administratora oraz zabezpieczenia przed odebraniem uprawnień samemu sobie lub głównemu kontu systemowemu.
+- **Wykrywanie i scalanie duplikatów (Merge Tool)**: algorytm wyszukiwania powtórzonych kartotek z porównaniem pól i automatycznym przeniesieniem całej historii konsultacji i załączników.
+- **Centralny dziennik zmian (Audit Logs)**: pełny rejestr modyfikacji porad z podglądem różnic (diff przed/po).
+- **Zarządzanie bazami danych (DB Manager)**: przełączanie silnika bazy danych, testowanie połączeń, migracje schematu oraz przełącznik trybu demo.
 
-### 3. 🗄️ Obsługa Baz Danych (PostgreSQL & SQLite)
+### 3. 🗄️ Obsługa baz danych (PostgreSQL i SQLite)
 - **Modułowa warstwa dostępu do danych (`DatabaseAdapter`)**:
   - **SQLite**: lokalna, bezkonfiguracyjna baza plikowa (`data/synapsis.sqlite`) z automatycznym tworzeniem tabel i indeksów.
   - **PostgreSQL**: obsługa produkcyjnego serwera bazy danych z pulą połączeń (`pg.Pool`), transakcjami i indeksami JSONB.
 - **Dynamiczne przełączanie silnika**: możliwość zmiany silnika w locie z poziomu panelu administratora lub zmiennych środowiskowych (`DATABASE_ENGINE`, `DATABASE_URL`).
 - **Automatyczne zasilanie (Auto-seeding)**: automatyczne inicjowanie bazy zestawem 71 porad i kartotek przy pierwszym uruchomieniu.
 
-### 4. 🔐 Autoryzacja i Ochrona Tras z JWT
+### 4. 🔐 Autoryzacja i ochrona tras JWT
 - **JSON Web Token (HMAC-SHA256)**: tokeny sesyjne z 24-godzinną ważnością, zawierające identyfikator specjalisty, rolę oraz uprawnienia `isAdmin`.
 - **Backend Middleware**: `authenticateJWT` oraz `requireAdmin` chroniące wrażliwe punkty końcowe API (`/api/admin/*`, usuwanie kartotek i porad).
 - **Frontend Route Guards**: `<ProtectedRoute>` oraz `<AdminRoute>` zabezpieczające nawigację po stronach.
 
-### 5. 🔍 Błyskawiczne Wyszukiwanie & Rozstrzyganie Kontaktów (Disambiguation)
+### 5. 🔍 Wyszukiwanie i ujednoznacznianie kontaktów
 - **Tolerancja na brak znaków diakrytycznych**: wpisanie `zolc`, `krakow`, `mrozek` bezbłędnie odnajduje odpowiednie osoby.
 - **Wyszukiwanie wielokryterialne**: po imieniu, nazwisku, odwróconej kolejności (*Nazwisko Imię*), numerze telefonu oraz miejscowości/województwie.
 
-### 6. 📋 Kartoteka Kontaktu i Oś Czasu Porad (Timeline)
+### 6. 📋 Kartoteka kontaktu i oś czasu porad
 - Pełna historia konsultacji z podziałem na rodzaj kontaktu, beneficjenta, orzeczenie o niepełnosprawności, kategorie poradnictwa oraz zarządzanie załącznikami.
 
-### 7. 📎 Wydajny Magazyn Załączników na Dysku & Wolumenie
+### 7. 📎 Magazyn załączników na dysku i wolumenie
 - **Optymalizacja bazy danych**: pliki załączników (PDF, skany, zdjęcia, arkusze Excel) nie powiększają bazy danych, lecz są zapisywane bezpośrednio na dysku/wolumenie w katalogu `data/uploads/attachments/` (lub ścieżce `ATTACHMENTS_DIR`).
 - **Endpointy API (`/api/attachments`)**: bezpieczny upload `multipart/form-data` do 50 MB, streaming plików, bezpośredni podgląd w przeglądarce i pobieranie z autoryzacją JWT.
 
-### 8. 🔄 System Przekazywania Spraw & Handoff (Referral System)
+### 8. 🔄 System przekazywania spraw i handoff
 - Ekran powitalny z oczekującymi sprawami, dynamiczny wybór konsultanta, powiadomienia e-mail i automatyczne oznaczanie spraw jako zakończone po udzieleniu porady.
 
-### 9. 📊 Raporty PFRON & Eksport Danych (Tylko Administratorzy)
+### 9. 📊 Raporty PFRON i eksport danych (dla administratorów)
 - Eksport XLSX (Excel) z rejestrem i arkuszem podsumowania wskaźników grantowych, eksport CSV z anonimizacją RODO.
-- Funkcjonalność eksportu zabezpieczona na poziomie interfejsu oraz logiki – dostępna wyłącznie dla zweryfikowanych administratorów systemu.
+- Funkcjonalność eksportu zabezpieczona na poziomie interfejsu oraz logiki - dostępna wyłącznie dla zweryfikowanych administratorów systemu.
 
-### 10. 🐳 Konteneryzacja Docker & Wdrożenie Coolify
+### 10. 🐳 Konteneryzacja Docker i wdrożenie Coolify
 - **Wielostopniowy Dockerfile**: optymalny obraz produkcyjny Node 22 Alpine.
 - **Wspólny Persistent Storage**: montowanie `/app/data` zabezpiecza i trwale przechowuje **zarówno bazę SQLite (`synapsis.sqlite`), jak i wszystkie załączniki (`uploads/attachments`)**.
 - **Gotowy szablon Coolify (`docker-compose.coolify.yml`)**: bezproblemowy deploy w środowisku Coolify z nazwanym wolumenem.
 
 ---
 
-## 🛠️ Stos Technologiczny
+## 🛠️ Stos technologiczny
 
 - **Frontend**: [React 19](https://react.dev/), [React Router](https://reactrouter.com/), [TypeScript](https://www.typescriptlang.org/), [ErrorBoundary]
 - **Backend**: [Node.js](https://nodejs.org/), [Express](https://expressjs.com/), [TypeScript](https://www.typescriptlang.org/), [Multer](https://github.com/expressjs/multer)
 - **ORM & Walidacja**: [Drizzle ORM](https://orm.drizzle.team/), [Zod](https://zod.dev/), [Drizzle Zod](https://orm.drizzle.team/docs/zod)
-- **Bazy Danych**: [SQLite (better-sqlite3)](https://github.com/WiseLibs/better-sqlite3), [PostgreSQL (pg)](https://node-postgres.com/)
-- **Konteneryzacja & Hosting**: [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/), [Coolify](https://coolify.io/)
+- **Bazy danych**: [SQLite (better-sqlite3)](https://github.com/WiseLibs/better-sqlite3), [PostgreSQL (pg)](https://node-postgres.com/)
+- **Konteneryzacja i hosting**: [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/), [Coolify](https://coolify.io/)
 - **Bezpieczeństwo**: [JSON Web Token (JWT)](https://jwt.io/), [SHA-256 / Crypto]
 - **Style**: [Tailwind CSS 4](https://tailwindcss.com/)
 - **Ikony**: [Lucide React](https://lucide.dev/) (wersja `^1.38.0`)
@@ -76,7 +76,7 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 
 ---
 
-## 📁 Struktura Projektu
+## 📁 Struktura projektu
 
 ```text
 ├── Dockerfile                  # Wielostopniowy obraz produkcyjny
@@ -137,7 +137,7 @@ Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych,
 
 ---
 
-## 🚀 Uruchomienie i Rozwój
+## 🚀 Uruchomienie i rozwój
 
 ### 1. Instalacja zależności
 ```bash
@@ -175,7 +175,7 @@ Kompiluje frontend (`dist/`) oraz backend (`dist-server/`).
 
 ---
 
-## 🐳 Uruchomienie w Dockerze & Coolify
+## 🐳 Uruchomienie w Dockerze i Coolify
 
 ### 1. Docker Compose (Standalone)
 Uruchomienie kompletnej aplikacji w kontenerze z trwałym montowaniem bazy SQLite i załączników (`./data:/app/data`):
@@ -193,10 +193,24 @@ Aplikacja będzie dostępna pod adresem `http://localhost:3001`.
 
 ---
 
-## 🔑 Domyślne Dane Dostępowe (Konta Demo)
+## 🔑 Domyślne dane dostępowe (konta demo)
 
 - **Administrator**: `admin@synapsis.org.pl` / hasło: `synapsis2026` (Dostęp do `/admin`)
 - **Koordynatorka / Psycholog**: `j.mrozek@synapsis.org.pl` / hasło: `synapsis2026`
 - **Radca Prawny**: `a.nowak@synapsis.org.pl` / hasło: `synapsis2026`
 - **Doradca P2P**: `b.wisniewska@synapsis.org.pl` / hasło: `synapsis2026`
 - **Konsultant Społeczny**: `k.zielinski@synapsis.org.pl` / hasło: `synapsis2026`
+
+---
+
+## 📚 Dokumentacja projektowa w `/docs`
+
+* **[Spis treści dokumentacji (`docs/README.md`)](./docs/README.md)**
+* **[Architektura systemu (`docs/ARCHITECTURE.md`)](./docs/ARCHITECTURE.md)**
+* **[Podręcznik użytkownika (`docs/USER_GUIDE.md`)](./docs/USER_GUIDE.md)**
+* **[Wytyczne sprawozdawczości PFRON (`docs/PFRON_GUIDELINES.md`)](./docs/PFRON_GUIDELINES.md)**
+* **[Instrukcja wdrożenia i DevOps (`docs/DEPLOYMENT.md`)](./docs/DEPLOYMENT.md)**
+* **[Strategia testowania (`docs/TESTING.md`)](./docs/TESTING.md)**
+* **[Przykładowy arkusz danych (`docs/przyklad.xlsx`)](./docs/przyklad.xlsx)**
+
+
