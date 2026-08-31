@@ -218,11 +218,11 @@ export const StatsBar: React.FC = () => {
         </div>
       </div>
 
-      {/* Breakdown by Guidance Type and Regions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Breakdown by Guidance Type and Regions (Stacked one below another) */}
+      <div className="space-y-6">
         {/* Guidance Types Chart Box */}
         <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-5 shadow-xs">
-          <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2">
+          <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3.5 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-[#296B6E] dark:text-[#FFB200]" />
             <span>Struktura rodzajów poradnictwa</span>
           </h3>
@@ -232,7 +232,7 @@ export const StatsBar: React.FC = () => {
               const meta = GUIDANCE_TYPE_META[type];
               return (
                 <div key={type}>
-                  <div className="flex justify-between font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <div className="flex justify-between font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-xs">
                     <span className="flex items-center gap-1.5">
                       {meta.icon} {label}
                     </span>
@@ -240,9 +240,9 @@ export const StatsBar: React.FC = () => {
                       {count} ({percent}%)
                     </span>
                   </div>
-                  <div className="w-full bg-slate-100 dark:bg-[#2C2927] rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-slate-100 dark:bg-[#2C2927] rounded-full h-2.5 overflow-hidden">
                     <div
-                      className={`${meta.barClass} h-2 rounded-full transition-all duration-500`}
+                      className={`${meta.barClass} h-2.5 rounded-full transition-all duration-500`}
                       style={{
                         width:
                           stats.totalRecords > 0 ? (count / stats.totalRecords) * 100 + "%" : "0%",
@@ -258,17 +258,17 @@ export const StatsBar: React.FC = () => {
         {/* Regions Box */}
         <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-3.5">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>Zasięg geograficzny: porady wg województw</span>
               </h3>
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-800 shrink-0">
+              <span className="text-[10px] font-bold px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-800 shrink-0">
                 16 województw
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
               {stats.voivodeshipRows.map(({ name, count, percent }) => {
                 const displayName =
                   name === "brak" ? "Brak danych" : name.charAt(0).toUpperCase() + name.slice(1);
@@ -276,13 +276,13 @@ export const StatsBar: React.FC = () => {
                 return (
                   <div
                     key={name}
-                    className={`flex items-center justify-between px-3 py-2 rounded-xl border text-xs transition-all ${
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-xs transition-all gap-3 ${
                       count > 0
                         ? "bg-slate-50/80 dark:bg-[#252018]/60 border-slate-200/80 dark:border-[#383431] shadow-2xs"
                         : "bg-transparent border-slate-100/80 dark:border-[#262422] opacity-50"
                     }`}
                   >
-                    <div className="flex items-center space-x-2 min-w-0 pr-2">
+                    <div className="flex items-center space-x-2.5 min-w-0">
                       <span
                         className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                           count > 0
@@ -291,10 +291,10 @@ export const StatsBar: React.FC = () => {
                         }`}
                       />
                       <span
-                        className={`truncate ${
+                        className={`font-semibold whitespace-nowrap ${
                           count > 0
-                            ? "font-semibold text-slate-800 dark:text-slate-100"
-                            : "text-slate-400 dark:text-slate-500"
+                            ? "text-slate-800 dark:text-slate-100"
+                            : "text-slate-400 dark:text-slate-500 font-normal"
                         }`}
                         title={displayName}
                       >
@@ -310,7 +310,7 @@ export const StatsBar: React.FC = () => {
                             : "text-slate-400 dark:text-slate-600 font-normal"
                         }`}
                       >
-                        {count} {pluralizePorady(count)}
+                        {pluralizePorady(count)}
                       </span>
                       {count > 0 && (
                         <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">

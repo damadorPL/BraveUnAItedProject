@@ -16,9 +16,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Search,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
   ChevronLeft,
   ChevronRight,
   RotateCcw,
@@ -226,6 +223,132 @@ export const AdminSpecialistsTab: React.FC = () => {
     });
   };
 
+  const promptToggleAdmin = (spec: Specialist) => {
+    if (spec.id === "spec-admin" && spec.isAdmin) {
+      setErrorMessage("Nie można odebrać uprawnień głównemu kontu administratora.");
+      setTimeout(() => setErrorMessage(null), 4000);
+      return;
+    }
+    if (spec.id === currentSpecialist.id && spec.isAdmin) {
+      setErrorMessage("Nie możesz odebrać uprawnień administratora własnemu zalogowanemu kontu.");
+      setTimeout(() => setErrorMessage(null), 4000);
+      return;
+    }
+
+    const willBeAdmin = !spec.isAdmin;
+    setConfirmModal({
+      isOpen: true,
+      title: willBeAdmin ? "Nadanie uprawnień administratora" : "Odebranie uprawnień administratora",
+      variant: willBeAdmin ? "warning" : "danger",
+      confirmText: willBeAdmin ? "Nadaj uprawnienia" : "Odbierz uprawnienia",
+      description: willBeAdmin ? (
+        <span>
+          Czy na pewno chcesz nadać uprawnienia administratora dla specjalisty{" "}
+          <strong>{spec.name}</strong> ({spec.email})?
+          <br />
+          <br />
+          Użytkownik uzyska pełny dostęp do panelu administratora (<code className="font-mono bg-slate-100 dark:bg-[#252018] px-1 py-0.5 rounded">/admin</code>), zarządzania kontami, scalania kartotek i operacji na bazie danych.
+        </span>
+      ) : (
+        <span>
+          Czy na pewno chcesz odebrać uprawnienia administratora specjaliście{" "}
+          <strong>{spec.name}</strong> ({spec.email})?
+          <br />
+          <br />
+          Użytkownik straci dostęp do modułów administracyjnych i stanie się zwykłym konsultantem.
+        </span>
+      ),
+      onConfirm: async () => {
+        setConfirmModal(null);
+        try {
+          const updated: Specialist = { ...spec, isAdmin: willBeAdmin };
+          await api.admin.updateSpecialist(spec.id, updated);
+          updateSpecialist(updated);
+          if (editingSpec?.id === spec.id) {
+            setIsAdmin(willBeAdmin);
+          }
+          setSuccessMessage(
+            willBeAdmin
+              ? `Nadano uprawnienia administratora dla ${spec.name}`
+              : `Odebrano uprawnienia administratora dla ${spec.name}`
+          );
+          setTimeout(() => setSuccessMessage(null), 4000);
+        } catch (err: any) {
+          setErrorMessage(err.message || "Błąd podczas zmiany uprawnień");
+          setTimeout(() => setErrorMessage(null), 4000);
+        }
+      },
+    });
+  };
+
+  const handleAdminCheckboxChange = (checked: boolean) => {
+    if (editingSpec) {
+      if (!checked && (editingSpec.id === "spec-admin" || editingSpec.id === currentSpecialist.id)) {
+        setErrorMessage(
+          editingSpec.id === "spec-admin"
+            ? "Nie można odebrać uprawnień głównemu kontu administratora."
+            : "Nie możesz odebrać uprawnień administratora własnemu zalogowanemu kontu."
+        );
+        setTimeout(() => setErrorMessage(null), 4000);
+        return;
+      }
+
+      if (checked !== Boolean(editingSpec.isAdmin)) {
+        setConfirmModal({
+          isOpen: true,
+          title: checked ? "Nadanie uprawnień administratora" : "Odebranie uprawnień administratora",
+          variant: checked ? "warning" : "danger",
+          confirmText: checked ? "Nadaj uprawnienia" : "Odbierz uprawnienia",
+          description: checked ? (
+            <span>
+              Czy na pewno chcesz nadać uprawnienia administratora dla specjalisty{" "}
+              <strong>{editingSpec.name}</strong> ({editingSpec.email})?
+              <br />
+              <br />
+              Użytkownik uzyska pełny dostęp do panelu administracyjnego (<code className="font-mono bg-slate-100 dark:bg-[#252018] px-1 py-0.5 rounded">/admin</code>).
+            </span>
+          ) : (
+            <span>
+              Czy na pewno chcesz odebrać uprawnienia administratora specjaliście{" "}
+              <strong>{editingSpec.name}</strong> ({editingSpec.email})?
+              <br />
+              <br />
+              Użytkownik straci dostęp do modułów administracyjnych.
+            </span>
+          ),
+          onConfirm: () => {
+            setIsAdmin(checked);
+            setConfirmModal(null);
+          },
+        });
+        return;
+      }
+    } else {
+      if (checked) {
+        setConfirmModal({
+          isOpen: true,
+          title: "Tworzenie konta administratora",
+          variant: "warning",
+          confirmText: "Włącz uprawnienia admina",
+          description: (
+            <span>
+              Czy na pewno chcesz utworzyć to konto z pełnymi uprawnieniami administratora?
+              <br />
+              <br />
+              Użytkownik będzie miał dostęp do panelu <code className="font-mono bg-slate-100 dark:bg-[#252018] px-1 py-0.5 rounded">/admin</code>.
+            </span>
+          ),
+          onConfirm: () => {
+            setIsAdmin(true);
+            setConfirmModal(null);
+          },
+        });
+        return;
+      }
+    }
+    setIsAdmin(checked);
+  };
+
   // Filtered specialists
   const filteredSpecialists = useMemo(() => {
     return specialists.filter((spec) => {
@@ -286,33 +409,20 @@ export const AdminSpecialistsTab: React.FC = () => {
     return sortedSpecialists.slice(start, start + pageSize);
   }, [sortedSpecialists, safeCurrentPage, pageSize]);
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
-
   const clearAllFilters = () => {
     setSearchQuery("");
     setFilterRole("all");
     setFilterGuidance("all");
+    setSortField("name");
+    setSortDirection("asc");
   };
 
-  const isFiltered = searchQuery.trim() !== "" || filterRole !== "all" || filterGuidance !== "all";
-
-  const renderSortIcon = (field: SortField) => {
-    if (sortField !== field) {
-      return <ArrowUpDown className="w-3.5 h-3.5 opacity-30 group-hover:opacity-70 transition-opacity" />;
-    }
-    return sortDirection === "asc" ? (
-      <ArrowUp className="w-3.5 h-3.5 text-amber-600 dark:text-[#FFB200]" />
-    ) : (
-      <ArrowDown className="w-3.5 h-3.5 text-amber-600 dark:text-[#FFB200]" />
-    );
-  };
+  const isFiltered =
+    searchQuery.trim() !== "" ||
+    filterRole !== "all" ||
+    filterGuidance !== "all" ||
+    sortField !== "name" ||
+    sortDirection !== "asc";
 
   return (
     <div className="space-y-4 sm:space-y-5 animate-in fade-in">
@@ -477,7 +587,7 @@ export const AdminSpecialistsTab: React.FC = () => {
               <input
                 type="checkbox"
                 checked={isAdmin}
-                onChange={(e) => setIsAdmin(e.target.checked)}
+                onChange={(e) => handleAdminCheckboxChange(e.target.checked)}
                 className="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
               />
               <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -555,6 +665,25 @@ export const AdminSpecialistsTab: React.FC = () => {
                   {g}
                 </option>
               ))}
+            </select>
+          </div>
+
+          {/* Sort Option */}
+          <div className="w-full md:w-48 shrink-0">
+            <select
+              value={`${sortField}-${sortDirection}`}
+              onChange={(e) => {
+                const [field, dir] = e.target.value.split("-") as [SortField, SortDirection];
+                setSortField(field);
+                setSortDirection(dir);
+              }}
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-[#FFB200] cursor-pointer"
+            >
+              <option value="name-asc">Sortuj: Nazwisko (A-Z)</option>
+              <option value="name-desc">Sortuj: Nazwisko (Z-A)</option>
+              <option value="title-asc">Sortuj: Rola (A-Z)</option>
+              <option value="guidanceType-asc">Sortuj: Obszar porad</option>
+              <option value="isAdmin-desc">Sortuj: Administratorzy pierwsi</option>
             </select>
           </div>
         </div>
@@ -644,17 +773,33 @@ export const AdminSpecialistsTab: React.FC = () => {
                   </div>
 
                   <div className="shrink-0">
-                    {spec.isAdmin ? (
-                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg text-[10px] font-black bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                        <ShieldCheck className="w-3 h-3" />
-                        <span>Admin</span>
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-[#282522] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#383431]">
-                        <UserCheck className="w-3 h-3 text-slate-400" />
-                        <span>Konsultant</span>
-                      </span>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => promptToggleAdmin(spec)}
+                      disabled={spec.id === "spec-admin" || (spec.id === currentSpecialist.id && spec.isAdmin)}
+                      title={
+                        spec.id === "spec-admin"
+                          ? "Główne konto administratora (brak możliwości zmiany)"
+                          : spec.id === currentSpecialist.id && spec.isAdmin
+                          ? "Nie możesz odebrać uprawnień administratora własnemu kontu"
+                          : spec.isAdmin
+                          ? "Kliknij, aby odebrać uprawnienia administratora"
+                          : "Kliknij, aby nadać uprawnienia administratora"
+                      }
+                      className="cursor-pointer transition-transform active:scale-95 disabled:cursor-not-allowed disabled:active:scale-100"
+                    >
+                      {spec.isAdmin ? (
+                        <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg text-[10px] font-black bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/60">
+                          <ShieldCheck className="w-3 h-3" />
+                          <span>Admin</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-slate-100 dark:bg-[#282522] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#383431] hover:bg-slate-200 dark:hover:bg-[#34302D]">
+                          <UserCheck className="w-3 h-3 text-slate-400" />
+                          <span>Konsultant</span>
+                        </span>
+                      )}
+                    </button>
                   </div>
                 </div>
 
@@ -716,51 +861,18 @@ export const AdminSpecialistsTab: React.FC = () => {
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-slate-50/90 dark:bg-[#252018] border-b border-slate-200 dark:border-[#383431] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px] select-none">
             <tr>
-              {/* Specjalista */}
-              <th
-                onClick={() => handleSort("name")}
-                className="py-3 px-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap"
-              >
-                <div className="flex items-center space-x-1">
-                  <span>Specjalista i kontakt</span>
-                  {renderSortIcon("name")}
-                </div>
+              <th className="py-3 px-4 whitespace-nowrap">
+                <span>Specjalista i kontakt</span>
               </th>
-
-              {/* Tytuł i rola */}
-              <th
-                onClick={() => handleSort("title")}
-                className="py-3 px-3 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap"
-              >
-                <div className="flex items-center space-x-1">
-                  <span>Rola i stanowisko</span>
-                  {renderSortIcon("title")}
-                </div>
+              <th className="py-3 px-3 whitespace-nowrap">
+                <span>Rola i stanowisko</span>
               </th>
-
-              {/* Obszar poradnictwa */}
-              <th
-                onClick={() => handleSort("guidanceType")}
-                className="py-3 px-3 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap"
-              >
-                <div className="flex items-center space-x-1">
-                  <span>Obszar poradnictwa</span>
-                  {renderSortIcon("guidanceType")}
-                </div>
+              <th className="py-3 px-3 whitespace-nowrap">
+                <span>Obszar poradnictwa</span>
               </th>
-
-              {/* Uprawnienia */}
-              <th
-                onClick={() => handleSort("isAdmin")}
-                className="py-3 px-3 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap"
-              >
-                <div className="flex items-center space-x-1">
-                  <span>Uprawnienia</span>
-                  {renderSortIcon("isAdmin")}
-                </div>
+              <th className="py-3 px-3 whitespace-nowrap">
+                <span>Uprawnienia</span>
               </th>
-
-              {/* Akcje */}
               <th className="py-3 px-4 text-right whitespace-nowrap">
                 <span>Akcje</span>
               </th>
@@ -858,17 +970,33 @@ export const AdminSpecialistsTab: React.FC = () => {
 
                     {/* Uprawnienia */}
                     <td className="py-3 px-3 whitespace-nowrap">
-                      {spec.isAdmin ? (
-                        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl text-[11px] font-black bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                          <span>Administrator</span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-slate-100 dark:bg-[#282522] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#383431]">
-                          <UserCheck className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Konsultant</span>
-                        </span>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => promptToggleAdmin(spec)}
+                        disabled={spec.id === "spec-admin" || (spec.id === currentSpecialist.id && spec.isAdmin)}
+                        title={
+                          spec.id === "spec-admin"
+                            ? "Główne konto administratora (brak możliwości zmiany)"
+                            : spec.id === currentSpecialist.id && spec.isAdmin
+                            ? "Nie możesz odebrać uprawnień administratora własnemu kontu"
+                            : spec.isAdmin
+                            ? "Kliknij, aby odebrać uprawnienia administratora"
+                            : "Kliknij, aby nadać uprawnienia administratora"
+                        }
+                        className="cursor-pointer transition-transform active:scale-95 disabled:cursor-not-allowed disabled:active:scale-100"
+                      >
+                        {spec.isAdmin ? (
+                          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl text-[11px] font-black bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors">
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            <span>Administrator</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-slate-100 dark:bg-[#282522] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#383431] hover:bg-slate-200 dark:hover:bg-[#34302D] transition-colors">
+                            <UserCheck className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Konsultant</span>
+                          </span>
+                        )}
+                      </button>
                     </td>
 
                     {/* Akcje */}

@@ -231,6 +231,53 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
     setSpecAvatarBg(spec.avatarBg || "bg-blue-600");
   };
 
+  const handleAdminCheckboxChange = (checked: boolean) => {
+    if (editingSpecialist) {
+      if (!checked && (editingSpecialist.id === "spec-admin" || editingSpecialist.id === currentSpecialist.id)) {
+        setSpecEmailError(
+          editingSpecialist.id === "spec-admin"
+            ? "Nie można odebrać uprawnień głównemu kontu administratora."
+            : "Nie możesz odebrać uprawnień administratora własnemu zalogowanemu kontu."
+        );
+        setTimeout(() => setSpecEmailError(null), 4000);
+        return;
+      }
+
+      if (checked !== Boolean(editingSpecialist.isAdmin)) {
+        setConfirmModal({
+          isOpen: true,
+          title: checked ? "Nadanie uprawnień administratora" : "Odebranie uprawnień administratora",
+          variant: checked ? "warning" : "danger",
+          confirmText: checked ? "Nadaj uprawnienia" : "Odbierz uprawnienia",
+          description: checked
+            ? `Czy na pewno chcesz nadać uprawnienia administratora dla ${editingSpecialist.name}? Użytkownik uzyska dostęp do funkcji administracyjnych.`
+            : `Czy na pewno chcesz odebrać uprawnienia administratora dla ${editingSpecialist.name}?`,
+          onConfirm: () => {
+            setSpecIsAdmin(checked);
+            setConfirmModal(null);
+          },
+        });
+        return;
+      }
+    } else {
+      if (checked) {
+        setConfirmModal({
+          isOpen: true,
+          title: "Tworzenie konta administratora",
+          variant: "warning",
+          confirmText: "Włącz uprawnienia admina",
+          description: "Czy na pewno chcesz nadać uprawnienia administratora nowo tworzonemu profilowi?",
+          onConfirm: () => {
+            setSpecIsAdmin(true);
+            setConfirmModal(null);
+          },
+        });
+        return;
+      }
+    }
+    setSpecIsAdmin(checked);
+  };
+
   const handleDeleteSpecialist = (spec: Specialist) => {
     if (spec.id === currentSpecialist.id) {
       setSpecEmailError("Nie możesz usunąć aktualnie zalogowanego konta administratora.");
@@ -712,7 +759,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                     <input
                       type="checkbox"
                       checked={specIsAdmin}
-                      onChange={(e) => setSpecIsAdmin(e.target.checked)}
+                      onChange={(e) => handleAdminCheckboxChange(e.target.checked)}
                       className="rounded text-[#FFB200] focus:ring-[#FFB200]"
                     />
                     <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
