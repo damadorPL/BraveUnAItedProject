@@ -111,6 +111,24 @@ recordsRouter.put("/:id", validateBody(updateRecordSchema), async (req: Authenti
       return;
     }
 
+    // Server-side authorization check (Rule 3.1 server-auth-actions)
+    const user = req.user;
+    if (!user) {
+      res.status(401).json({ error: "Wymagane uwierzytelnienie" });
+      return;
+    }
+
+    const isAdmin =
+      Boolean(user.isAdmin) ||
+      user.id === "spec-admin" ||
+      (user.role && user.role.toLowerCase().includes("admin"));
+    const isOwner = existing.specialistId === user.id;
+
+    if (!isAdmin && !isOwner) {
+      res.status(403).json({ error: "Brak uprawnień do edycji porady innego specjalisty" });
+      return;
+    }
+
     const updatedRecord: CallRecord = {
       ...existing,
       ...req.body,

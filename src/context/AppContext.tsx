@@ -276,18 +276,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const token = getStoredToken();
       const isAuthenticated = hasAuthToken || Boolean(token);
 
-      const fetchedSpecs = await api.specialists.getAll().catch(() => null);
-      if (fetchedSpecs && fetchedSpecs.length > 0) {
-        setSpecialists(fetchedSpecs);
-      }
-
       if (isAuthenticated) {
-        const [fetchedCallers, fetchedRecords] = await Promise.all([
+        const [fetchedSpecs, fetchedCallers, fetchedRecords] = await Promise.all([
+          api.specialists.getAll().catch(() => null),
           api.callers.getAll().catch(() => null),
           api.records.getAll().catch(() => null),
         ]);
+        if (fetchedSpecs && fetchedSpecs.length > 0) setSpecialists(fetchedSpecs);
         if (fetchedCallers) setCallers(fetchedCallers);
         if (fetchedRecords) setRecords(fetchedRecords);
+      } else {
+        const fetchedSpecs = await api.specialists.getAll().catch(() => null);
+        if (fetchedSpecs && fetchedSpecs.length > 0) setSpecialists(fetchedSpecs);
       }
     } catch (err) {
       console.warn("Backend sync warning, fallback to storage:", err);
@@ -391,13 +391,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return map;
   }, [records]);
 
-  // High-performance lookup Map for pending referrals by specialist
+  // High-performance lookup Map for pending referrals by specialist (O(S + R) instead of O(S * R))
   const referredRecordsBySpecialist = useMemo(() => {
     const map = new Map<string, CallRecord[]>();
     for (let s = 0; s < specialists.length; s++) {
-      const specId = specialists[s].id;
-      const specReferred = records.filter((r) => isReferredToSpecialist(r, specId, specialists));
-      map.set(specId, specReferred);
+      map.set(specialists[s].id, []);
+    }
+    for (let r = 0; r < records.length; r++) {
+      const rec = records[r];
+      if (rec.referredSpecialistId && map.has(rec.referredSpecialistId)) {
+        map.get(rec.referredSpecialistId)!.push(rec);
+      } else if (!rec.referredSpecialistId && rec.referredTo) {
+        for (let s = 0; s < specialists.length; s++) {
+          const spec = specialists[s];
+          const specLastName = spec.name.split(" ").pop()?.toLowerCase();
+          if (specLastName && rec.referredTo.toLowerCase().includes(specLastName)) {
+            map.get(spec.id)!.push(rec);
+            break;
+          }
+        }
+      }
     }
     return map;
   }, [records, specialists]);

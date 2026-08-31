@@ -18,7 +18,7 @@ import {
   HelpCircle,
   UserX,
 } from "lucide-react";
-import confetti from "canvas-confetti";
+import { fireConfetti } from "../utils/confetti";
 
 const MAX_LISTED_ITEMS = 8;
 
@@ -77,7 +77,7 @@ export const ExcelMigratorModal: React.FC = () => {
     setIsSuccess(true);
 
     try {
-      confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+      fireConfetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
     } catch {}
 
     setTimeout(() => {

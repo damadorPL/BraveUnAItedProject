@@ -149,14 +149,13 @@ export class PostgresAdapter implements DatabaseAdapter {
   async getStats(): Promise<AdminOverviewStats> {
     if (!this.pool) throw new Error("PG pool not open");
 
-    const callerCountRes = await this.pool.query("SELECT count(*)::int as count FROM callers");
-    const recordCountRes = await this.pool.query("SELECT count(*)::int as count FROM call_records");
-    const specCountRes = await this.pool.query("SELECT count(*)::int as count FROM specialists");
-    const pendingRes = await this.pool.query(
-      "SELECT count(*)::int as count FROM call_records WHERE referred_status = 'OCZEKUJĄCA'"
-    );
-
-    const recentLogs = await this.getAuditLogs(10);
+    const [callerCountRes, recordCountRes, specCountRes, pendingRes, recentLogs] = await Promise.all([
+      this.pool.query("SELECT count(*)::int as count FROM callers"),
+      this.pool.query("SELECT count(*)::int as count FROM call_records"),
+      this.pool.query("SELECT count(*)::int as count FROM specialists"),
+      this.pool.query("SELECT count(*)::int as count FROM call_records WHERE referred_status = 'OCZEKUJĄCA'"),
+      this.getAuditLogs(10),
+    ]);
 
     return {
       totalCallers: callerCountRes.rows[0]?.count || 0,

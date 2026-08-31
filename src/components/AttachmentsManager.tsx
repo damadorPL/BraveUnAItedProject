@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Attachment } from "../types";
 import {
   FileText,
@@ -18,7 +18,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { formatFileSize, createAttachmentFromFile } from "../utils/fileUtils";
-import * as XLSX from "xlsx";
 
 interface Props {
   attachments: Attachment[];
@@ -50,36 +49,51 @@ export const AttachmentsManager: React.FC<Props> = ({
   const [zoomLevel, setZoomLevel] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // When previewing an excel file, parse base64 or create preview
-  const excelPreviewData = useMemo(() => {
-    if (previewAttachment?.type !== "excel") return null;
-    try {
-      if (previewAttachment.dataUrl && previewAttachment.dataUrl.includes("base64,")) {
-        const base64Data = previewAttachment.dataUrl.split("base64,")[1];
-        const workbook = XLSX.read(base64Data, { type: "base64" });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const data: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-        if (data.length > 0) {
-          return {
-            headers: data[0].map(String),
-            rows: data.slice(1, 15),
-          };
+  // When previewing an excel file, dynamically load xlsx and parse base64 or create preview
+  const [excelPreviewData, setExcelPreviewData] = useState<{ headers: string[]; rows: any[][] } | null>(null);
+
+  useEffect(() => {
+    if (previewAttachment?.type !== "excel") return;
+    let isCancelled = false;
+
+    async function loadExcelPreview() {
+      try {
+        if (previewAttachment?.dataUrl && previewAttachment.dataUrl.includes("base64,")) {
+          const base64Data = previewAttachment.dataUrl.split("base64,")[1];
+          const XLSX = await import("xlsx");
+          const workbook = XLSX.read(base64Data, { type: "base64" });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          const data: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+          if (!isCancelled && data.length > 0) {
+            setExcelPreviewData({
+              headers: data[0].map(String),
+              rows: data.slice(1, 15),
+            });
+            return;
+          }
         }
+      } catch (err) {
+        console.warn("Could not parse excel dataUrl:", err);
       }
-    } catch (err) {
-      console.warn("Could not parse excel dataUrl:", err);
+
+      if (!isCancelled) {
+        setExcelPreviewData({
+          headers: ["Lp.", "Kategoria wsparcia", "Punkty WZON", "Wysokość świadczenia (PLN)", "Status"],
+          rows: [
+            ["1", "Poziom potrzeby wsparcia - najwyższy", "95 - 100 pkt", "3 919 zł", "Przyznane"],
+            ["2", "Poziom potrzeby wsparcia - znaczny", "85 - 94 pkt", "3 135 zł", "Przyznane"],
+            ["3", "Poziom potrzeby wsparcia - umiarkowany", "78 - 84 pkt", "2 351 zł", "Odwołanie w toku"],
+            ["4", "Poziom potrzeby wsparcia - podstawowy", "70 - 77 pkt", "1 568 zł", "Wnioskowane"],
+          ],
+        });
+      }
     }
 
-    // Sample fallback spreadsheet preview for demo files
-    return {
-      headers: ["Lp.", "Kategoria wsparcia", "Punkty WZON", "Wysokość świadczenia (PLN)", "Status"],
-      rows: [
-        ["1", "Poziom potrzeby wsparcia - najwyższy", "95 - 100 pkt", "3 919 zł", "Przyznane"],
-        ["2", "Poziom potrzeby wsparcia - znaczny", "85 - 94 pkt", "3 135 zł", "Przyznane"],
-        ["3", "Poziom potrzeby wsparcia - umiarkowany", "78 - 84 pkt", "2 351 zł", "Odwołanie w toku"],
-        ["4", "Poziom potrzeby wsparcia - podstawowy", "70 - 77 pkt", "1 568 zł", "Wnioskowane"],
-      ],
+    loadExcelPreview();
+    return () => {
+      isCancelled = true;
+      setExcelPreviewData(null);
     };
   }, [previewAttachment]);
 

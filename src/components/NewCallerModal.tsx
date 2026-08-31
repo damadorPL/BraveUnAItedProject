@@ -25,7 +25,7 @@ import {
   UserPlus,
   CheckCircle2,
 } from "lucide-react";
-import confetti from "canvas-confetti";
+import { fireConfetti } from "../utils/confetti";
 
 export const NewCallerModal: React.FC = () => {
   const {
@@ -148,7 +148,7 @@ export const NewCallerModal: React.FC = () => {
     }
 
     try {
-      confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+      fireConfetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
     } catch {}
 
     setSelectedCaller(createdCaller);

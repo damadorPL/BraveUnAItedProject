@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { GuidanceType, CallRecord } from "../types";
 import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
@@ -17,6 +17,22 @@ import {
   ChevronRight,
   Clock,
 } from "lucide-react";
+
+// Hoisted presentation helper (Rule 5.4 / 6.3: Hoisting helpers outside components)
+const getGuidanceBadge = (type?: GuidanceType) => {
+  switch (type) {
+    case "prawno-obywatelskie":
+      return "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60";
+    case "w zakresie psychologii i rehabilitacji społecznej":
+      return "bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/60";
+    case "Parent to Parent":
+      return "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60";
+    case "społeczne":
+      return "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/60";
+    default:
+      return "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700";
+  }
+};
 
 export const CallRecordsTable: React.FC = () => {
   const {
@@ -39,27 +55,20 @@ export const CallRecordsTable: React.FC = () => {
     setPage(1);
   }
 
-  const callersMap = buildCallersMap(callers);
+  // Memoize callers lookup Map (Rule 7.2 index maps, Rule 5.1 re-render optimization)
+  const callersMap = useMemo(() => buildCallersMap(callers), [callers]);
 
-  const filteredRecords = filterCallRecords(records, callersMap, filterState);
+  // Memoize filtered records
+  const filteredRecords = useMemo(
+    () => filterCallRecords(records, callersMap, filterState),
+    [records, callersMap, filterState]
+  );
 
   const totalPages = Math.ceil(filteredRecords.length / pageSize) || 1;
-  const paginatedRecords = filteredRecords.slice((page - 1) * pageSize, page * pageSize);
-
-  const getGuidanceBadge = (type?: GuidanceType) => {
-    switch (type) {
-      case "prawno-obywatelskie":
-        return "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60";
-      case "w zakresie psychologii i rehabilitacji społecznej":
-        return "bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/60";
-      case "Parent to Parent":
-        return "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60";
-      case "społeczne":
-        return "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/60";
-      default:
-        return "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700";
-    }
-  };
+  const paginatedRecords = useMemo(
+    () => filteredRecords.slice((page - 1) * pageSize, page * pageSize),
+    [filteredRecords, page, pageSize]
+  );
 
   const handleOpenCaller = (rec: CallRecord) => {
     let targetCaller = callersMap.get(rec.callerId);

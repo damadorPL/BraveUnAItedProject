@@ -18,7 +18,7 @@ import {
   Clock,
   CheckCircle2,
 } from "lucide-react";
-import confetti from "canvas-confetti";
+import { fireConfetti } from "../utils/confetti";
 
 export const NewCallRecordModal: React.FC = () => {
   const {
@@ -107,7 +107,7 @@ export const NewCallRecordModal: React.FC = () => {
     });
 
     try {
-      confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } });
+      fireConfetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } });
     } catch {}
 
     setIsSubmitting(false);

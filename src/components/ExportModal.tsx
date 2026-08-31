@@ -9,7 +9,7 @@ import {
   FileSpreadsheet,
   Lock,
 } from "lucide-react";
-import confetti from "canvas-confetti";
+import { fireConfetti } from "../utils/confetti";
 
 export const ExportModal: React.FC = () => {
   const { isExportModalOpen, setIsExportModalOpen, records, callers, filterState } = useApp();
@@ -35,7 +35,7 @@ export const ExportModal: React.FC = () => {
     if (!exported) return;
 
     try {
-      confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
+      fireConfetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
     } catch {}
 
     setIsExportModalOpen(false);

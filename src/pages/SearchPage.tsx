@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useDeferredValue, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { SearchBar } from "../components/SearchBar";
@@ -36,29 +36,52 @@ export const SearchPage: React.FC = () => {
   const currentSpecialist = useCurrentSpecialist();
   const navigate = useNavigate();
 
+  // Rule 5.14: Use useDeferredValue for expensive derived renders (search results)
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+
   const [callerPage, setCallerPage] = useState(1);
   const callerPageSize = 12;
   const [isReferredModalOpen, setIsReferredModalOpen] = useState(false);
 
-  const [prevSearchQuery, setPrevSearchQuery] = useState(searchQuery);
-  if (prevSearchQuery !== searchQuery) {
-    setPrevSearchQuery(searchQuery);
+  const [prevSearchQuery, setPrevSearchQuery] = useState(deferredSearchQuery);
+  if (prevSearchQuery !== deferredSearchQuery) {
+    setPrevSearchQuery(deferredSearchQuery);
     setCallerPage(1);
   }
 
+  // Memoize callers map for O(1) lookups (Rule 7.2)
+  const callersMap = useMemo(() => {
+    const map = new Map<string, (typeof callers)[0]>();
+    for (let i = 0; i < callers.length; i++) {
+      map.set(callers[i].id, callers[i]);
+    }
+    return map;
+  }, [callers]);
+
   const totalCallerPages = Math.ceil(filteredCallers.length / callerPageSize) || 1;
-  const paginatedCallers = filteredCallers.slice(
-    (callerPage - 1) * callerPageSize,
-    callerPage * callerPageSize
+  const paginatedCallers = useMemo(
+    () =>
+      filteredCallers.slice(
+        (callerPage - 1) * callerPageSize,
+        callerPage * callerPageSize
+      ),
+    [filteredCallers, callerPage, callerPageSize]
   );
 
-  const myReferredCases = getReferredRecordsForSpecialist(currentSpecialist.id);
-  const pendingCases = myReferredCases.filter(
-    (r) => (r.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
+  const myReferredCases = useMemo(
+    () => getReferredRecordsForSpecialist(currentSpecialist.id),
+    [getReferredRecordsForSpecialist, currentSpecialist.id]
+  );
+  const pendingCases = useMemo(
+    () =>
+      myReferredCases.filter(
+        (r) => (r.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
+      ),
+    [myReferredCases]
   );
 
   const handleOpenCaller = (callerId: string) => {
-    const found = callers.find((c) => c.id === callerId);
+    const found = callersMap.get(callerId);
     if (found) {
       setSelectedCaller(found);
       navigate(`/callers/${callerId}`);

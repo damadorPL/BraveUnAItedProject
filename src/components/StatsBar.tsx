@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { GuidanceType } from "../types";
 import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
@@ -67,11 +67,14 @@ function buildQuarterPresets(year: number): { label: string; from: string; to: s
 export const StatsBar: React.FC = () => {
   const { records, callers, filterState, setFilterState } = useApp();
 
-  const callersMap = buildCallersMap(callers);
-  // Statystyki liczone na tym samym zbiorze, który widzi rejestr i eksport.
-  const filteredRecords = filterCallRecords(records, callersMap, filterState);
+  // Memoize callers map and filtered records (Rule 5.1 & 7.4: Cache computations)
+  const callersMap = useMemo(() => buildCallersMap(callers), [callers]);
+  const filteredRecords = useMemo(
+    () => filterCallRecords(records, callersMap, filterState),
+    [records, callersMap, filterState]
+  );
 
-  const quarterPresets = buildQuarterPresets(new Date().getFullYear());
+  const quarterPresets = useMemo(() => buildQuarterPresets(new Date().getFullYear()), []);
   const hasDateRange = Boolean(filterState.dateFrom || filterState.dateTo);
   const hasOtherFilters = Boolean(
     filterState.searchQuery ||
@@ -83,8 +86,10 @@ export const StatsBar: React.FC = () => {
   );
 
   // Wspólna logika liczenia ze sprawozdawczym eksportem (arkusz "Podsumowanie")
-  // — widok i plik raportu muszą pokazywać identyczne wartości.
-  const stats = computeReportStats(filteredRecords, callersMap);
+  const stats = useMemo(
+    () => computeReportStats(filteredRecords, callersMap),
+    [filteredRecords, callersMap]
+  );
   const totalHours = (stats.totalMinutes / 60).toFixed(1);
 
   const setDateRange = (from: string, to: string) => {

@@ -196,5 +196,56 @@ describe("Backend Server & JWT Auth Test Suite", () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.some((c: any) => c.lastName.includes("Kowalski"))).toBe(true);
     });
+
+    it("PUT /api/records/:id should reject modification by unauthorized non-owner specialist with 403", async () => {
+      const recordsRes = await request(app)
+        .get("/api/records")
+        .set("Authorization", `Bearer ${token}`);
+      const record = recordsRes.body[0];
+
+      // Generate token for a different, non-admin specialist
+      const otherSpecialistToken = generateJWT({
+        id: "spec-stranger-999",
+        email: "stranger@synapsis.org.pl",
+        name: "Inny Specjalista",
+        role: "Konsultant",
+        isAdmin: false,
+      });
+
+      const res = await request(app)
+        .put(`/api/records/${record.id}`)
+        .set("Authorization", `Bearer ${otherSpecialistToken}`)
+        .send({
+          adviceDescription: "Nieautoryzowana próba modyfikacji",
+        });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toContain("Brak uprawnień");
+    });
+
+    it("PUT /api/records/:id should allow modification by admin or owner with 200", async () => {
+      const recordsRes = await request(app)
+        .get("/api/records")
+        .set("Authorization", `Bearer ${token}`);
+      const record = recordsRes.body[0];
+
+      const adminToken = generateJWT({
+        id: "spec-admin",
+        email: "admin@synapsis.org.pl",
+        name: "Admin",
+        role: "Admin",
+        isAdmin: true,
+      });
+
+      const res = await request(app)
+        .put(`/api/records/${record.id}`)
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({
+          adviceDescription: "Zaktualizowany opis przez administratora",
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.adviceDescription).toBe("Zaktualizowany opis przez administratora");
+    });
   });
 });
