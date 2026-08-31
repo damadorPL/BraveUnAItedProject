@@ -9,10 +9,11 @@ import {
   FileSpreadsheet,
   Lock,
 } from "lucide-react";
-import { fireConfetti } from "../utils/confetti";
+import { useToast } from "../context/ToastContext";
 
 export const ExportModal: React.FC = () => {
   const { isExportModalOpen, setIsExportModalOpen, records, callers, filterState, currentSpecialist } = useApp();
+  const { toast } = useToast();
 
   const [anonymized, setAnonymized] = useState(true);
   const [format, setFormat] = useState<"csv" | "xlsx">("csv");
@@ -35,9 +36,7 @@ export const ExportModal: React.FC = () => {
 
     if (!exported) return;
 
-    try {
-      fireConfetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
-    } catch {}
+    toast.success("Plik raportu został pomyślnie wygenerowany i pobrany.");
 
     setIsExportModalOpen(false);
   };

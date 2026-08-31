@@ -9,10 +9,11 @@ Witaj w oficjalnej dokumentacji systemu **Baza Porad** stworzonego dla Fundacji 
 | Dokument | Opis |
 | :--- | :--- |
 | **[1. Architektura systemu (`ARCHITECTURE.md`)](./ARCHITECTURE.md)** | Szczegółowy opis stosu technologicznego (React 19, Express, Drizzle ORM), warstwy baz danych (SQLite / PostgreSQL), magazynu załączników oraz modelu bezpieczeństwa JWT. |
-| **[2. Podręcznik użytkownika (`USER_GUIDE.md`)](./USER_GUIDE.md)** | Instrukcja krok po kroku dla dyżurujących specjalistów: wyszukiwanie kontaktów, rejestracja porad, przekazywanie spraw (*Handoff*), obsługa załączników i panel administratora. |
-| **[3. Wytyczne sprawozdawczości PFRON (`PFRON_GUIDELINES.md`)](./PFRON_GUIDELINES.md)** | Standardy zbierania danych wg wymogów grantowych PFRON, kategorie poradnictwa, wskaźniki sprawozdawcze i procedury anonimizacji RODO (art. 9). |
-| **[4. Wdrożenie i DevOps (`DEPLOYMENT.md`)](./DEPLOYMENT.md)** | Instrukcja uruchamiania w Dockerze, konfiguracja środowiska produkcyjnego Coolify, zarządzanie wolumenami trwałymi (`/app/data`) oraz zmienne środowiskowe. |
-| **[5. Strategia testowania (`TESTING.md`)](./TESTING.md)** | Opis testów jednostkowych i integracyjnych (Vitest + Supertest) oraz testów funkcjonalnych End-to-End w przeglądarce (Playwright). |
+| **[2. Szczegółowy opis modułów (`FEATURES.md`)](./FEATURES.md)** | Pełny opis 10 kluczowych modułów systemu (trasy URL, panel admina, bazy danych, wyszukiwarka, oś czasu, magazyn załączników, przekazywanie spraw). |
+| **[3. Podręcznik użytkownika (`USER_GUIDE.md`)](./USER_GUIDE.md)** | Instrukcja krok po kroku dla dyżurujących specjalistów: wyszukiwanie kontaktów, rejestracja porad, przekazywanie spraw (*Handoff*), obsługa załączników i panel administratora. |
+| **[4. Wytyczne sprawozdawczości PFRON (`PFRON_GUIDELINES.md`)](./PFRON_GUIDELINES.md)** | Standardy zbierania danych wg wymogów grantowych PFRON, kategorie poradnictwa, wskaźniki sprawozdawcze i procedury anonimizacji RODO (art. 9). |
+| **[5. Wdrożenie i DevOps (`DEPLOYMENT.md`)](./DEPLOYMENT.md)** | Instrukcja uruchamiania w Dockerze, konfiguracja środowiska produkcyjnego Coolify, zarządzanie wolumenami trwałymi (`/app/data`) oraz zmienne środowiskowe. |
+| **[6. Strategia testowania (`TESTING.md`)](./TESTING.md)** | Opis testów jednostkowych i integracyjnych (Vitest + Supertest) oraz testów funkcjonalnych End-to-End w przeglądarce (Playwright). |
 
 ---
 

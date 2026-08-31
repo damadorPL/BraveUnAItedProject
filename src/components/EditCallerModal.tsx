@@ -26,7 +26,7 @@ import {
   Edit3,
   AlertCircle,
 } from "lucide-react";
-import { fireConfetti } from "../utils/confetti";
+import { useToast } from "../context/ToastContext";
 
 export const EditCallerModal: React.FC = () => {
   const {
@@ -38,6 +38,7 @@ export const EditCallerModal: React.FC = () => {
     setSelectedCaller,
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
+  const { toast } = useToast();
 
   const [formError, setFormError] = useState<string | null>(null);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
@@ -131,9 +132,7 @@ export const EditCallerModal: React.FC = () => {
       setSelectedCaller(updated);
     }
 
-    try {
-      fireConfetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
-    } catch {}
+    toast.success("Dane kontaktu zostały pomyślnie zaktualizowane.");
 
     setIsSubmitting(false);
     setEditingCaller(null);

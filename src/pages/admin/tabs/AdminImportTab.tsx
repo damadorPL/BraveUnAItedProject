@@ -14,12 +14,13 @@ import {
   AlertTriangle,
   ArrowRight,
 } from "lucide-react";
-import { fireConfetti } from "../../../utils/confetti";
+import { useToast } from "../../../context/ToastContext";
 
 const MAX_LISTED_ITEMS = 8;
 
 export const AdminImportTab: React.FC = () => {
   const { callers, applyBulkImport } = useApp();
+  const { toast } = useToast();
 
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -70,10 +71,7 @@ export const AdminImportTab: React.FC = () => {
     });
     applyBulkImport(finalCallers, finalRecords);
     setIsSuccess(true);
-
-    try {
-      fireConfetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
-    } catch {}
+    toast.success("Dane z arkusza Excel zostały pomyślnie zaimportowane.");
   };
 
   const handleReset = () => {

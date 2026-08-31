@@ -7,6 +7,7 @@ import {
   Outlet,
 } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
+import { ToastProvider } from "./context/ToastContext";
 
 import { Header } from "./components/Header";
 import { LoginScreen } from "./components/LoginScreen";
@@ -102,42 +103,44 @@ export default function App() {
   return (
     <ErrorBoundary>
       <AppProvider>
-        <BrowserRouter>
-          <Suspense fallback={<PageFallback />}>
-            <Routes>
-            {/* Public Login Route */}
-            <Route path="/login" element={<LoginScreen />} />
-            <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        <ToastProvider>
+          <BrowserRouter>
+            <Suspense fallback={<PageFallback />}>
+              <Routes>
+              {/* Public Login Route */}
+              <Route path="/login" element={<LoginScreen />} />
+              <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-            {/* Protected Application Routes */}
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/" element={<Navigate to="/search" replace />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/callers/:id" element={<CallerDetailPage />} />
-              <Route path="/records" element={<RecordsPage />} />
-              <Route path="/stats" element={<StatsPage />} />
+              {/* Protected Application Routes */}
               <Route
-                path="/admin/*"
                 element={
-                  <ProtectedRoute requireAdmin={true}>
-                    <AdminDashboard />
+                  <ProtectedRoute>
+                    <AppLayout />
                   </ProtectedRoute>
                 }
-              />
-            </Route>
+              >
+                <Route path="/" element={<Navigate to="/search" replace />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/callers/:id" element={<CallerDetailPage />} />
+                <Route path="/records" element={<RecordsPage />} />
+                <Route path="/stats" element={<StatsPage />} />
+                <Route
+                  path="/admin/*"
+                  element={
+                    <ProtectedRoute requireAdmin={true}>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+              </Route>
 
-            {/* 404 Fallback */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
-    </AppProvider>
+              {/* 404 Fallback */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+        </ToastProvider>
+      </AppProvider>
     </ErrorBoundary>
   );
 }

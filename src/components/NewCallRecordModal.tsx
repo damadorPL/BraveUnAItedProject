@@ -19,7 +19,7 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import { fireConfetti } from "../utils/confetti";
+import { useToast } from "../context/ToastContext";
 
 export const NewCallRecordModal: React.FC = () => {
   const {
@@ -30,6 +30,7 @@ export const NewCallRecordModal: React.FC = () => {
     specialists,
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
+  const { toast } = useToast();
 
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -110,9 +111,7 @@ export const NewCallRecordModal: React.FC = () => {
       durationMinutes,
     });
 
-    try {
-      fireConfetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } });
-    } catch {}
+    toast.success("Nowa porada została pomyślnie zarejestrowana.");
 
     setIsSubmitting(false);
     setIsNewRecordModalOpen(false);

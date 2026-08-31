@@ -18,12 +18,13 @@ import {
   HelpCircle,
   UserX,
 } from "lucide-react";
-import { fireConfetti } from "../utils/confetti";
+import { useToast } from "../context/ToastContext";
 
 const MAX_LISTED_ITEMS = 8;
 
 export const ExcelMigratorModal: React.FC = () => {
   const { isExcelModalOpen, setIsExcelModalOpen, callers, applyBulkImport } = useApp();
+  const { toast } = useToast();
 
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -75,10 +76,7 @@ export const ExcelMigratorModal: React.FC = () => {
     });
     applyBulkImport(finalCallers, finalRecords);
     setIsSuccess(true);
-
-    try {
-      fireConfetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
-    } catch {}
+    toast.success("Dane z arkusza Excel zostały pomyślnie zaimportowane.");
 
     setTimeout(() => {
       setIsExcelModalOpen(false);

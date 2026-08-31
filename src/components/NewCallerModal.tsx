@@ -27,7 +27,7 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import { fireConfetti } from "../utils/confetti";
+import { useToast } from "../context/ToastContext";
 
 export const NewCallerModal: React.FC = () => {
   const {
@@ -40,6 +40,7 @@ export const NewCallerModal: React.FC = () => {
     specialists,
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const [formError, setFormError] = useState<string | null>(null);
@@ -152,9 +153,7 @@ export const NewCallerModal: React.FC = () => {
       });
     }
 
-    try {
-      fireConfetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
-    } catch {}
+    toast.success("Nowa kartoteka kontaktu została pomyślnie utworzona.");
 
     setSelectedCaller(createdCaller);
     setIsNewCallerModalOpen(false);

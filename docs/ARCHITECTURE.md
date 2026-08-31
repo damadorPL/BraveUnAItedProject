@@ -44,14 +44,14 @@ graph TD
 
 ## 💻 2. Frontend (warstwa prezentacji)
 
-* **Framework i biblioteki**: React 19, TypeScript, React Router v7, Tailwind CSS 4, Lucide React (`^1.38.0`).
+* **Framework i biblioteki**: React 19, TypeScript, React Router v7, Tailwind CSS 4, Lucide React.
 * **Zarządzanie stanem i wydajność**:
   * Globalny stan zarządzany przez dedykowany `AppProvider` zoptymalizowany pod kątem renderowania za pomocą `useMemo` na poziomie wartości kontekstu.
   * Zastosowanie `useDeferredValue` do natychmiastowej responsywności wyszukiwarki kontaktów przy dużych zbiorach danych.
 * **Granica błędów (`ErrorBoundary`)**:
   * Zabezpieczenie tras i modułów aplikacji przed awariami renderowania. W przypadku nieoczekiwanego błędu użytkownik otrzymuje czytelny interfejs naprawczy z opcją ponownej próby lub powrotu do strony głównej.
 * **Code-Splitting i Lazy Loading**:
-  * Wszystkie główne podstrony (`/records`, `/stats`, `/admin/*`, `/callers/:id`) oraz ciężkie moduły (`xlsx`, `canvas-confetti`) są ładowane asynchronicznie (`React.lazy` + `<Suspense>`), co gwarantuje start aplikacji w ułamku sekundy (Initial bundle < 425 kB).
+  * Wszystkie główne podstrony (`/records`, `/stats`, `/admin/*`, `/callers/:id`) oraz ciężkie moduły (`xlsx`) są ładowane asynchronicznie (`React.lazy` + `<Suspense>`), co gwarantuje start aplikacji w ułamku sekundy (Initial bundle < 425 kB).
 
 ---
 
@@ -64,7 +64,7 @@ graph TD
   * **`PostgresAdapter`**: Produkcyjny silnik oparty na puli połączeń `pg.Pool` z obsługą typów `jsonb` i transakcji.
   * **Dynamiczne przełączanie w locie**: Administrator może zmieniać silnik bazy danych bezpośrednio z poziomu panelu `/admin`.
 * **Walidacja i schemat**:
-  * Drizzle ORM + Drizzle Zod + Zod schemas: ścisła walidacja każdego przychodzącego payloadu.
+  * Drizzle ORM + Zod schemas: ścisła walidacja każdego przychodzącego payloadu i schematu relacyjnego.
 
 ---
 
