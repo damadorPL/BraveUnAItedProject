@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { SpecialistAvatar } from "./SpecialistAvatar";
@@ -36,6 +36,7 @@ export const Header: React.FC = () => {
     setIsAdminPanelOpen,
     isDarkMode,
     toggleDarkMode,
+    records,
     getReferredRecordsForSpecialist,
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
@@ -44,9 +45,26 @@ export const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const myReferredCases = getReferredRecordsForSpecialist(currentSpecialist.id);
-  const pendingReferredCount = myReferredCases.filter(
+  const myPendingCount = myReferredCases.filter(
     (r) => (r.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
   ).length;
+
+  const allTeamPendingCount = useMemo(() => {
+    if (!currentSpecialist.isAdmin) return 0;
+    return records.filter(
+      (r) =>
+        Boolean(r.referredTo || r.referredSpecialistId) &&
+        (r.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
+    ).length;
+  }, [records, currentSpecialist.isAdmin]);
+
+  const allTeamReferredCount = useMemo(() => {
+    if (!currentSpecialist.isAdmin) return 0;
+    return records.filter((r) => Boolean(r.referredTo || r.referredSpecialistId)).length;
+  }, [records, currentSpecialist.isAdmin]);
+
+  const pendingReferredCount = myPendingCount > 0 ? myPendingCount : (currentSpecialist.isAdmin ? allTeamPendingCount : 0);
+  const totalReferredCount = myReferredCases.length > 0 ? myReferredCases.length : (currentSpecialist.isAdmin ? allTeamReferredCount : 0);
 
   const handleTabChange = (tab: "SEARCH" | "ALL_RECORDS" | "STATS") => {
     setSelectedCaller(null);
@@ -106,7 +124,7 @@ export const Header: React.FC = () => {
               }`}
             >
               <Search className="w-3.5 h-3.5 shrink-0" />
-              <span>Kartoteka i szukaj</span>
+              <span>Kontakty</span>
             </button>
 
             <button
@@ -119,7 +137,7 @@ export const Header: React.FC = () => {
               }`}
             >
               <ListFilter className="w-3.5 h-3.5 shrink-0" />
-              <span>Wszystkie wpisy</span>
+              <span>Wszystkie porady</span>
             </button>
 
             <button
@@ -134,7 +152,7 @@ export const Header: React.FC = () => {
             >
               <Inbox className="w-3.5 h-3.5 shrink-0 text-[#FFB200]" />
               <span>Przekazane</span>
-              {myReferredCases.length > 0 && (
+              {totalReferredCount > 0 && (
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ml-0.5 ${
                     pendingReferredCount > 0
@@ -142,7 +160,7 @@ export const Header: React.FC = () => {
                       : "bg-slate-700 text-slate-300"
                   }`}
                 >
-                  {pendingReferredCount > 0 ? pendingReferredCount : myReferredCases.length}
+                  {pendingReferredCount > 0 ? pendingReferredCount : totalReferredCount}
                 </span>
               )}
               {pendingReferredCount > 0 && (
@@ -408,7 +426,7 @@ export const Header: React.FC = () => {
             >
               <div className="flex items-center space-x-2.5">
                 <Search className="w-4 h-4" />
-                <span>Baza historii kontaktów</span>
+                <span>Kontakty</span>
               </div>
               <ChevronRight className="w-4 h-4 opacity-50" />
             </button>
@@ -424,7 +442,7 @@ export const Header: React.FC = () => {
             >
               <div className="flex items-center space-x-2.5">
                 <ListFilter className="w-4 h-4" />
-                <span>Wszystkie wpisy rejestru porad</span>
+                <span>Wszystkie porady</span>
               </div>
               <ChevronRight className="w-4 h-4 opacity-50" />
             </button>

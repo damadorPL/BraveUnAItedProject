@@ -182,7 +182,7 @@ export const ContactHistoryView: React.FC<Props> = ({ caller }) => {
                 <strong>{livePresenceSpecialist}</strong> również ma otwartą tę kartotekę w czasie rzeczywistym!
               </span>
             </div>
-            <span className="text-[10px] bg-black/20 px-2 py-0.5 rounded font-mono">Synchronizacja Live</span>
+            <span className="text-[10px] bg-black/20 px-2 py-0.5 rounded font-mono">Synchronizacja live</span>
           </div>
         )}
 

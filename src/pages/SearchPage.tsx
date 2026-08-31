@@ -25,6 +25,7 @@ export const SearchPage: React.FC = () => {
   const {
     callers,
     filteredCallers,
+    records,
     searchQuery,
     setSelectedCaller,
     setIsNewCallerModalOpen,
@@ -72,13 +73,36 @@ export const SearchPage: React.FC = () => {
     () => getReferredRecordsForSpecialist(currentSpecialist.id),
     [getReferredRecordsForSpecialist, currentSpecialist.id]
   );
-  const pendingCases = useMemo(
+  const myPendingCases = useMemo(
     () =>
       myReferredCases.filter(
         (r) => (r.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
       ),
     [myReferredCases]
   );
+
+  // All pending referrals across team (for Admin)
+  const allTeamPendingCases = useMemo(() => {
+    if (!currentSpecialist.isAdmin) return [];
+    return records.filter(
+      (r) =>
+        Boolean(r.referredTo || r.referredSpecialistId) &&
+        (r.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
+    );
+  }, [records, currentSpecialist.isAdmin]);
+
+  const allTeamReferredCasesCount = useMemo(() => {
+    if (!currentSpecialist.isAdmin) return 0;
+    return records.filter((r) => Boolean(r.referredTo || r.referredSpecialistId)).length;
+  }, [records, currentSpecialist.isAdmin]);
+
+  const displayedPendingCases =
+    currentSpecialist.isAdmin && myPendingCases.length === 0
+      ? allTeamPendingCases
+      : myPendingCases;
+
+  const isShowingTeamPending =
+    currentSpecialist.isAdmin && myPendingCases.length === 0 && allTeamPendingCases.length > 0;
 
   const handleOpenCaller = (callerId: string) => {
     const found = callersMap.get(callerId);
@@ -90,8 +114,8 @@ export const SearchPage: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      {/* Handoff Banner: Pending cases referred to current specialist */}
-      {pendingCases.length > 0 && !searchQuery && (
+      {/* Handoff Banner: Pending cases referred to current specialist or team for Admin */}
+      {displayedPendingCases.length > 0 && !searchQuery && (
         <div className="bg-gradient-to-r from-amber-500/15 via-[#FFB200]/20 to-amber-500/10 dark:from-amber-950/60 dark:via-[#252018] dark:to-amber-950/40 border-2 border-[#FFB200] rounded-3xl p-5 shadow-sm space-y-3 animate-in fade-in">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-[#FFB200]/30">
             <div className="flex items-center space-x-2.5">
@@ -100,13 +124,19 @@ export const SearchPage: React.FC = () => {
               </div>
               <div>
                 <h2 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
-                  <span>Sprawy przekazane do Twojej konsultacji (Handoff)</span>
+                  <span>
+                    {isShowingTeamPending
+                      ? "Sprawy przekazane w zespole oczekujące na kontakt (Tryb Administratora)"
+                      : "Sprawy przekazane do Twojej konsultacji (Handoff)"}
+                  </span>
                   <span className="text-[11px] bg-[#2D2A28] text-[#FFB200] dark:bg-[#FFB200] dark:text-[#2D2A28] font-black px-2.5 py-0.5 rounded-full shadow-2xs">
-                    {pluralizeOczekujace(pendingCases.length)}
+                    {pluralizeOczekujace(displayedPendingCases.length)}
                   </span>
                 </h2>
                 <p className="text-xs text-slate-700 dark:text-slate-300 mt-0.5">
-                  Inni dyżurujący specjaliści przekazali do Ciebie poniższe osoby wymagające konsultacji:
+                  {isShowingTeamPending
+                    ? "Poniższe osoby oczekują na kontakt od dyżurujących specjalistów w fundacji:"
+                    : "Inni dyżurujący specjaliści przekazali do Ciebie poniższe osoby wymagające konsultacji:"}
                 </p>
               </div>
             </div>
@@ -116,14 +146,18 @@ export const SearchPage: React.FC = () => {
               onClick={() => setIsReferredModalOpen(true)}
               className="text-xs font-bold text-[#2D2A28] dark:text-[#FFDF06] hover:underline flex items-center gap-1 cursor-pointer shrink-0"
             >
-              <span>Wszystkie przekazane ({myReferredCases.length})</span>
+              <span>
+                {currentSpecialist.isAdmin
+                  ? `Wszystkie sprawy zespołu (${allTeamReferredCasesCount})`
+                  : `Wszystkie przekazane (${myReferredCases.length})`}
+              </span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
           {/* Grid of Pending Handoff Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-            {pendingCases.slice(0, 4).map((rec) => {
+            {displayedPendingCases.slice(0, 4).map((rec) => {
               const caller = callers.find((c) => c.id === rec.callerId);
               return (
                 <div
@@ -135,9 +169,16 @@ export const SearchPage: React.FC = () => {
                       <span className="font-black text-slate-900 dark:text-white text-xs">
                         {caller ? `${caller.firstName} ${caller.lastName}` : "Kontakt z bazy"}
                       </span>
-                      <span className="text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-950 dark:text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800 shrink-0">
-                        Od: {rec.specialistName}
-                      </span>
+                      <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+                        <span className="text-[10px] bg-amber-100 dark:bg-amber-950/60 text-amber-950 dark:text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
+                          Od: {rec.specialistName}
+                        </span>
+                        {isShowingTeamPending && rec.referredTo && (
+                          <span className="text-[10px] bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 font-bold px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
+                            Do: {rec.referredTo}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {caller && (

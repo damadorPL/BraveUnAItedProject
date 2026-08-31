@@ -7,11 +7,11 @@ export const SearchBar: React.FC = () => {
     searchQuery,
     setSearchQuery,
     callers,
+    currentSpecialist,
+    showDemoFeatures,
   } = useApp();
 
   const inputRef = useRef<HTMLInputElement>(null);
-
-
 
   const sampleSearches = [
     { label: "Kowalska (wielokrotny kontakt)", query: "Kowalska" },
@@ -19,6 +19,9 @@ export const SearchBar: React.FC = () => {
     { label: "Zieliński (dorosły w spektrum)", query: "Zieliński" },
     { label: "Dąbrowska (Kraków)", query: "Dąbrowska" },
   ];
+
+  // Szybki test jest domyślnie ukryty i widoczny TYLKO dla administratora po włączeniu opcji demo
+  const isDemoVisible = Boolean(currentSpecialist?.isAdmin && showDemoFeatures);
 
   return (
     <div className="w-full bg-white dark:bg-[#242220] rounded-2xl shadow-sm border border-slate-200 dark:border-[#3E3A37] p-4 transition-all">
@@ -42,7 +45,7 @@ export const SearchBar: React.FC = () => {
               setSearchQuery("");
               inputRef.current?.focus();
             }}
-            className="absolute right-3 p-1 rounded-md text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-[#34302E] transition-colors"
+            className="absolute right-3 p-1 rounded-md text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-[#34302E] transition-colors cursor-pointer"
             title="Wyczyść wyszukiwanie"
           >
             <X className="w-4 h-4" />
@@ -50,31 +53,33 @@ export const SearchBar: React.FC = () => {
         ) : null}
       </div>
 
-      {/* Quick Search Chips & Fast Info */}
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-[#3E3A37] text-xs text-slate-600 dark:text-slate-300">
-        <div className="flex items-center space-x-1.5 flex-wrap">
-          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center mr-1">
-            <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-600 dark:text-[#FFB200]" /> Szybki test:
-          </span>
-          {sampleSearches.map((item) => (
-            <button
-              key={item.query}
-              onClick={() => setSearchQuery(item.query)}
-              className={`px-2.5 py-1 rounded-lg text-xs transition-colors border cursor-pointer font-medium ${
-                searchQuery === item.query
-                  ? "bg-[#FFB200]/20 text-amber-950 dark:text-[#FFDF06] border-[#FFB200]/60 font-bold"
-                  : "bg-slate-100/90 dark:bg-[#1A1918] hover:bg-slate-200 dark:hover:bg-[#2D2A28] text-slate-700 dark:text-slate-300 border-slate-300 dark:border-[#3E3A37]"
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+      {/* Quick Search Chips (Admin Demo Mode Only) */}
+      {isDemoVisible && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-[#3E3A37] text-xs text-slate-600 dark:text-slate-300 animate-in fade-in">
+          <div className="flex items-center space-x-1.5 flex-wrap">
+            <span className="text-[11px] font-bold text-amber-700 dark:text-[#FFDF06] flex items-center mr-1">
+              <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-600 dark:text-[#FFB200]" /> Szybki test (Tryb demo admina):
+            </span>
+            {sampleSearches.map((item) => (
+              <button
+                key={item.query}
+                onClick={() => setSearchQuery(item.query)}
+                className={`px-2.5 py-1 rounded-lg text-xs transition-colors border cursor-pointer font-medium ${
+                  searchQuery === item.query
+                    ? "bg-[#FFB200]/20 text-amber-950 dark:text-[#FFDF06] border-[#FFB200]/60 font-bold"
+                    : "bg-slate-100/90 dark:bg-[#1A1918] hover:bg-slate-200 dark:hover:bg-[#2D2A28] text-slate-700 dark:text-slate-300 border-slate-300 dark:border-[#3E3A37]"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
 
-        <div className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
-          W bazie: <strong className="text-slate-900 dark:text-slate-100 font-bold">{callers.length}</strong> zarejestrowanych kontaktów
+          <div className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
+            W bazie: <strong className="text-slate-900 dark:text-slate-100 font-bold">{callers.length}</strong> zarejestrowanych kontaktów
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

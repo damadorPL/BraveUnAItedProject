@@ -128,7 +128,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
         {step === "EMAIL" && (
           <form onSubmit={handleSendCode} noValidate>
             <p className="text-xs text-slate-500 mb-4">
-              Podaj służbowy adres e-mail — wyślemy na niego kod weryfikacyjny do ustawienia nowego hasła.
+              Podaj służbowy adres e-mail, wyślemy na niego kod weryfikacyjny do ustawienia nowego hasła.
             </p>
 
             <label htmlFor="reset-email" className="block text-xs font-bold text-slate-700 mb-1.5">
@@ -205,7 +205,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
                 <span>Symulacja skrzynki: {recognized.email}</span>
               </div>
               <div className="bg-white border border-amber-100 rounded-lg p-2.5 text-slate-800">
-                <p className="font-bold text-slate-900">Temat: Reset hasła — Baza Porad</p>
+                <p className="font-bold text-slate-900">Temat: Reset hasła - Baza Porad</p>
                 <p className="mt-1">
                   Twój kod weryfikacyjny:{" "}
                   <code className="font-mono font-black text-[#1F5254] bg-[#E6F3F3] px-1.5 py-0.5 rounded-md tracking-widest">

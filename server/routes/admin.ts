@@ -152,11 +152,17 @@ adminRouter.delete("/specialists/:id", async (req: AuthenticatedRequest, res) =>
 adminRouter.post("/specialists/:id/reset-password", async (req, res) => {
   try {
     const id = req.params.id as string;
+    const adapter = await dbManager.getAdapter();
+    const existing = await adapter.getSpecialistById(id);
+    if (!existing) {
+      res.status(404).json({ error: "Nie znaleziono specjalisty o podanym ID w bazie danych." });
+      return;
+    }
+
     const { newPassword } = req.body;
     const tempPassword = newPassword || `Synapsis${Math.floor(1000 + Math.random() * 9000)}!`;
     const hash = sha256Hex(tempPassword);
 
-    const adapter = await dbManager.getAdapter();
     await adapter.setPasswordHash(id, hash);
 
     res.json({

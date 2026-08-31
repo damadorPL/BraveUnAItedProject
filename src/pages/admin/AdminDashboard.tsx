@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { useCurrentSpecialist } from "../../context/AppContext";
+import React, { useState, useMemo } from "react";
+import { useApp, useCurrentSpecialist } from "../../context/AppContext";
 import { AdminOverviewTab } from "./tabs/AdminOverviewTab";
 import { AdminReportsTab } from "./tabs/AdminReportsTab";
 import { AdminSpecialistsTab } from "./tabs/AdminSpecialistsTab";
+import { AdminHandoffTab } from "./tabs/AdminHandoffTab";
 import { AdminMergeTab } from "./tabs/AdminMergeTab";
 import { AdminImportTab } from "./tabs/AdminImportTab";
 import { AdminAuditLogsTab } from "./tabs/AdminAuditLogsTab";
@@ -12,6 +13,7 @@ import {
   LayoutDashboard,
   BarChart3,
   Users,
+  Inbox,
   GitMerge,
   FileSpreadsheet,
   Activity,
@@ -21,11 +23,20 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-type AdminTab = "overview" | "reports" | "specialists" | "merge" | "import" | "audit" | "database";
+type AdminTab = "overview" | "reports" | "specialists" | "handoff" | "merge" | "import" | "audit" | "database";
 
 export const AdminDashboard: React.FC = () => {
+  const { records } = useApp();
   const currentSpecialist = useCurrentSpecialist();
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
+
+  const pendingHandoffsCount = useMemo(() => {
+    return records.filter(
+      (r) =>
+        Boolean(r.referredTo || r.referredSpecialistId) &&
+        (r.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
+    ).length;
+  }, [records]);
 
   return (
     <div className="space-y-6 animate-in fade-in">
@@ -99,6 +110,26 @@ export const AdminDashboard: React.FC = () => {
 
             <button
               type="button"
+              onClick={() => setActiveTab("handoff")}
+              className={`w-full flex items-center space-x-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "handoff"
+                  ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#282522] hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <Inbox className="w-4 h-4 shrink-0 text-amber-500" />
+              <div className="flex items-center justify-between flex-1">
+                <span>Przekazane konsultacje</span>
+                {pendingHandoffsCount > 0 && (
+                  <span className="text-[10px] bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-[#FFDF06] font-black px-2 py-0.2 rounded-full border border-amber-300 dark:border-amber-700/80">
+                    {pendingHandoffsCount}
+                  </span>
+                )}
+              </div>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setActiveTab("merge")}
               className={`w-full flex items-center space-x-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "merge"
@@ -153,9 +184,10 @@ export const AdminDashboard: React.FC = () => {
 
         {/* Tab Content Body */}
         <div className="lg:col-span-9">
-          {activeTab === "overview" && <AdminOverviewTab onSelectTab={(tab) => setActiveTab(tab)} />}
+          {activeTab === "overview" && <AdminOverviewTab onSelectTab={(tab) => setActiveTab(tab as AdminTab)} />}
           {activeTab === "reports" && <AdminReportsTab />}
           {activeTab === "specialists" && <AdminSpecialistsTab />}
+          {activeTab === "handoff" && <AdminHandoffTab />}
           {activeTab === "merge" && <AdminMergeTab />}
           {activeTab === "import" && <AdminImportTab />}
           {activeTab === "audit" && <AdminAuditLogsTab />}

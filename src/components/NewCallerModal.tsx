@@ -25,6 +25,7 @@ import {
   X,
   UserPlus,
   CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { fireConfetti } from "../utils/confetti";
 
@@ -41,6 +42,7 @@ export const NewCallerModal: React.FC = () => {
   const currentSpecialist = useCurrentSpecialist();
   const navigate = useNavigate();
 
+  const [formError, setFormError] = useState<string | null>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState(() => searchQuery || "");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -106,9 +108,10 @@ export const NewCallerModal: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!lastName.trim()) {
-      alert("Proszę podać nazwisko lub identyfikator kontaktu.");
+      setFormError("Proszę podać nazwisko lub identyfikator kontaktu.");
       return;
     }
+    setFormError(null);
 
     const tags = tagInput
       .split(",")
@@ -198,6 +201,13 @@ export const NewCallerModal: React.FC = () => {
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-xs">
+          {formError && (
+            <div className="flex items-center space-x-2 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 px-4 py-3 rounded-2xl text-xs font-semibold animate-in fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
+
           {/* Identity Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>

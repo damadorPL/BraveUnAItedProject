@@ -165,7 +165,7 @@ export function buildSummarySheetData(
   const totalHours = (stats.totalMinutes / 60).toFixed(1);
 
   const rows: SummaryCell[][] = [
-    ["Raport statystyczny — rejestr porad linii PFRON"],
+    ["Raport statystyczny: rejestr porad linii PFRON"],
     [],
     ["Wygenerowano", new Date().toLocaleString("pl-PL")],
     ["Okres sprawozdawczy od", formatPeriodDate(options.period?.from, "początek rejestru")],
@@ -194,7 +194,7 @@ export function buildSummarySheetData(
   });
 
   rows.push([]);
-  rows.push(["Zasięg geograficzny — województwo", "Liczba porad"]);
+  rows.push(["Zasięg geograficzny: województwo", "Liczba porad"]);
   stats.voivodeshipRows.forEach((row) => {
     rows.push([row.name === "brak" ? "brak danych" : row.name, row.count]);
   });
@@ -254,7 +254,6 @@ export function exportRecordsData(
   const exportData = buildExportRows(records, callers, anonymized);
 
   if (exportData.length === 0) {
-    alert("Brak danych do wyeksportowania dla zadanych filtrów.");
     return false;
   }
 
