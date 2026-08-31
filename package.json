@@ -2,6 +2,7 @@
   "name": "brave2",
   "private": true,
   "version": "0.0.0",
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
     "dev": "concurrently -k -n \"SERVER,CLIENT\" -c \"cyan.bold,green.bold\" \"npm run dev:backend\" \"npm run dev:frontend\"",
