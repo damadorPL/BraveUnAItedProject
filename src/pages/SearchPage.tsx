@@ -4,10 +4,14 @@ import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { SearchBar } from "../components/SearchBar";
 import { CallerDisambiguation } from "../components/CallerDisambiguation";
 import { ReferredCasesModal } from "../components/ReferredCasesModal";
+import { ReassignReferralModal } from "../components/ReassignReferralModal";
+import { useToast } from "../context/ToastContext";
+import { CallRecord } from "../types";
 import { pluralizeOczekujace, pluralizePorady } from "../utils/pluralization";
 import {
   Users,
   UserPlus,
+  UserCheck,
   Inbox,
   ArrowRight,
   MessageSquare,
@@ -36,6 +40,7 @@ export const SearchPage: React.FC = () => {
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Rule 5.14: Use useDeferredValue for expensive derived renders (search results)
   const deferredSearchQuery = useDeferredValue(searchQuery);
@@ -43,6 +48,7 @@ export const SearchPage: React.FC = () => {
   const [callerPage, setCallerPage] = useState(1);
   const callerPageSize = 12;
   const [isReferredModalOpen, setIsReferredModalOpen] = useState(false);
+  const [reassigningRecord, setReassigningRecord] = useState<CallRecord | null>(null);
 
   const [prevSearchQuery, setPrevSearchQuery] = useState(deferredSearchQuery);
   if (prevSearchQuery !== deferredSearchQuery) {
@@ -199,14 +205,28 @@ export const SearchPage: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="mt-2 pt-2 border-t border-slate-100 dark:border-[#2C2927] flex items-center justify-between gap-2">
-                    <button
-                      type="button"
-                      onClick={() => caller && handleOpenCaller(caller.id)}
-                      className="text-[11px] font-bold text-[#1F5254] dark:text-teal-400 hover:underline cursor-pointer"
-                    >
-                      Otwórz kartotekę
-                    </button>
+                  <div className="mt-2 pt-2 border-t border-slate-100 dark:border-[#2C2927] flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => caller && handleOpenCaller(caller.id)}
+                        className="text-[11px] font-bold text-[#1F5254] dark:text-teal-400 hover:underline cursor-pointer"
+                      >
+                        Otwórz kartotekę
+                      </button>
+
+                      {currentSpecialist.isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => setReassigningRecord(rec)}
+                          className="text-[11px] font-bold text-amber-800 dark:text-[#FFDF06] hover:underline flex items-center gap-1 cursor-pointer"
+                          title="Przepisz sprawę do innego specjalisty"
+                        >
+                          <UserCheck className="w-3.5 h-3.5" />
+                          <span>Przekaż innemu</span>
+                        </button>
+                      )}
+                    </div>
 
                     <button
                       type="button"
@@ -216,7 +236,7 @@ export const SearchPage: React.FC = () => {
                           setIsNewRecordModalOpen(true);
                         }
                       }}
-                      className="px-3 py-1 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-2xs transition-colors flex items-center gap-1 cursor-pointer"
+                      className="px-3 py-1 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-2xs transition-colors flex items-center gap-1 cursor-pointer shrink-0"
                     >
                       <PlusCircle className="w-3.5 h-3.5" />
                       <span>Konsultuj</span>
@@ -245,6 +265,18 @@ export const SearchPage: React.FC = () => {
         isOpen={isReferredModalOpen}
         onClose={() => setIsReferredModalOpen(false)}
       />
+
+      {reassigningRecord && (
+        <ReassignReferralModal
+          isOpen={Boolean(reassigningRecord)}
+          record={reassigningRecord}
+          onClose={() => setReassigningRecord(null)}
+          onSuccess={() => {
+            toast.success("Sprawa została pomyślnie przekazana do innego specjalisty.");
+            setReassigningRecord(null);
+          }}
+        />
+      )}
 
       {searchQuery && filteredCallers.length > 1 ? (
         <CallerDisambiguation callers={filteredCallers} />
