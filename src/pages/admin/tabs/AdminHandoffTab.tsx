@@ -470,15 +470,15 @@ export const AdminHandoffTab: React.FC = () => {
         )}
       </div>
 
-      {/* 2. Desktop Streamlined Table View (>= md screens: No horizontal overflow or cut-offs!) */}
-      <div className="hidden md:block bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-2xl overflow-x-auto shadow-xs">
-        <table className="w-full text-left text-xs border-collapse min-w-[720px]">
+      {/* 2. Desktop Streamlined Table View (>= md screens: 100% width, no horizontal scrollbar) */}
+      <div className="hidden md:block bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-2xl overflow-hidden shadow-xs">
+        <table className="w-full text-left text-xs border-collapse table-fixed">
           <thead className="bg-slate-50/90 dark:bg-[#252018] border-b border-slate-200 dark:border-[#383431] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px] select-none">
             <tr>
               {/* Beneficjent i kontakt */}
               <th
                 onClick={() => handleSort("callerName")}
-                className="py-3 px-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap w-[24%]"
+                className="py-3 px-3.5 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap w-[27%]"
               >
                 <div className="flex items-center space-x-1">
                   <span>Beneficjent i kontakt</span>
@@ -489,7 +489,7 @@ export const AdminHandoffTab: React.FC = () => {
               {/* Przebieg przekazania: Kto ➔ Do kogo */}
               <th
                 onClick={() => handleSort("referredTo")}
-                className="py-3 px-3 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap w-[26%]"
+                className="py-3 px-2.5 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap w-[27%]"
               >
                 <div className="flex items-center space-x-1">
                   <span>Przebieg (Od ➔ Do)</span>
@@ -498,14 +498,14 @@ export const AdminHandoffTab: React.FC = () => {
               </th>
 
               {/* Wytyczne / Notatka */}
-              <th className="py-3 px-3 w-[26%]">
+              <th className="py-3 px-2.5 w-[20%]">
                 <span>Wytyczne / notatka</span>
               </th>
 
               {/* Status */}
               <th
                 onClick={() => handleSort("status")}
-                className="py-3 px-3 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap w-[10%]"
+                className="py-3 px-2 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors group whitespace-nowrap w-[11%]"
               >
                 <div className="flex items-center space-x-1">
                   <span>Status</span>
@@ -514,7 +514,7 @@ export const AdminHandoffTab: React.FC = () => {
               </th>
 
               {/* Akcje */}
-              <th className="py-3 px-4 text-right whitespace-nowrap w-[14%]">
+              <th className="py-3 px-3 text-right whitespace-nowrap w-[15%]">
                 <span>Akcje</span>
               </th>
             </tr>
@@ -550,75 +550,84 @@ export const AdminHandoffTab: React.FC = () => {
                     className="hover:bg-slate-50/70 dark:hover:bg-[#24211E] transition-colors"
                   >
                     {/* Beneficjent i kontakt */}
-                    <td className="py-3 px-4">
-                      <div>
-                        <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white leading-tight">
+                    <td className="py-3 px-3.5">
+                      <div className="min-w-0 pr-1">
+                        <div
+                          className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white leading-tight truncate"
+                          title={caller ? `${caller.firstName} ${caller.lastName}` : "Kontakt z bazy"}
+                        >
                           {caller ? `${caller.firstName} ${caller.lastName}` : "Kontakt z bazy"}
                         </div>
-                        <div className="flex items-center space-x-1.5 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 whitespace-nowrap">
-                          <span className="font-mono">{caller?.phoneNumber || "Brak nr"}</span>
-                          <span className="text-slate-300 dark:text-slate-600">•</span>
-                          <span>{caller?.city || "—"} ({caller?.voivodeship})</span>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 truncate">
+                          {caller?.phoneNumber || "Brak nr"} • {caller?.city || "—"} ({caller?.voivodeship})
                         </div>
                       </div>
                     </td>
 
                     {/* Przebieg przekazania: Źródło ➔ Cel */}
-                    <td className="py-3 px-3">
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-1.5 text-xs">
-                          <span className="font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[120px]" title={rec.specialistName}>
+                    <td className="py-3 px-2.5">
+                      <div className="min-w-0 pr-1 space-y-0.5">
+                        <div className="flex items-center space-x-1 text-xs truncate">
+                          <span
+                            className="font-medium text-slate-700 dark:text-slate-300 truncate"
+                            title={rec.specialistName}
+                          >
                             {rec.specialistName}
                           </span>
                           <ArrowRight className="w-3 h-3 text-amber-500 shrink-0 inline" />
                           <span
-                            className="font-bold text-amber-900 dark:text-[#FFDF06] bg-amber-50 dark:bg-amber-950/70 px-2 py-0.5 rounded-lg border border-amber-200 dark:border-amber-800/60 text-[11px] truncate max-w-[130px]"
+                            className="font-bold text-amber-900 dark:text-[#FFDF06] truncate"
                             title={rec.referredTo || "Nie określono"}
                           >
                             {rec.referredTo || "Nie określono"}
                           </span>
                         </div>
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-[10px] text-slate-400 font-mono">
                           {new Date(rec.callDate || rec.createdAt).toLocaleDateString("pl-PL")}
                         </div>
                       </div>
                     </td>
 
                     {/* Wytyczne / Notatka */}
-                    <td className="py-3 px-3">
-                      {rec.referredNote ? (
-                        <p className="text-[11px] text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed font-medium max-w-[260px]">
-                          {rec.referredNote}
-                        </p>
-                      ) : (
-                        <span className="text-[11px] text-slate-400 italic">Brak dodatkowych wytycznych</span>
-                      )}
+                    <td className="py-3 px-2.5">
+                      <div className="min-w-0 pr-1">
+                        {rec.referredNote ? (
+                          <p
+                            className="text-[11px] text-slate-700 dark:text-slate-300 truncate font-medium"
+                            title={rec.referredNote}
+                          >
+                            {rec.referredNote}
+                          </p>
+                        ) : (
+                          <span className="text-[11px] text-slate-400 italic">Brak</span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Status */}
-                    <td className="py-3 px-3 whitespace-nowrap">
+                    <td className="py-3 px-2 whitespace-nowrap">
                       {status === "OCZEKUJĄCA" ? (
-                        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-700/60">
-                          <span>🟡 Oczekuje</span>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-700/60">
+                          🟡 Oczekuje
                         </span>
                       ) : (
-                        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-xl text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/60">
-                          <span>🟢 Załatwiona</span>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700/60">
+                          🟢 Załatwiona
                         </span>
                       )}
                     </td>
 
                     {/* Akcje */}
-                    <td className="py-3 px-4 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end space-x-1.5">
+                    <td className="py-3 px-3 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end space-x-1">
                         {caller && (
                           <button
                             type="button"
                             onClick={() => handleOpenCaller(caller.id)}
                             title="Otwórz kartotekę kontaktu"
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-slate-100 dark:hover:bg-[#282522] transition-colors cursor-pointer"
+                            className="p-1 rounded-lg text-slate-500 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-slate-100 dark:hover:bg-[#282522] transition-colors cursor-pointer"
                           >
-                            <ExternalLink className="w-4 h-4" />
+                            <ExternalLink className="w-3.5 h-3.5" />
                           </button>
                         )}
 
@@ -628,22 +637,22 @@ export const AdminHandoffTab: React.FC = () => {
                             markReferralStatus(rec.id, status === "OCZEKUJĄCA" ? "ZAKOŃCZONA" : "OCZEKUJĄCA")
                           }
                           title={status === "OCZEKUJĄCA" ? "Oznacz jako załatwioną" : "Przywróć jako oczekującą"}
-                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                          className={`p-1 rounded-lg transition-colors cursor-pointer ${
                             status === "OCZEKUJĄCA"
                               ? "text-slate-500 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
                               : "text-slate-500 hover:text-amber-700 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40"
                           }`}
                         >
-                          <CheckCircle2 className="w-4 h-4" />
+                          <CheckCircle2 className="w-3.5 h-3.5" />
                         </button>
 
                         <button
                           type="button"
                           onClick={() => setReassigningRecord(rec)}
                           title="Zmień przypisanego specjalistę (Przepisz sprawę)"
-                          className="px-2.5 py-1 rounded-xl text-xs font-black bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] shadow-xs flex items-center space-x-1 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                          className="px-2 py-1 rounded-lg text-xs font-black bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] shadow-xs flex items-center space-x-1 transition-all cursor-pointer hover:scale-105 active:scale-95"
                         >
-                          <UserCheck className="w-3.5 h-3.5" />
+                          <UserCheck className="w-3 h-3" />
                           <span>Przepisz</span>
                         </button>
                       </div>
