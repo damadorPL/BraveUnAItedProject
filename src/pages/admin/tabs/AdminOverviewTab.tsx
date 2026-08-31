@@ -16,11 +16,11 @@ import {
 } from "lucide-react";
 
 interface AdminOverviewTabProps {
-  onSelectTab: (tab: "reports" | "specialists" | "merge" | "import" | "audit" | "database") => void;
+  onSelectTab: (tab: "reports" | "specialists" | "handoff" | "merge" | "import" | "audit" | "database") => void;
 }
 
 export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab }) => {
-  const { callers, records, specialists } = useApp();
+  const { callers, records, specialists, showDemoFeatures, setShowDemoFeatures } = useApp();
   const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
@@ -35,7 +35,11 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
             totalCallers: callers.length,
             totalRecords: records.length,
             totalSpecialists: specialists.length,
-            totalPendingReferrals: records.filter((r) => r.referredStatus === "OCZEKUJĄCA").length,
+            totalPendingReferrals: records.filter(
+              (r) =>
+                Boolean(r.referredTo || r.referredSpecialistId) &&
+                (r.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA"
+            ).length,
             databaseEngine: "sqlite",
             databaseStatus: "connected",
             databaseLocation: "data/synapsis.sqlite",
@@ -54,7 +58,10 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
     <div className="space-y-6 animate-in fade-in">
       {/* Top Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-2xl p-5 shadow-xs flex items-center justify-between">
+        <div
+          onClick={() => onSelectTab("reports")}
+          className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-2xl p-5 shadow-xs flex items-center justify-between hover:border-slate-300 transition-colors cursor-pointer"
+        >
           <div>
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
               Kartoteki w bazie
@@ -71,7 +78,10 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-2xl p-5 shadow-xs flex items-center justify-between">
+        <div
+          onClick={() => onSelectTab("reports")}
+          className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-2xl p-5 shadow-xs flex items-center justify-between hover:border-slate-300 transition-colors cursor-pointer"
+        >
           <div>
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
               Udzielone porady
@@ -88,7 +98,10 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-2xl p-5 shadow-xs flex items-center justify-between">
+        <div
+          onClick={() => onSelectTab("specialists")}
+          className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-2xl p-5 shadow-xs flex items-center justify-between hover:border-slate-300 transition-colors cursor-pointer"
+        >
           <div>
             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
               Zespół specjalistów
@@ -105,19 +118,22 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-2xl p-5 shadow-xs flex items-center justify-between">
+        <div
+          onClick={() => onSelectTab("handoff")}
+          className="bg-amber-50/40 dark:bg-amber-950/20 border-2 border-amber-200 dark:border-amber-900/50 rounded-2xl p-5 shadow-xs flex items-center justify-between hover:border-[#FFB200] transition-colors cursor-pointer group"
+        >
           <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
               Oczekujące przekazania
             </p>
-            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-              {stats?.totalPendingReferrals ?? 0}
+            <h3 className="text-2xl font-black text-amber-950 dark:text-[#FFB200] mt-1">
+              {stats?.totalPendingReferrals ?? records.filter((r) => Boolean(r.referredTo || r.referredSpecialistId) && (r.referredStatus || "OCZEKUJĄCA") === "OCZEKUJĄCA").length}
             </h3>
-            <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-1">
-              Kolejka konsultacji
+            <p className="text-[11px] text-amber-700 dark:text-amber-400 font-bold mt-1 group-hover:underline flex items-center gap-1">
+              <span>Zarządzaj przekazaniami &rarr;</span>
             </p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-[#FFDF06] flex items-center justify-center shadow-xs">
             <Inbox className="w-6 h-6" />
           </div>
         </div>
@@ -223,6 +239,32 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
               <span className="font-semibold text-slate-800 dark:text-slate-200">
                 SHA-256 / bezpieczny hash
               </span>
+            </div>
+
+            {/* Demo Mode Toggle for Admins */}
+            <div className="pt-2.5 border-t border-slate-100 dark:border-[#2D2A28] flex items-center justify-between">
+              <div>
+                <span className="font-bold text-slate-800 dark:text-slate-200">Opcje demo i Szybki test:</span>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Chipy testowe w wyszukiwarce (widoczne tylko dla konta admina)
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDemoFeatures(!showDemoFeatures)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
+                  showDemoFeatures ? "bg-[#FFB200]" : "bg-slate-300 dark:bg-slate-700"
+                }`}
+                role="switch"
+                aria-checked={showDemoFeatures}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                    showDemoFeatures ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
             </div>
           </div>
 

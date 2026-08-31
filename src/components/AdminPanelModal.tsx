@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { Specialist, GUIDANCE_TYPES, GuidanceType, Caller } from "../types";
+import { ConfirmModal } from "./ConfirmModal";
 import {
   ShieldCheck,
   Users,
@@ -59,6 +60,16 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
   const [specAvatarBg, setSpecAvatarBg] = useState("bg-blue-600");
   const [specSuccessMessage, setSpecSuccessMessage] = useState<string | null>(null);
   const [specEmailError, setSpecEmailError] = useState<string | null>(null);
+
+  // Confirm modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: React.ReactNode;
+    confirmText?: string;
+    variant?: "danger" | "warning" | "primary";
+    onConfirm: () => void;
+  } | null>(null);
 
   // Potential duplicates detection
   const potentialDuplicates = useMemo(() => {
@@ -135,22 +146,24 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
     e.preventDefault();
     if (!targetCaller || !sourceCaller || targetCallerId === sourceCallerId) return;
 
-    if (
-      !window.confirm(
-        `Czy na pewno chcesz scalić kontakt "${sourceCaller.firstName} ${sourceCaller.lastName}" z kontaktem głównym "${targetCaller.firstName} ${targetCaller.lastName}"?\n\nPrzeniesionych zostanie ${pluralizePorady(sourceRecords.length)}. Kontakt zdublowany zostanie trwale usunięty.`
-      )
-    ) {
-      return;
-    }
-
-    mergeCallers(sourceCallerId, targetCallerId);
-    setMergeSuccessMessage(
-      `Pomyślnie scalono kartotekę. Przeniesiono ${pluralizePorady(sourceRecords.length)} do kontaktu głównego: ${targetCaller.firstName} ${targetCaller.lastName}.`
-    );
-    setSourceCallerId("");
-    setTimeout(() => {
-      setMergeSuccessMessage(null);
-    }, 4000);
+    setConfirmModal({
+      isOpen: true,
+      title: "Scalanie kartotek",
+      variant: "warning",
+      confirmText: "Scal kartoteki",
+      description: `Czy na pewno chcesz scalić kontakt "${sourceCaller.firstName} ${sourceCaller.lastName}" z kontaktem głównym "${targetCaller.firstName} ${targetCaller.lastName}"?\n\nPrzeniesionych zostanie ${pluralizePorady(sourceRecords.length)}. Kontakt zdublowany zostanie trwale usunięty.`,
+      onConfirm: () => {
+        setConfirmModal(null);
+        mergeCallers(sourceCallerId, targetCallerId);
+        setMergeSuccessMessage(
+          `Pomyślnie scalono kartotekę. Przeniesiono ${pluralizePorady(sourceRecords.length)} do kontaktu głównego: ${targetCaller.firstName} ${targetCaller.lastName}.`
+        );
+        setSourceCallerId("");
+        setTimeout(() => {
+          setMergeSuccessMessage(null);
+        }, 4000);
+      },
+    });
   };
 
   const handleSaveSpecialist = (e: React.FormEvent) => {
@@ -220,12 +233,22 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
 
   const handleDeleteSpecialist = (spec: Specialist) => {
     if (spec.id === currentSpecialist.id) {
-      alert("Nie możesz usunąć aktualnie zalogowanego konta administratora.");
+      setSpecEmailError("Nie możesz usunąć aktualnie zalogowanego konta administratora.");
+      setTimeout(() => setSpecEmailError(null), 4000);
       return;
     }
-    if (window.confirm(`Czy na pewno chcesz usunąć konto konsultanta: ${spec.name}?`)) {
-      deleteSpecialist(spec.id);
-    }
+
+    setConfirmModal({
+      isOpen: true,
+      title: "Usuwanie profilu konsultanta",
+      variant: "danger",
+      confirmText: "Usuń konto",
+      description: `Czy na pewno chcesz bezpowrotnie usunąć konto konsultanta: ${spec.name} (${spec.email})?`,
+      onConfirm: () => {
+        setConfirmModal(null);
+        deleteSpecialist(spec.id);
+      },
+    });
   };
 
   if (!isOpen || !currentSpecialist.isAdmin) return null;
@@ -244,7 +267,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h2 className="text-base font-black tracking-tight text-white">Panel Administratora</h2>
+                <h2 className="text-base font-black tracking-tight text-white">Panel administratora</h2>
                 <span className="text-[10px] bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full font-bold">
                   Dostęp uprzywilejowany
                 </span>
@@ -784,6 +807,19 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
           </div>
         )}
       </div>
+
+      {/* Reusable Confirm Modal */}
+      {confirmModal && (
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          title={confirmModal.title}
+          description={confirmModal.description}
+          variant={confirmModal.variant}
+          confirmText={confirmModal.confirmText}
+          onConfirm={confirmModal.onConfirm}
+          onClose={() => setConfirmModal(null)}
+        />
+      )}
     </div>
   );
 };

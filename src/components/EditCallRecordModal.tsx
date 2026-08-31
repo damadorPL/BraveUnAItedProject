@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
+import { ConfirmModal } from "./ConfirmModal";
 import {
   GuidanceType,
   GUIDANCE_TYPES,
@@ -19,6 +20,7 @@ import {
   Edit3,
   History,
   ChevronDown,
+  AlertCircle,
 } from "lucide-react";
 import { AttachmentsManager } from "./AttachmentsManager";
 import { ReferralSelector } from "./ReferralSelector";
@@ -34,6 +36,9 @@ export const EditCallRecordModal: React.FC = () => {
     callers,
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
+
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
   const [guidanceType, setGuidanceType] = useState<GuidanceType>(
     editingRecord?.guidanceType || "w zakresie psychologii i rehabilitacji społecznej"
@@ -112,9 +117,10 @@ export const EditCallRecordModal: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!adviceDescription.trim()) {
-      alert("Proszę wpisać krótki opis, czego dotyczyła porada.");
+      setFormError("Proszę wpisać krótki opis, czego dotyczyła porada.");
       return;
     }
+    setFormError(null);
 
     const assignedSpec = specialists.find((s) => s.id === specialistId) || currentSpecialist;
 
@@ -141,10 +147,7 @@ export const EditCallRecordModal: React.FC = () => {
   };
 
   const handleDelete = () => {
-    if (window.confirm("Czy na pewno chcesz bezpowrotnie usunąć ten wpis porady z bazy danych?")) {
-      deleteRecord(editingRecord.id);
-      setEditingRecord(null);
-    }
+    setIsConfirmDeleteOpen(true);
   };
 
   const availableAreas = GUIDANCE_AREAS_MAP[guidanceType] || [];
@@ -183,6 +186,13 @@ export const EditCallRecordModal: React.FC = () => {
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-xs">
+          {formError && (
+            <div className="flex items-center space-x-2 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 px-4 py-3 rounded-2xl text-xs font-semibold animate-in fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
+
           {/* Specjalista (Admin can reassign) */}
           {currentSpecialist.isAdmin && (
             <div className="bg-amber-50/80 dark:bg-[#241E15] border border-amber-200 dark:border-amber-600/40 rounded-2xl p-3.5 space-y-2">
@@ -502,6 +512,23 @@ export const EditCallRecordModal: React.FC = () => {
           </div>
         </form>
       </div>
+
+      {/* Delete Record Confirmation Modal */}
+      {isConfirmDeleteOpen && (
+        <ConfirmModal
+          isOpen={isConfirmDeleteOpen}
+          title="Usuwanie porady"
+          variant="danger"
+          confirmText="Usuń poradę"
+          description="Czy na pewno chcesz bezpowrotnie usunąć ten wpis porady z bazy danych? Tej operacji nie można cofnąć."
+          onConfirm={() => {
+            setIsConfirmDeleteOpen(false);
+            deleteRecord(editingRecord.id);
+            setEditingRecord(null);
+          }}
+          onClose={() => setIsConfirmDeleteOpen(false)}
+        />
+      )}
     </div>
   );
 };

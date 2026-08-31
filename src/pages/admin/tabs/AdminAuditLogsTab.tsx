@@ -140,7 +140,7 @@ export const AdminAuditLogsTab: React.FC = () => {
                         onClick={() => setSelectedLog(log)}
                         className="px-2.5 py-1 bg-slate-100 dark:bg-[#282522] hover:bg-slate-200 dark:hover:bg-[#34302E] text-slate-700 dark:text-slate-200 rounded-lg text-xs font-bold transition-colors cursor-pointer"
                       >
-                        Pokaż diff
+                        Pokaż zmianę
                       </button>
                     </td>
                   </tr>

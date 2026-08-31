@@ -81,7 +81,7 @@ export const ExportModal: React.FC = () => {
           {/* Anonymization Choice */}
           <div>
             <label className="block font-bold text-slate-700 dark:text-slate-200 mb-2">
-              Tryb Bezpieczeństwa Danych (RODO / PFRON):
+              Tryb bezpieczeństwa danych (RODO / PFRON):
             </label>
 
             <div className="space-y-2.5">
@@ -98,7 +98,7 @@ export const ExportModal: React.FC = () => {
                 </div>
                 <div>
                   <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <span>Raport Anonimizowany dla Grantodawcy (PFRON)</span>
+                    <span>Raport anonimizowany dla grantodawcy (PFRON)</span>
                     <span className="text-[10px] bg-emerald-600 text-white font-bold px-1.5 py-0.5 rounded">
                       Zalecany
                     </span>
@@ -122,7 +122,7 @@ export const ExportModal: React.FC = () => {
                 </div>
                 <div>
                   <div className="font-bold text-slate-900 dark:text-white">
-                    Pełne Zestawienie Wewnętrzne (Do Użytku Służbowego)
+                    Pełne zestawienie wewnętrzne (do użytku służbowego)
                   </div>
                   <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">
                     Zawiera pełne imiona, nazwiska, numery telefonów oraz notatki wewnętrzne. Dostępne wyłącznie dla upoważnionych pracowników.
@@ -135,7 +135,7 @@ export const ExportModal: React.FC = () => {
           {/* Format Choice */}
           <div>
             <label className="block font-bold text-slate-700 dark:text-slate-200 mb-2">
-              Format Pliku:
+              Format pliku:
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -166,7 +166,7 @@ export const ExportModal: React.FC = () => {
             </div>
             {format === "xlsx" && (
               <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-                Plik Excel zawiera dodatkowy arkusz „Podsumowanie” — raport statystyczny wybranego
+                Plik Excel zawiera dodatkowy arkusz „Podsumowanie”: raport statystyczny wybranego
                 okresu sprawozdawczego (liczba porad, beneficjenci, struktura poradnictwa, zasięg
                 wg województw).
               </p>
@@ -188,7 +188,7 @@ export const ExportModal: React.FC = () => {
               className="px-5 py-2 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl font-black shadow-md hover:shadow-lg transition-all flex items-center space-x-1.5 cursor-pointer"
             >
               <Download className="w-4 h-4" />
-              <span>Pobierz Plik</span>
+              <span>Pobierz plik</span>
             </button>
           </div>
         </div>

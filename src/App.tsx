@@ -30,6 +30,9 @@ const CallerDetailPage = React.lazy(() =>
 const RecordsPage = React.lazy(() =>
   import("./pages/RecordsPage").then((m) => ({ default: m.RecordsPage }))
 );
+const StatsPage = React.lazy(() =>
+  import("./pages/StatsPage").then((m) => ({ default: m.StatsPage }))
+);
 const AdminDashboard = React.lazy(() =>
   import("./pages/admin/AdminDashboard").then((m) => ({ default: m.AdminDashboard }))
 );
@@ -114,7 +117,7 @@ export default function App() {
               <Route path="/search" element={<SearchPage />} />
               <Route path="/callers/:id" element={<CallerDetailPage />} />
               <Route path="/records" element={<RecordsPage />} />
-              <Route path="/stats" element={<Navigate to="/admin" replace />} />
+              <Route path="/stats" element={<StatsPage />} />
               <Route
                 path="/admin/*"
                 element={

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
+import { ConfirmModal } from "./ConfirmModal";
 import {
   Attachment,
   Caller,
@@ -23,6 +24,7 @@ import {
   Users,
   ShieldCheck,
   Edit3,
+  AlertCircle,
 } from "lucide-react";
 import { fireConfetti } from "../utils/confetti";
 
@@ -36,6 +38,9 @@ export const EditCallerModal: React.FC = () => {
     setSelectedCaller,
   } = useApp();
   const currentSpecialist = useCurrentSpecialist();
+
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
   const [firstName, setFirstName] = useState(editingCaller?.firstName || "");
   const [lastName, setLastName] = useState(editingCaller?.lastName || "");
@@ -92,9 +97,10 @@ export const EditCallerModal: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!lastName.trim()) {
-      alert("Proszę podać nazwisko lub identyfikator kontaktu.");
+      setFormError("Proszę podać nazwisko lub identyfikator kontaktu.");
       return;
     }
+    setFormError(null);
 
     setIsSubmitting(true);
 
@@ -135,14 +141,7 @@ export const EditCallerModal: React.FC = () => {
 
   const handleDelete = () => {
     if (!editingCaller) return;
-    if (
-      window.confirm(
-        `Czy na pewno chcesz bezpowrotnie usunąć kartotekę kontaktu "${editingCaller.firstName} ${editingCaller.lastName}" oraz całą przypisaną historię porad?`
-      )
-    ) {
-      deleteCaller(editingCaller.id);
-      setEditingCaller(null);
-    }
+    setIsConfirmDeleteOpen(true);
   };
 
   return (
@@ -156,11 +155,11 @@ export const EditCallerModal: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-black text-white">Edycja Kartoteki Kontaktu</h2>
+                <h2 className="text-lg font-black text-white">Edycja kartoteki kontaktu</h2>
                 {currentSpecialist.isAdmin && (
                   <span className="text-[10px] bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3" />
-                    Tryb Admina
+                    Tryb administratora
                   </span>
                 )}
               </div>
@@ -180,6 +179,13 @@ export const EditCallerModal: React.FC = () => {
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-xs">
+          {formError && (
+            <div className="flex items-center space-x-2 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 px-4 py-3 rounded-2xl text-xs font-semibold animate-in fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
+
           {/* First & Last Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -403,6 +409,23 @@ export const EditCallerModal: React.FC = () => {
           </div>
         </form>
       </div>
+
+      {/* Delete Caller Confirmation Modal */}
+      {isConfirmDeleteOpen && editingCaller && (
+        <ConfirmModal
+          isOpen={isConfirmDeleteOpen}
+          title="Usuwanie kartoteki kontaktu"
+          variant="danger"
+          confirmText="Usuń kartotekę"
+          description={`Czy na pewno chcesz bezpowrotnie usunąć kartotekę "${editingCaller.firstName} ${editingCaller.lastName}" oraz całą przypisaną historię porad? Tej operacji nie można cofnąć.`}
+          onConfirm={() => {
+            setIsConfirmDeleteOpen(false);
+            deleteCaller(editingCaller.id);
+            setEditingCaller(null);
+          }}
+          onClose={() => setIsConfirmDeleteOpen(false)}
+        />
+      )}
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Attachment } from "../types";
+import { ConfirmModal } from "./ConfirmModal";
 import {
   FileText,
   Image as ImageIcon,
@@ -16,6 +17,7 @@ import {
   ZoomOut,
   Table,
   ChevronDown,
+  AlertCircle,
 } from "lucide-react";
 import { formatFileSize } from "../utils/fileUtils";
 import { api, getStoredToken } from "../services/api";
@@ -45,6 +47,8 @@ export const AttachmentsManager: React.FC<Props> = ({
   const allowRemove = canRemove ?? !readOnly;
   const [isExpanded, setIsExpanded] = useState(defaultExpanded ?? (attachments.length > 0));
   const [previewAttachment, setPreviewAttachment] = useState<Attachment | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -131,7 +135,8 @@ export const AttachmentsManager: React.FC<Props> = ({
       onChange([...attachments, ...newAtts]);
     } catch (err) {
       console.error("Błąd podczas wgrywania pliku:", err);
-      alert("Wystąpił błąd podczas wgrywania pliku.");
+      setUploadError("Wystąpił błąd podczas wgrywania pliku.");
+      setTimeout(() => setUploadError(null), 4000);
     } finally {
       setIsUploading(false);
     }
@@ -139,11 +144,7 @@ export const AttachmentsManager: React.FC<Props> = ({
 
   const handleRemove = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm("Czy na pewno chcesz usunąć ten załącznik?")) {
-      api.attachments.delete(id).catch((err) => console.warn("Failed to delete attachment from server:", err));
-      onChange(attachments.filter((a) => a.id !== id));
-      if (previewAttachment?.id === id) setPreviewAttachment(null);
-    }
+    setConfirmDeleteId(id);
   };
 
   const handleDownload = (att: Attachment, e: React.MouseEvent) => {
@@ -257,6 +258,13 @@ export const AttachmentsManager: React.FC<Props> = ({
       {/* Accordion Body */}
       {isExpanded && (
         <div className="space-y-3 pt-1 animate-in fade-in duration-150">
+          {uploadError && (
+            <div className="flex items-center space-x-2 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 px-3.5 py-2 rounded-xl text-xs font-semibold animate-in fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{uploadError}</span>
+            </div>
+          )}
+
           {/* Upload Drag & Drop Area */}
           {!readOnly && (
             <div
@@ -578,6 +586,24 @@ export const AttachmentsManager: React.FC<Props> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Delete Attachment Confirmation */}
+      {confirmDeleteId && (
+        <ConfirmModal
+          isOpen={Boolean(confirmDeleteId)}
+          title="Usuwanie załącznika"
+          variant="danger"
+          confirmText="Usuń załącznik"
+          description="Czy na pewno chcesz trwale usunąć ten załącznik?"
+          onConfirm={() => {
+            api.attachments.delete(confirmDeleteId).catch((err) => console.warn("Failed to delete attachment from server:", err));
+            onChange(attachments.filter((a) => a.id !== confirmDeleteId));
+            if (previewAttachment?.id === confirmDeleteId) setPreviewAttachment(null);
+            setConfirmDeleteId(null);
+          }}
+          onClose={() => setConfirmDeleteId(null)}
+        />
       )}
     </div>
   );
