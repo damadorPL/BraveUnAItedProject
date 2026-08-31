@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Caller, GuidanceType, Attachment } from "../types";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import {
@@ -52,7 +53,13 @@ export const ContactHistoryView: React.FC<Props> = ({ caller }) => {
   const [activeViewMode, setActiveViewMode] = useState<"TIMELINE" | "DOCS">("TIMELINE");
   const [auditLogRecord, setAuditLogRecord] = useState<CallRecord | null>(null);
 
+  const navigate = useNavigate();
   const records = getCallerRecords(caller?.id || "");
+
+  const handleBack = () => {
+    setSelectedCaller(null);
+    navigate("/search");
+  };
 
   const getGuidanceBadgeColor = (type?: GuidanceType) => {
     switch (type) {
@@ -63,9 +70,9 @@ export const ContactHistoryView: React.FC<Props> = ({ caller }) => {
       case "Parent to Parent":
         return "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60 ring-emerald-500/20";
       case "społeczne":
-        return "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/60 ring-indigo-500/20";
+        return "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60 ring-amber-500/20";
       default:
-        return "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 ring-slate-500/20";
+        return "bg-slate-50 dark:bg-[#282522] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#383431] ring-slate-500/20";
     }
   };
 
@@ -86,12 +93,12 @@ export const ContactHistoryView: React.FC<Props> = ({ caller }) => {
 
   if (!caller) {
     return (
-      <div className="bg-white dark:bg-[#1E1C1A] p-8 rounded-2xl border border-slate-200 dark:border-[#383431] text-center">
+      <div className="bg-white dark:bg-[#242220] rounded-2xl border border-slate-200 dark:border-[#3E3A37] p-8 text-center shadow-xs">
         <AlertCircle className="w-8 h-8 text-rose-500 mx-auto mb-2" />
         <h3 className="font-bold text-slate-800 dark:text-white">Nie odnaleziono danych kontaktu</h3>
         <button
           type="button"
-          onClick={() => setSelectedCaller(null)}
+          onClick={handleBack}
           className="mt-3 px-4 py-1.5 bg-slate-100 dark:bg-[#2C2927] hover:bg-slate-200 dark:hover:bg-[#383431] text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold cursor-pointer"
         >
           Wróć do listy
@@ -138,7 +145,7 @@ export const ContactHistoryView: React.FC<Props> = ({ caller }) => {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <button
           type="button"
-          onClick={() => setSelectedCaller(null)}
+          onClick={handleBack}
           className="flex items-center space-x-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-[#296B6E] dark:hover:text-[#FFB200] bg-white dark:bg-[#1E1C1A] hover:bg-slate-50 dark:hover:bg-[#282522] px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#383431] shadow-sm hover:shadow transition-all cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />

@@ -6,6 +6,7 @@ import {
   DEMO_PASSWORD,
 } from "../services/auth";
 import { loadPasswordOverrides } from "../services/storage";
+import { api } from "../services/api";
 import { PasswordResetModal } from "./PasswordResetModal";
 import { SpecialistAvatar } from "./SpecialistAvatar";
 import {
@@ -45,19 +46,14 @@ export const LoginScreen: React.FC = () => {
       setError("Podaj służbowy adres e-mail.");
       return;
     }
-    if (!recognized) {
-      setError("Nie znaleziono konta dla podanego adresu e-mail.");
-      return;
-    }
-    const overrides = loadPasswordOverrides();
-    const passwordOk = await verifySpecialistPassword(overrides[recognized.id] ?? null, password);
-    if (!passwordOk) {
-      setError("Nieprawidłowe hasło. Spróbuj ponownie.");
-      return;
-    }
 
-    setError(null);
-    login(recognized);
+    try {
+      const response = await api.auth.login(email.trim(), password);
+      setError(null);
+      login(response.user);
+    } catch (err: any) {
+      setError(err.message || "Nieprawidłowe dane logowania. Spróbuj ponownie.");
+    }
   };
 
   const handleResetSuccess = (resetEmail: string) => {

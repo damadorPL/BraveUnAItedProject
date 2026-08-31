@@ -1,0 +1,337 @@
+import React, { useState, useEffect } from "react";
+import { useApp } from "../../../context/AppContext";
+import { api } from "../../../services/api";
+import {
+  Database,
+  Server,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+  HardDrive,
+  FileCode,
+  RotateCcw,
+  Zap,
+  Layers,
+  ArrowRight,
+} from "lucide-react";
+
+export const AdminDatabaseTab: React.FC = () => {
+  const { resetDatabase } = useApp();
+
+  const [currentConfig, setCurrentConfig] = useState<any>(null);
+  const [engine, setEngine] = useState<"sqlite" | "postgres">("sqlite");
+  const [sqlitePath, setSqlitePath] = useState("data/synapsis.sqlite");
+  const [postgresUrl, setPostgresUrl] = useState("postgres://postgres:postgres@localhost:5432/brave_synapsis");
+
+  const [loading, setLoading] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [actionMessage, setActionMessage] = useState<{ success: boolean; text: string } | null>(null);
+
+  const fetchConfig = async () => {
+    try {
+      setLoading(true);
+      const data = await api.admin.getDbConfig();
+      setCurrentConfig(data);
+      if (data.engine) setEngine(data.engine);
+      if (data.sqlitePath) setSqlitePath(data.sqlitePath);
+      if (data.postgresUrl) setPostgresUrl(data.postgresUrl);
+    } catch {
+      setCurrentConfig({
+        engine: "sqlite",
+        sqlitePath: "data/synapsis.sqlite",
+        status: "connected",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchConfig();
+  }, []);
+
+  const handleTestConnection = async () => {
+    setTestResult(null);
+    try {
+      setLoading(true);
+      const res = await api.admin.testDb({
+        engine,
+        sqlitePath: engine === "sqlite" ? sqlitePath : undefined,
+        postgresUrl: engine === "postgres" ? postgresUrl : undefined,
+      });
+      setTestResult(res);
+    } catch (err: any) {
+      setTestResult({
+        success: false,
+        message: err.message || "Błąd podczas testu połączenia.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApplyConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionMessage(null);
+    try {
+      setLoading(true);
+      const res = await api.admin.switchDb({
+        engine,
+        sqlitePath: engine === "sqlite" ? sqlitePath : undefined,
+        postgresUrl: engine === "postgres" ? postgresUrl : undefined,
+      });
+      setActionMessage({ success: res.success, text: res.message });
+      await fetchConfig();
+    } catch (err: any) {
+      setActionMessage({ success: false, text: err.message || "Błąd przełączania bazy" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetDatabase = async () => {
+    if (
+      !window.confirm(
+        "Czy na pewno chcesz przywrócić bazę danych do początkowego zestawu testowego (71 porad i kartoteki Fundacji SYNAPSIS)? Wszystkie wprowadzone ręcznie dane zostaną zastąpione."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await api.admin.resetDb();
+      resetDatabase();
+      setActionMessage({ success: true, text: res.message || "Baza danych została zresetowana." });
+      setTimeout(() => setActionMessage(null), 5000);
+    } catch (err: any) {
+      setActionMessage({ success: false, text: err.message || "Błąd resetowania bazy" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in">
+      <div>
+        <h2 className="text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+          <Database className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+          <span>Konfiguracja Baz Danych (SQLite & PostgreSQL)</span>
+        </h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Wybierz aktywny silnik bazy danych, skonfiguruj parametry połączenia lub przywróć dane początkowe
+        </p>
+      </div>
+
+      {actionMessage && (
+        <div
+          className={`flex items-center space-x-2 px-4 py-3 rounded-2xl text-xs font-semibold animate-in fade-in ${
+            actionMessage.success
+              ? "bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
+              : "bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300"
+          }`}
+        >
+          {actionMessage.success ? (
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+          ) : (
+            <AlertCircle className="w-4 h-4 shrink-0" />
+          )}
+          <span>{actionMessage.text}</span>
+        </div>
+      )}
+
+      {/* Active Engine Card */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div
+          onClick={() => setEngine("sqlite")}
+          className={`p-5 rounded-3xl border-2 transition-all cursor-pointer ${
+            engine === "sqlite"
+              ? "border-[#FFB200] bg-amber-50/20 dark:bg-[#252018] shadow-xs"
+              : "border-slate-200 dark:border-[#383431] bg-white dark:bg-[#1E1C1A] hover:border-slate-300"
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2.5 rounded-2xl bg-teal-50 dark:bg-teal-950/50 text-[#296B6E] dark:text-teal-300">
+                <HardDrive className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                  SQLite (Lokalna Baza Plikowa)
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Zero-config • szybki odczyt lokalny
+                </p>
+              </div>
+            </div>
+
+            <input
+              type="radio"
+              name="engine"
+              checked={engine === "sqlite"}
+              onChange={() => setEngine("sqlite")}
+              className="text-[#FFB200] focus:ring-[#FFB200] w-4 h-4"
+            />
+          </div>
+        </div>
+
+        <div
+          onClick={() => setEngine("postgres")}
+          className={`p-5 rounded-3xl border-2 transition-all cursor-pointer ${
+            engine === "postgres"
+              ? "border-[#FFB200] bg-amber-50/20 dark:bg-[#252018] shadow-xs"
+              : "border-slate-200 dark:border-[#383431] bg-white dark:bg-[#1E1C1A] hover:border-slate-300"
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2.5 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
+                <Server className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                  PostgreSQL (Relacyjny Serwer Bazy)
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Wysoka wydajność • produkcyjna linia wsparcia
+                </p>
+              </div>
+            </div>
+
+            <input
+              type="radio"
+              name="engine"
+              checked={engine === "postgres"}
+              onChange={() => setEngine("postgres")}
+              className="text-[#FFB200] focus:ring-[#FFB200] w-4 h-4"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Engine Configuration Form */}
+      <form
+        onSubmit={handleApplyConfig}
+        className="bg-white dark:bg-[#1E1C1A] border border-slate-200 dark:border-[#383431] rounded-3xl p-6 shadow-xs space-y-4"
+      >
+        <div className="border-b border-slate-100 dark:border-[#2D2A28] pb-3">
+          <h3 className="text-sm font-black text-slate-900 dark:text-white">
+            Parametry dla silnika: {engine.toUpperCase()}
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Wprowadź ścieżkę do pliku lub adres URL bazy danych PostgreSQL
+          </p>
+        </div>
+
+        {engine === "sqlite" ? (
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Ścieżka do pliku bazy SQLite
+            </label>
+            <input
+              type="text"
+              required
+              value={sqlitePath}
+              onChange={(e) => setSqlitePath(e.target.value)}
+              placeholder="data/synapsis.sqlite"
+              className="w-full text-xs font-mono px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#383431] bg-slate-50 dark:bg-[#252018] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
+            />
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+              Plik zostanie automatycznie utworzony ze schematem tabel, jeśli nie istnieje.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                PostgreSQL Connection String (URI)
+              </label>
+              <input
+                type="text"
+                required
+                value={postgresUrl}
+                onChange={(e) => setPostgresUrl(e.target.value)}
+                placeholder="postgres://user:password@localhost:5432/brave_synapsis"
+                className="w-full text-xs font-mono px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#383431] bg-slate-50 dark:bg-[#252018] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
+              />
+            </div>
+
+            <div className="p-3 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 rounded-2xl text-[11px] text-blue-800 dark:text-blue-300 space-y-1">
+              <p className="font-bold flex items-center gap-1">
+                <Zap className="w-3.5 h-3.5" />
+                <span>Wskazówka konfiguracji:</span>
+              </p>
+              <p>
+                Wzorzec: <code>postgres://[użytkownik]:[hasło]@[host]:[port]/[nazwa_bazy]</code>. Po
+                połączeniu system automatycznie utworzy tabele relacyjne, indeksy oraz indeksy
+                JSONB.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {testResult && (
+          <div
+            className={`p-3.5 rounded-2xl text-xs flex items-center space-x-2 ${
+              testResult.success
+                ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800"
+                : "bg-rose-50 dark:bg-rose-950/50 text-rose-800 dark:text-rose-200 border border-rose-200 dark:border-rose-800"
+            }`}
+          >
+            {testResult.success ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 shrink-0" />
+            )}
+            <span>{testResult.message}</span>
+          </div>
+        )}
+
+        <div className="pt-2 flex items-center justify-between flex-wrap gap-3 border-t border-slate-100 dark:border-[#2D2A28]">
+          <button
+            type="button"
+            disabled={loading}
+            onClick={handleTestConnection}
+            className="px-4 py-2 bg-slate-100 dark:bg-[#282522] hover:bg-slate-200 dark:hover:bg-[#34302E] text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            <span>Testuj połączenie</span>
+          </button>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-5 py-2 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-xs transition-colors cursor-pointer flex items-center space-x-1.5"
+          >
+            <Layers className="w-4 h-4" />
+            <span>Zastosuj i przełącz bazę</span>
+          </button>
+        </div>
+      </form>
+
+      {/* Danger Zone: Reset Sample Data */}
+      <div className="bg-rose-50/40 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 rounded-3xl p-6 space-y-3">
+        <div className="flex items-center space-x-2 text-rose-700 dark:text-rose-400">
+          <RotateCcw className="w-5 h-5" />
+          <h3 className="text-sm font-black">
+            Przywrócenie Bazy Demonstracyjnej (Sample Data)
+          </h3>
+        </div>
+
+        <p className="text-xs text-slate-600 dark:text-slate-300 max-w-2xl">
+          Ta operacja zastąpi bieżący stan tabel wzorcowym zestawem 71 konsultacji, kartotek beneficjentów oraz kont specjalistów Fundacji SYNAPSIS.
+        </p>
+
+        <button
+          type="button"
+          disabled={loading}
+          onClick={handleResetDatabase}
+          className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-black shadow-xs transition-colors cursor-pointer inline-flex items-center space-x-1.5"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span>Przywróć dane demonstracyjne</span>
+        </button>
+      </div>
+    </div>
+  );
+};

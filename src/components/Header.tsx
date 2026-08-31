@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useApp, useCurrentSpecialist } from "../context/AppContext";
 import { SpecialistAvatar } from "./SpecialistAvatar";
 import {
@@ -23,6 +24,8 @@ import { UserProfileModal } from "./UserProfileModal";
 import { AdminPanelModal } from "./AdminPanelModal";
 
 export const Header: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const {
     logout,
     activeTab,
@@ -54,6 +57,14 @@ export const Header: React.FC = () => {
     setSelectedCaller(null);
     setActiveTab(tab);
     setIsMobileMenuOpen(false);
+    if (tab === "SEARCH") navigate("/search");
+    else if (tab === "ALL_RECORDS") navigate("/records");
+    else if (tab === "STATS") navigate("/stats");
+  };
+
+  const handleAdminClick = () => {
+    setIsMobileMenuOpen(false);
+    navigate("/admin");
   };
 
   // Close mobile menu on resize to full desktop (xl: >= 1280px)
@@ -94,7 +105,7 @@ export const Header: React.FC = () => {
               type="button"
               onClick={() => handleTabChange("SEARCH")}
               className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                activeTab === "SEARCH" && !selectedCaller
+                location.pathname === "/search" || location.pathname === "/" || location.pathname.startsWith("/callers")
                   ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
                   : "text-slate-300 hover:text-white hover:bg-[#34302E]"
               }`}
@@ -107,7 +118,7 @@ export const Header: React.FC = () => {
               type="button"
               onClick={() => handleTabChange("ALL_RECORDS")}
               className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                activeTab === "ALL_RECORDS" && !selectedCaller
+                location.pathname === "/records"
                   ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
                   : "text-slate-300 hover:text-white hover:bg-[#34302E]"
               }`}
@@ -152,7 +163,7 @@ export const Header: React.FC = () => {
                 type="button"
                 onClick={() => handleTabChange("STATS")}
                 className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                  activeTab === "STATS" && !selectedCaller
+                  location.pathname === "/stats"
                     ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
                     : "text-slate-300 hover:text-white hover:bg-[#34302E]"
                 }`}
@@ -193,12 +204,16 @@ export const Header: React.FC = () => {
             {currentSpecialist.isAdmin && (
               <button
                 type="button"
-                onClick={() => setIsAdminPanelOpen(true)}
-                className="flex items-center space-x-1 px-2 py-1.5 rounded-xl text-xs font-black bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 transition-all cursor-pointer whitespace-nowrap shadow-xs"
-                title="Panel Administratora: scalanie kontaktów i zarządzanie dyżurującymi"
+                onClick={handleAdminClick}
+                className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap shadow-xs ${
+                  location.pathname.startsWith("/admin")
+                    ? "bg-[#FFB200] text-[#2D2A28]"
+                    : "bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50"
+                }`}
+                title="Panel Administratora: scalanie kontaktów, zarządzanie dyżurującymi, bazy danych"
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                <span>Admin</span>
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Admin Dashboard</span>
               </button>
             )}
 
@@ -526,14 +541,11 @@ export const Header: React.FC = () => {
               <>
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    setIsAdminPanelOpen(true);
-                  }}
+                  onClick={handleAdminClick}
                   className="w-full flex items-center space-x-2.5 px-3.5 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                 >
                   <ShieldCheck className="w-4 h-4 text-amber-400" />
-                  <span>Panel Administratora (scalanie i konsultanci)</span>
+                  <span>Panel Administratora (Dashboard, Bazy, Scalanie)</span>
                 </button>
 
                 <button

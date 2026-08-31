@@ -2,149 +2,156 @@
 
 > **Centralny system rejestracji poradnictwa, kartotek kontaktów i sprawozdawczości PFRON dla dyżurujących specjalistów.**
 
-Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych, doradców Parent-to-Parent i konsultantów społecznych) Fundacji SYNAPSIS, zapewniająca natychmiastowy (poniżej 5 sekund) dostęp do pełnego kontekstu wcześniejszych rozmów z beneficjentami oraz ujednoliconą sprawozdawczość.
+Aplikacja dedykowana dla zespołu konsultantów (psychologów, radców prawnych, doradców Parent-to-Parent i konsultantów społecznych) Fundacji SYNAPSIS, zapewniająca natychmiastowy dostęp do pełnego kontekstu wcześniejszych rozmów z beneficjentami, tras URL, dedykowanego panelu administratora, obsługi baz danych SQLite & PostgreSQL oraz autoryzacji JWT.
 
 ---
 
 ## 🌟 Kluczowe Funkcjonalności
 
-### 1. 🔍 Błyskawiczne Wyszukiwanie & Rozstrzyganie Kontaktów (Disambiguation)
+### 1. 🌐 Trasy URL (URL Routes & Deep Linking)
+- **Klient-side Routing (`react-router-dom`)**:
+  - `/login`: ekran logowania ze wsparciem autoryzacji JWT i kontami demo.
+  - `/search` lub `/`: szybka wyszukiwarka kontaktów, ujednoznacznianie i baner przekazań Handoff.
+  - `/callers/:id`: bezpośredni link do profilu kontaktu i osi czasu porad (Timeline).
+  - `/records`: centralny rejestr wszystkich udzielonych porad z zaawansowanymi filtrami.
+  - `/stats`: pulpit statystyk i raportów PFRON.
+  - `/admin/*`: dedykowany, pełnoekranowy panel administratora chroniony strażnikiem uprawnień (`AdminRoute`).
+  - `/unauthorized`: strona błędu 403 w przypadku braku uprawnień administratora.
+
+### 2. 🛡️ Dedykowany Panel Administratora (`/admin`)
+- **Pulpit Główny (Overview)**: wskaźniki KPI bazy, stan silnika bazy danych, status połączenia oraz szybkie skróty.
+- **Specjaliści i Uprawnienia**: pełne zarządzanie kontami specjalistów (CRUD), nadawanie ról, przypisywanie obszarów poradnictwa, przełączanie flagi administratora i generator resetu haseł.
+- **Wykrywanie i Scalanie Duplikatów (Merge Tool)**: algorytm wyszukiwania powtórzonych kartotek z porównaniem pól i automatycznym przeniesieniem całej historii konsultacji i załączników.
+- **Centralny Dziennik Zmian (Audit Logs)**: pełny rejestr modyfikacji porad z podglądem różnic (diff przed/po).
+- **Zarządzanie Bazami Danych (DB Manager)**: przełączanie silnika bazy danych, testowanie połączeń, migracje schematu oraz przywracanie bazy demonstracyjnej.
+
+### 3. 🗄️ Obsługa Baz Danych (PostgreSQL & SQLite)
+- **Modułowa warstwa dostępu do danych (`DatabaseAdapter`)**:
+  - **SQLite**: lokalna, bezkonfiguracyjna baza plikowa (`data/synapsis.sqlite`) z automatycznym tworzeniem tabel i indeksów.
+  - **PostgreSQL**: obsługa produkcyjnego serwera bazy danych z pulą połączeń (`pg.Pool`), transakcjami i indeksami JSONB.
+- **Dynamiczne przełączanie silnika**: możliwość zmiany silnika w locie z poziomu panelu administratora lub zmiennych środowiskowych (`DATABASE_ENGINE`, `DATABASE_URL`).
+- **Automatyczne zasilanie (Auto-seeding)**: automatyczne inicjowanie bazy zestawem 71 porad i kartotek przy pierwszym uruchomieniu.
+
+### 4. 🔐 Autoryzacja i Ochrona Tras z JWT
+- **JSON Web Token (HMAC-SHA256)**: tokeny sesyjne z 24-godzinną ważnością, zawierające identyfikator specjalisty, rolę oraz uprawnienia `isAdmin`.
+- **Backend Middleware**: `authenticateJWT` oraz `requireAdmin` chroniące wrażliwe punkty końcowe API (`/api/admin/*`, usuwanie kartotek i porad).
+- **Frontend Route Guards**: `<ProtectedRoute>` oraz `<AdminRoute>` zabezpieczające nawigację po stronach.
+
+### 5. 🔍 Błyskawiczne Wyszukiwanie & Rozstrzyganie Kontaktów (Disambiguation)
 - **Tolerancja na brak znaków diakrytycznych**: wpisanie `zolc`, `krakow`, `mrozek` bezbłędnie odnajduje odpowiednie osoby.
-- **Wyszukiwanie wielokryterialne**: po imieniu, nazwisku, odwróconej kolejności (*Nazwisko Imię*), numerze telefonu (z ignorowaniem spacji i formatowania) oraz miejscowości/województwie.
-- **Karty ujednoznaczniania**: w przypadku wielu osób o tym samym nazwisku system wyświetla czytelne karty rozróżniające z liczbą odbytych porad.
+- **Wyszukiwanie wielokryterialne**: po imieniu, nazwisku, odwróconej kolejności (*Nazwisko Imię*), numerze telefonu oraz miejscowości/województwie.
 
-### 2. 📋 Kartoteka Kontaktu i Oś Czasu Porad (Timeline)
-- Pełna historia konsultacji z podziałem na:
-  - **Rodzaj kontaktu**: telefon, e-mail, kontakt osobisty, inne.
-  - **Beneficjent**: rodzic, opiekun, osoba dorosła w spektrum, inne.
-  - **Orzeczenie o niepełnosprawności**: status posiadania oraz stopień niepełnosprawności.
-  - **Kategorie i obszary poradnictwa**: prawno-obywatelskie, psychologiczne, Parent to Parent, społeczne.
-  - **Zarządzanie załącznikami**: dodawanie i podgląd dokumentów (PDF, skany orzeczeń, tabele Excel, obrazy, pliki tekstowe).
+### 6. 📋 Kartoteka Kontaktu i Oś Czasu Porad (Timeline)
+- Pełna historia konsultacji z podziałem na rodzaj kontaktu, beneficjenta, orzeczenie o niepełnosprawności, kategorie poradnictwa oraz zarządzanie załącznikami (PDF, skany, obrazy).
 
-### 3. 🔄 System Przekazywania Spraw & Handoff (Referral System)
-- **Ekran powitalny Handoff po zalogowaniu**: po zalogowaniu lub zmianie dyżurującego specjalisty na pulpicie wyświetla się wyróżniony baner z listą oczekujących spraw, notatkami od poprzednich konsultantów i przyciskami natychmiastowej konsultacji.
-- **Dynamiczny wybór konsultanta (Autocomplete)**: pole wyszukiwania specjalistów w trakcie pisania tolerancyjne na polskie znaki z awatarami i specjalizacjami.
-- **Nawigacja w nagłówku**: przycisk *„Przekazane”* z licznikiem i pulsującym wskaźnikiem nowości przy oczekujących sprawach.
-- **Automatyczne powiadomienia e-mail**: generowanie i wysyłka powiadomień ze szczegółami i notatką/wytycznymi na adres dyżurującego specjalisty.
-- **Automatyczne zamykanie spraw**: rejestracja porady przez specjalistę automatycznie oznacza przekazanie jako *„Zakończona”*.
+### 7. 🔄 System Przekazywania Spraw & Handoff (Referral System)
+- Ekran powitalny z oczekującymi sprawami, dynamiczny wybór konsultanta, powiadomienia e-mail i automatyczne oznaczanie spraw jako zakończone po udzieleniu porady.
 
-### 4. 🛡️ Panel Administratora & Zarządzanie Kartotekami
-- **Wykrywanie i scalanie duplikatów (Merge Contacts)**: inteligentna analiza podobieństw numerów telefonów i nazwisk z bezpiecznym przeniesieniem całej historii porad i załączników.
-- **Edycja kartoteki kontaktu**: dedykowany formularz modyfikacji danych teleadresowych i orzeczeń oraz uprawnienie do usuwania kartotek przez administratora.
-- **Zarządzanie konsultantami**: dodawanie nowych specjalistów, edycja specjalizacji, ról i uprawnień.
-- **Edycja profilu użytkownika**: każdy konsultant ma możliwość edycji swoich danych oraz adresu e-mail.
-
-### 5. 📊 Raporty PFRON & Eksport Danych
-- **Eksport XLSX (Excel)**: arkusz z rejestrem porad oraz dedykowany arkusz *Podsumowanie* z metrykami grantowymi (struktura rodzajów poradnictwa, rozkład geograficzny 16 województw, liczba unikalnych beneficjentów, godziny dyżurów).
-- **Eksport CSV & Ochrona Danych (RODO)**: tryby eksportu pełnego, zanonimizowanego oraz pseudonimizowanego.
-- **Wskaźniki KPI w czasie rzeczywistym**: filtr zakresu dat z gotowymi skrótami kwartalnymi PFRON (Q1–Q4).
-
-### 6. 📥 Inteligentny Migrator Bazy z Excela
-- Import plików `.xlsx` i `.xls` z historycznymi danymi.
-- **Fuzzy matching**: automatyczne dopasowywanie i normalizacja województw, typów poradnictwa i ról dyżurujących.
-- Rozwiązywanie konfliktów i podgląd zmian przed zatwierdzeniem.
-
-### 7. 🎨 Stylistyka Fundacji SYNAPSIS & Dark Mode
-- Nowoczesna paleta barw zgodna z identyfikacją wizualną Fundacji SYNAPSIS (grafit `#2D2A28`, złoto `#FFB200`, turkus `#296B6E`).
-- Pełne wsparcie dla trybu ciemnego (**Dark Mode**) z przełącznikiem i zapamiętywaniem preferencji w `localStorage`.
+### 8. 📊 Raporty PFRON & Eksport Danych
+- Eksport XLSX (Excel) z rejestrem i arkuszem podsumowania wskaźników grantowych, eksport CSV z anonimizacją RODO.
 
 ---
 
 ## 🛠️ Stos Technologiczny
 
-- **Frontend**: [React 19](https://react.dev/), [TypeScript](https://www.typescriptlang.org/)
-- **Build Tool**: [Vite](https://vite.dev/)
-- **Style**: [Tailwind CSS](https://tailwindcss.com/)
-- **Ikony**: [Lucide React](https://lucide.dev/)
-- **Arkusze i Eksport**: [XLSX (SheetJS)](https://sheetjs.com/)
-- **Efekty**: [Canvas Confetti](https://www.npmjs.com/package/canvas-confetti)
-- **Testy**: [Vitest](https://vitest.dev/) (88 testów jednostkowych, 100% passed)
+- **Frontend**: [React 19](https://react.dev/), [React Router](https://reactrouter.com/), [TypeScript](https://www.typescriptlang.org/)
+- **Backend**: [Node.js](https://nodejs.org/), [Express](https://expressjs.com/), [TypeScript](https://www.typescriptlang.org/)
+- **ORM & Walidacja**: [Drizzle ORM](https://orm.drizzle.team/), [Zod](https://zod.dev/), [Drizzle Zod](https://orm.drizzle.team/docs/zod)
+- **Bazy Danych**: [SQLite (better-sqlite3)](https://github.com/WiseLibs/better-sqlite3), [PostgreSQL (pg)](https://node-postgres.com/)
+- **Bezpieczeństwo**: [JSON Web Token (JWT)](https://jwt.io/), [SHA-256 / Crypto]
+- **Style**: [Tailwind CSS 4](https://tailwindcss.com/)
+- **Ikony**: [Lucide React](https://lucide.dev/) (wersja `^1.38.0`)
+- **Testy**: [Vitest](https://vitest.dev/), [Supertest](https://github.com/ladjs/supertest) (21 plików testowych, 132 testy, 100% passed)
 
 ---
 
 ## 📁 Struktura Projektu
 
 ```text
-src/
-├── components/            # Komponenty interfejsu użytkownika
-│   ├── AdminPanelModal.tsx       # Panel administratora (scalanie, konsultanci)
-│   ├── AttachmentsManager.tsx    # Menedżer i podgląd załączników (PDF/obrazy/arkusze)
-│   ├── CallerDisambiguation.tsx  # Rozstrzyganie osób o tym samym nazwisku
-│   ├── ContactHistoryView.tsx    # Widok kartoteki i osi czasu porad
-│   ├── CallRecordsFilter.tsx     # Filtrowanie rejestru (województwa, daty, typy)
-│   ├── CallRecordsTable.tsx      # Tabela centralnego rejestru porad
-│   ├── DateRangePicker.tsx       # Wybór zakresu dat z kalendarzem
-│   ├── EditCallerModal.tsx       # Modal edycji danych kontaktu (Admin/Specjalista)
-│   ├── EditCallRecordModal.tsx   # Modal edycji wpisu porady
-│   ├── EmailNotificationModal.tsx# Podgląd powiadomień e-mail
-│   ├── ExcelMigratorModal.tsx    # Kreator importu bazy z plików Excel
-│   ├── ExportModal.tsx           # Kreator eksportu XLSX / CSV z RODO
-│   ├── Header.tsx                # Nagłówek z przełącznikiem dyżurującego, Handoff i Dark Mode
-│   ├── LoginScreen.tsx           # Ekran logowania ze sprawdzaniem uprawnień
-│   ├── NewCallerModal.tsx        # Rejestracja nowego kontaktu i pierwszej porady
-│   ├── NewCallRecordModal.tsx    # Formularz dodania nowej porady
-│   ├── ReferralSelector.tsx      # Autocomplete wyboru konsultanta do przekazania
-│   ├── ReferredCasesModal.tsx    # Kolejka spraw przekazanych (Handoff)
-│   ├── SearchBar.tsx             # Pasek szybkiego wyszukiwania kontaktów
-│   ├── StatsBar.tsx              # Pulpit statystyk i wykresów PFRON
-│   └── UserProfileModal.tsx      # Modal edycji profilu konsultanta
-├── context/
-│   └── AppContext.tsx            # Globalny stan aplikacji i synchronizacja Live
-├── data/
-│   ├── sampleData.ts             # Początkowa baza 71 porad i kartotek
-│   └── sampleData.test.ts        # Testy spójności danych początkowych
-├── services/                     # Logika biznesowa i integracje
-│   ├── adminService.test.ts      # Testy operacji administratora
-│   ├── auth.ts / .test.ts        # Autoryzacja i role dyżurujących
-│   ├── callDate.ts / .test.ts    # Narzędzia formatowania i walidacji dat
-│   ├── excelMigrator.ts / .test  # Silnik parsowania i scalania Excela
-│   ├── exportService.ts          # Generator raportów XLSX i CSV
-│   ├── fuzzyMatch.ts / .test.ts  # Algorytmy dopasowania rozmytego i Levenshteina
-│   ├── notificationService.ts    # Generowanie szablonów e-mail
-│   ├── referrals.test.ts         # Testy modułu przekazywania spraw i handoff
-│   └── storage.ts / .test.ts     # Pamięć lokalna i wyszukiwarka kontaktów
-├── types/
-│   └── index.ts                  # Typy TypeScript (Caller, CallRecord, Specialist itp.)
-└── utils/
-    ├── fileUtils.ts / .test.ts   # Obsługa formatów plików i rozmiarów
-    ├── recordFilters.ts          # Filtry danych rejestru
-    └── reportStats.ts            # Agregacja statystyk dla PFRON
+├── server/                     # Backend TypeScript API & Baza Danych
+│   ├── db/
+│   │   ├── adapter.ts          # Interfejs DatabaseAdapter
+│   │   ├── index.ts            # Manager bazy i przełącznik silników
+│   │   ├── postgresAdapter.ts  # Adapter bazy danych PostgreSQL
+│   │   └── sqliteAdapter.ts    # Adapter bazy danych SQLite
+│   ├── middleware/
+│   │   └── auth.ts             # Middleware JWT (authenticateJWT, requireAdmin)
+│   ├── routes/
+│   │   ├── admin.ts            # Punkty końcowe administratora (/api/admin/*)
+│   │   ├── auth.ts             # Logowanie i sesje JWT (/api/auth/*)
+│   │   ├── callers.ts          # Kartoteki kontaktów (/api/callers/*)
+│   │   └── records.ts          # Rejestr porad (/api/records/*)
+│   ├── index.ts                # Główny serwer Express
+│   ├── server.test.ts          # Testy integracyjne backendu i JWT
+│   └── types.ts                # Typy backendowe i JWT
+├── src/
+│   ├── components/             # Komponenty interfejsu użytkownika
+│   │   ├── Header.tsx          # Główny nagłówek z nawigacją tras URL
+│   │   ├── LoginScreen.tsx     # Ekran logowania z autoryzacją JWT
+│   │   ├── ProtectedRoute.tsx  # Strażnik tras URL i uprawnień admina
+│   │   ├── ContactHistoryView.tsx # Kartoteka kontaktu i oś czasu
+│   │   └── ...                 # Modale i filtry
+│   ├── pages/                  # Strony routingu
+│   │   ├── admin/
+│   │   │   ├── AdminDashboard.tsx   # Panel Administratora
+│   │   │   └── tabs/                # Zakładki panelu (Overview, Specialists, Merge, Audit, DB)
+│   │   ├── CallerDetailPage.tsx     # /callers/:id
+│   │   ├── NotFoundPage.tsx         # 404
+│   │   ├── RecordsPage.tsx          # /records
+│   │   ├── SearchPage.tsx           # /search
+│   │   ├── StatsPage.tsx            # /stats
+│   │   └── UnauthorizedPage.tsx     # 403
+│   ├── context/
+│   │   └── AppContext.tsx      # Globalny stan z synchronizacją z API i JWT
+│   ├── services/
+│   │   ├── api.ts              # Klient HTTP z tokenami JWT
+│   │   ├── auth.ts             # Usługa autoryzacji
+│   │   └── storage.ts          # Usługa magazynu lokalnego
+│   └── types/
+│       └── index.ts            # Współdzielone typy danych
+├── package.json
+└── vite.config.ts
 ```
 
 ---
 
 ## 🚀 Uruchomienie i Rozwój
 
-### Wymagania wstępne
-- [Node.js](https://nodejs.org/) (wersja 18 lub nowsza)
-- Menedżer pakietów `npm`
-
-### Instalacja zależności
+### 1. Instalacja zależności
 ```bash
 npm install
 ```
 
-### Uruchomienie serwera deweloperskiego
+### 2. Uruchomienie serwera deweloperskiego (Backend + Frontend)
 ```bash
 npm run dev
 ```
-Aplikacja będzie dostępna pod adresem: `http://localhost:5173/`
+- **Frontend**: `http://localhost:5173/`
+- **Backend API**: `http://localhost:3001/`
 
-### Uruchomienie testów jednostkowych
+Możesz także uruchamiać komponenty osobno:
+```bash
+npm run dev:backend   # Uruchamia serwer Express z tsx watch
+npm run dev:frontend  # Uruchamia Vite dev server
+```
+
+### 3. Testy jednostkowe i integracyjne
 ```bash
 npm test
 ```
 
-### Budowanie wersji produkcyjnej
+### 4. Budowanie wersji produkcyjnej
 ```bash
 npm run build
 ```
-Skompilowane pliki produkcyjne znajdą się w katalogu `./dist`.
+Kompiluje frontend (`dist/`) oraz backend (`dist-server/`).
 
 ---
 
-## 🔒 Bezpieczeństwo i RODO
-Aplikacja przetwarza dane w zgodzie z art. 9 RODO (dane dotyczące zdrowia i niepełnosprawności):
-- Możliwość natychmiastowej anonimizacji danych osobowych w raportach.
-- Bezpieczne przechowywanie danych w pamięci lokalnej przeglądarki.
-- Pełna separacja ról administratora i dyżurujących specjalistów.
+## 🔑 Domyślne Dane Dostępowe (Konta Demo)
+
+- **Administrator**: `admin@synapsis.org.pl` / hasło: `synapsis2026` (Dostęp do `/admin`)
+- **Koordynatorka / Psycholog**: `j.mrozek@synapsis.org.pl` / hasło: `synapsis2026`
+- **Radca Prawny**: `a.nowak@synapsis.org.pl` / hasło: `synapsis2026`
+- **Doradca P2P**: `b.wisniewska@synapsis.org.pl` / hasło: `synapsis2026`
+- **Konsultant Społeczny**: `k.zielinski@synapsis.org.pl` / hasło: `synapsis2026`

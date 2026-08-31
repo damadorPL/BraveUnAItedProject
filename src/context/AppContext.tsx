@@ -22,6 +22,7 @@ import {
   resetToSampleData,
   searchCallers,
 } from "../services/storage";
+import { api, getStoredToken, setStoredToken } from "../services/api";
 import { computeRecordChanges } from "../utils/auditLogger";
 
 // Jedno źródło prawdy dla "czy ten wpis jest przekazany do tego specjalisty" —
@@ -266,16 +267,70 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [selectedCaller, broadcast]);
 
+  const syncData = useCallback(async (hasAuthToken = false) => {
+    try {
+      const token = getStoredToken();
+      const isAuthenticated = hasAuthToken || Boolean(token);
+
+      const fetchedSpecs = await api.specialists.getAll().catch(() => null);
+      if (fetchedSpecs && fetchedSpecs.length > 0) {
+        setSpecialists(fetchedSpecs);
+      }
+
+      if (isAuthenticated) {
+        const [fetchedCallers, fetchedRecords] = await Promise.all([
+          api.callers.getAll().catch(() => null),
+          api.records.getAll().catch(() => null),
+        ]);
+        if (fetchedCallers) setCallers(fetchedCallers);
+        if (fetchedRecords) setRecords(fetchedRecords);
+      }
+    } catch (err) {
+      console.warn("Backend sync warning, fallback to storage:", err);
+    }
+  }, []);
+
+  // Initial load from backend API if available
+  useEffect(() => {
+    let isMounted = true;
+    async function initData() {
+      try {
+        const token = getStoredToken();
+        let authenticated = false;
+        if (token) {
+          const me = await api.auth.me();
+          if (me?.user && isMounted) {
+            setCurrentSpecialist(me.user);
+            saveSessionSpecialistId(me.user.id);
+            authenticated = true;
+          }
+        }
+        await syncData(authenticated);
+      } catch (err) {
+        console.warn("Backend sync failed on init, using local storage:", err);
+      }
+    }
+    initData();
+    return () => {
+      isMounted = false;
+    };
+  }, [syncData]);
+
   const dismissNotification = useCallback(() => {
     setLiveNotification(null);
   }, []);
 
-  const login = useCallback((specialist: Specialist) => {
-    setCurrentSpecialist(specialist);
-    saveSessionSpecialistId(specialist.id);
-  }, []);
+  const login = useCallback(
+    (specialist: Specialist) => {
+      setCurrentSpecialist(specialist);
+      saveSessionSpecialistId(specialist.id);
+      syncData(true);
+    },
+    [syncData]
+  );
 
   const logout = useCallback(() => {
+    api.auth.logout();
     setCurrentSpecialist(null);
     clearSession();
     setSelectedCaller(null);
