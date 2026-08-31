@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useCurrentSpecialist } from "../../context/AppContext";
 import { AdminOverviewTab } from "./tabs/AdminOverviewTab";
+import { AdminReportsTab } from "./tabs/AdminReportsTab";
 import { AdminSpecialistsTab } from "./tabs/AdminSpecialistsTab";
 import { AdminMergeTab } from "./tabs/AdminMergeTab";
 import { AdminImportTab } from "./tabs/AdminImportTab";
@@ -9,6 +10,7 @@ import { AdminDatabaseTab } from "./tabs/AdminDatabaseTab";
 import {
   ShieldCheck,
   LayoutDashboard,
+  BarChart3,
   Users,
   GitMerge,
   FileSpreadsheet,
@@ -19,7 +21,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-type AdminTab = "overview" | "specialists" | "merge" | "import" | "audit" | "database";
+type AdminTab = "overview" | "reports" | "specialists" | "merge" | "import" | "audit" | "database";
 
 export const AdminDashboard: React.FC = () => {
   const currentSpecialist = useCurrentSpecialist();
@@ -67,6 +69,19 @@ export const AdminDashboard: React.FC = () => {
             >
               <LayoutDashboard className="w-4 h-4 shrink-0" />
               <span>Pulpit główny</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("reports")}
+              className={`w-full flex items-center space-x-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "reports"
+                  ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#282522] hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              <BarChart3 className="w-4 h-4 shrink-0 text-indigo-500" />
+              <span>Raporty PFRON i analityka</span>
             </button>
 
             <button
@@ -139,6 +154,7 @@ export const AdminDashboard: React.FC = () => {
         {/* Tab Content Body */}
         <div className="lg:col-span-9">
           {activeTab === "overview" && <AdminOverviewTab onSelectTab={(tab) => setActiveTab(tab)} />}
+          {activeTab === "reports" && <AdminReportsTab />}
           {activeTab === "specialists" && <AdminSpecialistsTab />}
           {activeTab === "merge" && <AdminMergeTab />}
           {activeTab === "import" && <AdminImportTab />}

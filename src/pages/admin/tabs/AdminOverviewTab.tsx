@@ -15,10 +15,11 @@ import {
   KeyRound,
   RefreshCw,
   FileSpreadsheet,
+  BarChart3,
 } from "lucide-react";
 
 interface AdminOverviewTabProps {
-  onSelectTab: (tab: "specialists" | "merge" | "import" | "audit" | "database") => void;
+  onSelectTab: (tab: "reports" | "specialists" | "merge" | "import" | "audit" | "database") => void;
 }
 
 export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab }) => {
@@ -244,7 +245,23 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onSelectTab 
         <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">
           Szybkie akcje administracyjne
         </h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+          <button
+            type="button"
+            onClick={() => onSelectTab("reports")}
+            className="p-4 bg-white dark:bg-[#1E1C1A] hover:bg-slate-50 dark:hover:bg-[#282522] border border-slate-200 dark:border-[#383431] rounded-2xl text-left transition-all group cursor-pointer shadow-2xs"
+          >
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+              <BarChart3 className="w-4 h-4" />
+            </div>
+            <div className="font-bold text-xs text-slate-900 dark:text-white">
+              Raporty PFRON
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              Pulpit analityczny, wskaźniki i eksport Excel/CSV
+            </p>
+          </button>
+
           <button
             type="button"
             onClick={() => onSelectTab("specialists")}

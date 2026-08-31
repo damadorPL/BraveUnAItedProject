@@ -157,21 +157,6 @@ export const Header: React.FC = () => {
                 </span>
               )}
             </button>
-
-            {currentSpecialist.isAdmin && (
-              <button
-                type="button"
-                onClick={() => handleTabChange("STATS")}
-                className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                  location.pathname === "/stats"
-                    ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
-                    : "text-slate-300 hover:text-white hover:bg-[#34302E]"
-                }`}
-              >
-                <BarChart3 className="w-3.5 h-3.5 shrink-0" />
-                <span>Raporty PFRON</span>
-              </button>
-            )}
           </nav>
 
           {/* 3. Right: Desktop Actions & User Controls (Visible on xl: >= 1280px) */}
@@ -486,24 +471,6 @@ export const Header: React.FC = () => {
                 </span>
               )}
             </button>
-
-            {currentSpecialist.isAdmin && (
-              <button
-                type="button"
-                onClick={() => handleTabChange("STATS")}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === "STATS" && !selectedCaller
-                    ? "bg-[#FFB200] text-[#2D2A28] shadow-xs"
-                    : "text-slate-200 hover:bg-[#2D2A28]"
-                }`}
-              >
-                <div className="flex items-center space-x-2.5">
-                  <BarChart3 className="w-4 h-4" />
-                  <span>Raporty PFRON i analityka</span>
-                </div>
-                <ChevronRight className="w-4 h-4 opacity-50" />
-              </button>
-            )}
           </div>
 
           {/* Quick Actions in Mobile Menu */}

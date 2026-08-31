@@ -12,7 +12,6 @@ import { LoginScreen } from "./components/LoginScreen";
 import { SearchPage } from "./pages/SearchPage";
 import { CallerDetailPage } from "./pages/CallerDetailPage";
 import { RecordsPage } from "./pages/RecordsPage";
-import { StatsPage } from "./pages/StatsPage";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
 import { UnauthorizedPage } from "./pages/UnauthorizedPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -82,7 +81,7 @@ export default function App() {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/callers/:id" element={<CallerDetailPage />} />
             <Route path="/records" element={<RecordsPage />} />
-            <Route path="/stats" element={<StatsPage />} />
+            <Route path="/stats" element={<Navigate to="/admin" replace />} />
             <Route
               path="/admin/*"
               element={
