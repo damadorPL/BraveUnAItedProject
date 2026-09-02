@@ -114,7 +114,7 @@ export const EditCallRecordModal: React.FC = () => {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!adviceDescription.trim()) {
       setFormError("Proszę wpisać krótki opis, czego dotyczyła porada.");

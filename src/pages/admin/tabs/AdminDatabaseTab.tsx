@@ -93,7 +93,7 @@ export const AdminDatabaseTab: React.FC = () => {
     }
   };
 
-  const handleApplyConfig = async (e: React.FormEvent) => {
+  const handleApplyConfig = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setActionMessage(null);
     try {

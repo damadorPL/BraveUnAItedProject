@@ -179,7 +179,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
     );
   }, [callers, targetCallerId, mergeSearchSource]);
 
-  const handleMergeSubmit = (e: React.FormEvent) => {
+  const handleMergeSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!targetCaller || !sourceCaller || targetCallerId === sourceCallerId) return;
 
@@ -203,7 +203,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
     });
   };
 
-  const handleSaveSpecialist = (e: React.FormEvent) => {
+  const handleSaveSpecialist = (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!specName.trim() || !specEmail.trim()) return;
 

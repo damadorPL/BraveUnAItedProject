@@ -62,7 +62,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
     onClose();
   };
 
-  const handleSendCode = (e: React.FormEvent) => {
+  const handleSendCode = (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!email.trim()) {
       setError("Podaj służbowy adres e-mail.");
@@ -77,7 +77,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
     setStep("CODE");
   };
 
-  const handleSetPassword = async (e: React.FormEvent) => {
+  const handleSetPassword = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!recognized) return;
     if (codeInput.trim() !== sentCode) {

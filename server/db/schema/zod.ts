@@ -38,8 +38,6 @@ export const BENEFICIARY_TYPES = [
 // 1. Auth Schemas
 export const loginSchema = z.object({
   email: z
-    .string()
-    .min(1, "Adres e-mail jest wymagany.")
     .email("Wprowadź poprawny adres e-mail.")
     .trim(),
   password: z
@@ -48,7 +46,7 @@ export const loginSchema = z.object({
 });
 
 export const resetPasswordSchema = z.object({
-  email: z.string().email("Wprowadź poprawny adres e-mail.").trim(),
+  email: z.email("Wprowadź poprawny adres e-mail.").trim(),
   newPassword: z
     .string()
     .min(8, "Nowe hasło musi składać się z co najmniej 8 znaków."),
@@ -116,7 +114,6 @@ export const specialistSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(2, "Imię i nazwisko specjalisty jest wymagane."),
   email: z
-    .string()
     .email("Niepoprawny format adresu e-mail.")
     .refine((val) => val.trim().toLowerCase().endsWith("@synapsis.org.pl"), {
       message: "Adres e-mail musi należeć do domeny @synapsis.org.pl",

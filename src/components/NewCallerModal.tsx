@@ -106,7 +106,7 @@ export const NewCallerModal: React.FC = () => {
     setGuidanceAreas(areas.length > 0 ? [areas[0]] : []);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!lastName.trim()) {
       setFormError("Proszę podać nazwisko lub identyfikator kontaktu.");

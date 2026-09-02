@@ -58,7 +58,7 @@ export const LoginScreen: React.FC = () => {
     return <Navigate to={target} replace />;
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
     if (!email.trim()) {

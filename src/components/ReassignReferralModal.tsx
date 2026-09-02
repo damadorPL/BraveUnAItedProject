@@ -37,7 +37,7 @@ const ReassignModalForm: React.FC<{
   const caller: Caller | undefined = callers.find((c) => c.id === record.callerId);
   const targetSpecialist = specialists.find((s) => s.id === selectedSpecialistId);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!targetSpecialist) return;
 

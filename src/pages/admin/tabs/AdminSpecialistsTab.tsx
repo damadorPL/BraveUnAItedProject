@@ -158,7 +158,7 @@ export const AdminSpecialistsTab: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
