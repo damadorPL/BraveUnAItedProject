@@ -17,7 +17,7 @@
     "lint": "oxlint",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "preview": "vite preview"
+    "preview": "concurrently -k -n \"SERVER,PREVIEW\" -c \"cyan.bold,yellow.bold\" \"npm run dev:backend\" \"vite preview\""
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
