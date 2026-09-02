@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { getSpecialistInitials } from "../services/auth";
 
 interface SpecialistAvatarProps {
@@ -18,19 +18,17 @@ export const SpecialistAvatar: React.FC<SpecialistAvatarProps> = ({
   avatarUrl,
   className,
 }) => {
-  const [hasError, setHasError] = useState(false);
-
-  useEffect(() => {
-    setHasError(false);
-  }, [avatarUrl]);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const hasError = Boolean(avatarUrl && failedUrl === avatarUrl);
 
   if (avatarUrl && !hasError) {
     return (
       <img
+        key={avatarUrl}
         src={avatarUrl}
         alt=""
         aria-hidden="true"
-        onError={() => setHasError(true)}
+        onError={() => setFailedUrl(avatarUrl)}
         className={`object-cover ${className}`}
       />
     );
