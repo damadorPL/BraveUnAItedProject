@@ -202,7 +202,7 @@ export const CallRecordsFilter: React.FC = () => {
           type="text"
           value={filterState.searchQuery}
           onChange={(e) => setFilterState((prev) => ({ ...prev, searchQuery: e.target.value }))}
-          placeholder="Szukaj w treści porad, zaleceń lub uwag (np. WZON, IPET, orzeczenie, szkoła)..."
+          placeholder="Szukaj w treści porad, zaleceń lub uwag..."
           aria-label="Szukaj w treści porad"
           className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-[#FFB200] focus:outline-none"
         />

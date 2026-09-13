@@ -209,7 +209,7 @@ export const EditCallerModal: React.FC = () => {
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                placeholder="np. Kowalska (lub Mama Jasia)"
+                placeholder="np. Kowalska"
                 className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-500 dark:placeholder-slate-400"
               />
             </div>
@@ -240,7 +240,7 @@ export const EditCallerModal: React.FC = () => {
                 type="text"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                placeholder="np. Warszawa / Kraków"
+                placeholder="np. Warszawa"
                 className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-500 dark:placeholder-slate-400"
               />
             </div>
@@ -351,7 +351,7 @@ export const EditCallerModal: React.FC = () => {
               type="text"
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
-              placeholder="np. Diagnoza WZON, Uczeń LO, Przedszkole integracyjne"
+              placeholder="np. Przedszkole, Szkoła podstawowa, Diagnoza (po przecinku)"
               className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-400 dark:placeholder-slate-500"
             />
           </div>

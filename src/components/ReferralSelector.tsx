@@ -264,7 +264,7 @@ export const ReferralSelector: React.FC<Props> = ({
               rows={2}
               value={referralNote}
               onChange={(e) => onChangeNote(e.target.value)}
-              placeholder="Np. Pilna prośba o kontakt telefoniczny w sprawie analizy punktu 7 i 8 orzeczenia WZON..."
+              placeholder="Wpisz instrukcje, powód przekazania lub wskazówki dla specjalisty..."
               className="w-full bg-white dark:bg-[#1E1C1A] border border-slate-300 dark:border-[#4A4542] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] focus:outline-none placeholder-slate-500 dark:placeholder-slate-400"
             />
           </div>

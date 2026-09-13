@@ -150,7 +150,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="np. mgr Joanna Mrożek"
+                placeholder="np. mgr Anna Kowalska"
                 className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200]"
               />
             </div>
@@ -167,7 +167,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="np. j.mrozek@synapsis.org.pl"
+                placeholder="np. imie.nazwisko@synapsis.org.pl"
                 className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#141312] border border-slate-300 dark:border-[#4A4542] rounded-xl text-xs font-medium text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200]"
               />
             </div>

@@ -354,7 +354,7 @@ export const NewCallerModal: React.FC = () => {
               type="text"
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
-              placeholder="Np. Syn 7 lat, WZON punkt 7, Szkoła podstawowa"
+              placeholder="np. Przedszkole, Szkoła podstawowa, Diagnoza (po przecinku)"
               className="w-full bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl p-2.5 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#FFB200] focus:outline-none placeholder-slate-400 dark:placeholder-slate-500"
             />
           </div>

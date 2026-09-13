@@ -736,7 +736,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ isOpen, onClos
                         setSpecEmail(e.target.value);
                         setSpecEmailError(null);
                       }}
-                      placeholder={`np. t.lewandowski@${ALLOWED_EMAIL_DOMAIN}`}
+                      placeholder={`np. imie.nazwisko@${ALLOWED_EMAIL_DOMAIN}`}
                       className={`w-full px-3 py-1.5 bg-white dark:bg-[#1E1C1A] border rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 ${
                         specEmailError
                           ? "border-red-400 dark:border-red-700 focus:ring-red-400"

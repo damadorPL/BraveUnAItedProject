@@ -51,6 +51,7 @@ export const AttachmentsManager: React.FC<Props> = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadDescription, setUploadDescription] = useState("");
   const [zoomLevel, setZoomLevel] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -133,15 +134,7 @@ export const AttachmentsManager: React.FC<Props> = ({
       }
 
       if (!isCancelled) {
-        setExcelPreviewData({
-          headers: ["Lp.", "Kategoria wsparcia", "Punkty WZON", "Wysokość świadczenia (PLN)", "Status"],
-          rows: [
-            ["1", "Poziom potrzeby wsparcia - najwyższy", "95 - 100 pkt", "3 919 zł", "Przyznane"],
-            ["2", "Poziom potrzeby wsparcia - znaczny", "85 - 94 pkt", "3 135 zł", "Przyznane"],
-            ["3", "Poziom potrzeby wsparcia - umiarkowany", "78 - 84 pkt", "2 351 zł", "Odwołanie w toku"],
-            ["4", "Poziom potrzeby wsparcia - podstawowy", "70 - 77 pkt", "1 568 zł", "Wnioskowane"],
-          ],
-        });
+        setExcelPreviewData(null);
       }
     }
 
@@ -157,12 +150,14 @@ export const AttachmentsManager: React.FC<Props> = ({
     setIsUploading(true);
     try {
       const newAtts: Attachment[] = [];
+      const descriptionToSend = uploadDescription.trim() || undefined;
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const att = await api.attachments.upload(file, specialistName);
+        const att = await api.attachments.upload(file, specialistName, descriptionToSend);
         newAtts.push(att);
       }
       onChange([...attachments, ...newAtts]);
+      setUploadDescription("");
     } catch (err) {
       console.error("Błąd podczas wgrywania pliku:", err);
       setUploadError("Wystąpił błąd podczas wgrywania pliku.");
@@ -210,7 +205,7 @@ export const AttachmentsManager: React.FC<Props> = ({
       }
     } else {
       // Demo download simulation: create a downloadable text/blob
-      const sampleContent = "Plik demonstracyjny dokumentacji ASD\nNazwa: " + att.name + "\nOpis: " + (att.description || "Załącznik do kartoteki.");
+      const sampleContent = "Plik: " + att.name + (att.description ? "\nOpis: " + att.description : "");
       const blob = new Blob([sampleContent], { type: "text/plain;charset=utf-8;" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
@@ -317,32 +312,53 @@ export const AttachmentsManager: React.FC<Props> = ({
 
           {/* Upload Drag & Drop Area */}
           {!readOnly && (
-            <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setIsDragging(true);
-              }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setIsDragging(false);
-                handleFiles(e.dataTransfer.files);
-              }}
-              onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all ${
-                isDragging
-                  ? "border-[#FFB200] bg-[#FFB200]/10 scale-[0.99]"
-                  : "border-slate-200 dark:border-[#383431] hover:border-[#FFB200] bg-slate-50/50 dark:bg-[#141312] hover:bg-[#FFB200]/5"
-              }`}
-            >
-              <div className="flex flex-col items-center justify-center space-y-1">
-                <UploadCloud className="w-6 h-6 text-amber-600 dark:text-[#FFB200]" />
-                <p className="font-semibold text-slate-800 dark:text-slate-200">
-                  {isUploading ? "Wgrywanie pliku..." : "Przeciągnij pliki tutaj lub kliknij, aby wybrać"}
-                </p>
-                <p className="text-[11px] text-slate-600 dark:text-slate-300">
-                  Obsługiwane formaty: <strong>PDF</strong>, <strong>Obrazy (JPG, PNG)</strong>, <strong>Excel / CSV</strong>, <strong>Dokumenty tekstowe (DOCX, TXT)</strong>
-                </p>
+            <div className="space-y-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <input
+                  type="text"
+                  value={uploadDescription}
+                  onChange={(e) => setUploadDescription(e.target.value)}
+                  placeholder="Opis załącznika (opcjonalnie, np. orzeczenie, opinia, wniosek)..."
+                  className="flex-1 px-3.5 py-2 rounded-xl border border-slate-300 dark:border-[#383431] bg-white dark:bg-[#1E1C1A] text-slate-900 dark:text-white placeholder:text-slate-400 text-xs focus:outline-none focus:ring-2 focus:ring-[#FFB200] transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="inline-flex items-center justify-center space-x-1.5 px-3.5 py-2 bg-[#FFB200] hover:bg-[#E5A000] text-[#2D2A28] rounded-xl text-xs font-black shadow-xs transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>{isUploading ? "Wgrywanie..." : "Wybierz plik"}</span>
+                </button>
+              </div>
+
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  handleFiles(e.dataTransfer.files);
+                }}
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all ${
+                  isDragging
+                    ? "border-[#FFB200] bg-[#FFB200]/10 scale-[0.99]"
+                    : "border-slate-200 dark:border-[#383431] hover:border-[#FFB200] bg-slate-50/50 dark:bg-[#141312] hover:bg-[#FFB200]/5"
+                }`}
+              >
+                <div className="flex flex-col items-center justify-center space-y-1">
+                  <UploadCloud className="w-6 h-6 text-amber-600 dark:text-[#FFB200]" />
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">
+                    {isUploading ? "Wgrywanie pliku..." : "Przeciągnij pliki tutaj lub kliknij, aby wybrać"}
+                  </p>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                    Obsługiwane formaty: <strong>PDF</strong>, <strong>Obrazy (JPG, PNG)</strong>, <strong>Excel / CSV</strong>, <strong>Dokumenty tekstowe (DOCX, TXT)</strong>
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -532,10 +548,16 @@ export const AttachmentsManager: React.FC<Props> = ({
                       </div>
 
                       <div className="bg-slate-50 dark:bg-[#141312] p-4 rounded-xl text-xs space-y-2 border border-slate-200 dark:border-[#2C2927]">
-                        <div className="font-bold text-slate-700 dark:text-slate-300">Podsumowanie treści dokumentu:</div>
-                        <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                          {previewAttachment.description || "Orzeczenie o potrzebie kształcenia specjalnego wydane z uwagi na autyzm (w tym Zespół Aspergera). Wskazano konieczność zapewnienia nauczyciela współorganizującego kształcenie oraz zajęć rewalidacyjnych."}
-                        </p>
+                        <div className="font-bold text-slate-700 dark:text-slate-300">Opis dokumentu:</div>
+                        {previewAttachment.description ? (
+                          <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                            {previewAttachment.description}
+                          </p>
+                        ) : (
+                          <p className="text-slate-400 dark:text-slate-500 italic leading-relaxed">
+                            Brak opisu dokumentu.
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex items-center justify-between pt-2">
@@ -572,7 +594,7 @@ export const AttachmentsManager: React.FC<Props> = ({
                     </span>
                   </div>
 
-                  {excelPreviewData && (
+                  {excelPreviewData && excelPreviewData.rows.length > 0 ? (
                     <div className="overflow-x-auto border border-slate-200 dark:border-[#383431] rounded-xl shadow-2xs">
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
@@ -597,6 +619,15 @@ export const AttachmentsManager: React.FC<Props> = ({
                         </tbody>
                       </table>
                     </div>
+                  ) : (
+                    <div className="p-8 text-center bg-slate-50 dark:bg-[#141312] rounded-xl border border-slate-200 dark:border-[#2C2927] space-y-2">
+                      <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        Brak danych tabelarycznych do wyświetlenia w podglądzie
+                      </p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Pobierz plik, aby otworzyć pełną treść w programie Excel lub arkuszu kalkulacyjnym.
+                      </p>
+                    </div>
                   )}
                 </div>
               )}
@@ -616,9 +647,15 @@ export const AttachmentsManager: React.FC<Props> = ({
 
                   <div className="bg-slate-50 dark:bg-[#141312] p-4 rounded-xl text-xs space-y-2 border border-slate-200 dark:border-[#2C2927]">
                     <div className="font-bold text-slate-700 dark:text-slate-300">Zawartość / opis dokumentu:</div>
-                    <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-mono whitespace-pre-wrap">
-                      {previewAttachment.description || "Wzór pisma przygotowany dla osoby kontaktowej w celu złożenia odwołania od orzeczenia WZON lub wniosku do dyrekcji szkoły."}
-                    </p>
+                    {previewAttachment.description ? (
+                      <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-mono whitespace-pre-wrap">
+                        {previewAttachment.description}
+                      </p>
+                    ) : (
+                      <p className="text-slate-400 dark:text-slate-500 italic leading-relaxed">
+                        Brak opisu dokumentu.
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-end pt-2">

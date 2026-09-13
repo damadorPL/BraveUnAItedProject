@@ -620,7 +620,7 @@ export const AdminSpecialistsTab: React.FC = () => {
                 type="password"
                 value={customPassword}
                 onChange={(e) => setCustomPassword(e.target.value)}
-                placeholder={editingSpec ? "Pozostaw puste, aby nie zmieniać" : "Domyślne: synapsis2026"}
+                placeholder={editingSpec ? "Pozostaw puste, aby nie zmieniać" : "Wprowadź hasło początkowe (opcjonalnie)"}
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#383431] bg-slate-50 dark:bg-[#141312] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
               />
             </div>

@@ -36,10 +36,10 @@ export const LoginScreen: React.FC = () => {
   const [isResetOpen, setIsResetOpen] = useState(false);
   const [resetSuccess, setResetSuccess] = useState<string | null>(null);
 
-  // Account auto-detection: system identifies account (and role) by email address
+  // Account auto-detection: system identifies account (and role) by email address only when demo mode is active
   const recognized = useMemo(
-    () => findSpecialistByEmail(specialists, email),
-    [specialists, email]
+    () => (showDemoFeatures ? findSpecialistByEmail(specialists, email) : null),
+    [specialists, email, showDemoFeatures]
   );
 
   // Only standard demo accounts (do not expose newly added database accounts in demo list)
@@ -128,7 +128,9 @@ export const LoginScreen: React.FC = () => {
       <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-xl p-7 sm:p-8">
         <h1 className="text-lg font-black text-slate-900 tracking-tight">Zaloguj się do systemu</h1>
         <p className="text-xs text-slate-600 mt-1 mb-5">
-          System sam rozpozna Twoje konto i uprawnienia na podstawie służbowego adresu e-mail.
+          {showDemoFeatures
+            ? "System sam rozpozna Twoje konto i uprawnienia na podstawie służbowego adresu e-mail."
+            : "Wprowadź swój służbowy adres e-mail oraz hasło dostępowe."}
         </p>
 
         {resetSuccess && (
@@ -157,13 +159,13 @@ export const LoginScreen: React.FC = () => {
                   setEmail(e.target.value);
                   setError(null);
                 }}
-                placeholder="np. a.nowak@synapsis.org.pl"
-                aria-invalid={Boolean(error && !recognized)}
+                placeholder="np. imie.nazwisko@synapsis.org.pl"
+                aria-invalid={Boolean(error)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
               />
 
-              {/* Rozpoznane konto + wykryty typ */}
-              {recognized && (
+              {/* Rozpoznane konto + wykryty typ (tylko w trybie demonstracyjnym) */}
+              {showDemoFeatures && recognized && (
                 <div
                   className="mt-2 flex items-center space-x-3 bg-[#E6F3F3] border border-[#296B6E]/25 rounded-xl px-3 py-2 animate-in fade-in"
                   role="status"
@@ -219,7 +221,7 @@ export const LoginScreen: React.FC = () => {
                     setError(null);
                   }}
                   placeholder="••••••••"
-                  aria-invalid={Boolean(error && recognized)}
+                  aria-invalid={Boolean(error)}
                   className="w-full px-3.5 py-2.5 pr-11 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#FFB200] focus:border-[#FFB200] transition-colors"
                 />
                 <button
