@@ -404,22 +404,38 @@ export const api = {
       }
     },
 
-    getViewUrl(attachment: Attachment): string {
-      if (attachment.dataUrl) return attachment.dataUrl;
-      const token = getStoredToken();
-      const tokenQuery = token ? `?token=${encodeURIComponent(token)}` : "";
-      return attachment.url ? `${attachment.url}${tokenQuery}` : `/api/attachments/${attachment.id}${tokenQuery}`;
+    async createDownloadTicket(id: string): Promise<string> {
+      const res = await request<{ success: boolean; ticket: string; downloadUrl: string }>(
+        `/attachments/${id}/ticket`,
+        { method: "POST" }
+      );
+      return res.ticket;
     },
 
-    getDownloadUrl(attachment: Attachment): string {
+    async getDownloadUrl(attachment: Attachment): Promise<string> {
       if (attachment.dataUrl) return attachment.dataUrl;
-      const token = getStoredToken();
+      const ticket = await this.createDownloadTicket(attachment.id);
       const params = new URLSearchParams();
-      if (token) params.set("token", token);
+      params.set("ticket", ticket);
       params.set("download", "1");
       if (attachment.name) params.set("filename", attachment.name);
       const base = attachment.url || `/api/attachments/${attachment.id}`;
       return `${base}?${params.toString()}`;
+    },
+
+    async fetchBlob(attachment: Attachment): Promise<Blob> {
+      const token = getStoredToken();
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const url = attachment.url || `/api/attachments/${attachment.id}`;
+      const res = await fetch(url, { headers });
+      if (!res.ok) throw new Error(`Błąd pobierania pliku: ${res.status}`);
+      return await res.blob();
+    },
+
+    getViewUrl(attachment: Attachment): string {
+      if (attachment.dataUrl) return attachment.dataUrl;
+      return attachment.url || `/api/attachments/${attachment.id}`;
     },
 
     async delete(id: string): Promise<boolean> {

@@ -75,7 +75,8 @@ graph TD
   * Pliki trafiają bezpośrednio na dysk / montowany wolumen kontenera (`data/uploads/attachments/` lub ścieżka ze zmiennej `ATTACHMENTS_DIR`).
 * **Punkty końcowe API**:
   * `POST /api/attachments/upload`: Odbiór pliku przez strumień `multer`, zapis ze zrandomizowanym identyfikatorem kolizyjnym, zwrot metadanych i adresu URL.
-  * `GET /api/attachments/:id`: Bezpieczne serwowanie pliku ze sprawdzeniem tokenu JWT i poprawnymi nagłówkami MIME/Content-Disposition.
+  * `POST /api/attachments/:id/ticket`: Generowanie jednorazowego kryptograficznego biletu pobierania (*Download Nonce*) ważnego przez 60 sekund.
+  * `GET /api/attachments/:id`: Bezpieczne serwowanie pliku z weryfikacją jednorazowego biletu (`?ticket=<nonce>`) lub nagłówka `Authorization: Bearer`.
   * `DELETE /api/attachments/:id`: Fizyczne usunięcie pliku z dysku przy usunięciu załącznika w kartotece.
 
 ---

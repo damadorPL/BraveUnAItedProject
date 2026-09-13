@@ -10,6 +10,10 @@ import {
   getAttachmentFilePath,
   deleteAttachmentFile,
 } from "../storage/attachmentStorage.js";
+import {
+  createAttachmentTicket,
+  consumeAttachmentTicket,
+} from "../storage/attachmentTicketStore.js";
 
 export const attachmentsRouter = Router();
 
@@ -56,27 +60,64 @@ attachmentsRouter.post(
   }
 );
 
+// POST /api/attachments/:id/ticket (generate single-use download nonce ticket)
+attachmentsRouter.post("/:id/ticket", authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const fileInfo = getAttachmentFilePath(id);
+    if (!fileInfo) {
+      res.status(404).json({ error: "Załącznik nie został znaleziony" });
+      return;
+    }
+
+    const ticketData = createAttachmentTicket(id, req.user?.id);
+    res.json({
+      success: true,
+      ticket: ticketData.ticket,
+      expiresIn: ticketData.expiresIn,
+      expiresAt: ticketData.expiresAt,
+      downloadUrl: `/api/attachments/${id}?ticket=${encodeURIComponent(ticketData.ticket)}`,
+    });
+  } catch (err: any) {
+    console.error("Error generating attachment ticket:", err);
+    res.status(500).json({ error: err.message || "Błąd generowania biletu pobierania" });
+  }
+});
+
 // GET /api/attachments/:id
 attachmentsRouter.get("/:id", (req: AuthenticatedRequest, res: Response) => {
   try {
     const id = req.params.id as string;
-    
-    // Check auth from Header or Query Token
-    let token = "";
-    if (req.headers.authorization?.startsWith("Bearer ")) {
-      token = req.headers.authorization.substring(7).trim();
-    } else if (typeof req.query.token === "string") {
-      token = req.query.token;
+
+    // 1. Check for single-use nonce ticket
+    const ticketParam = req.query.ticket || req.query.nonce;
+    const ticket = typeof ticketParam === "string" ? ticketParam : undefined;
+
+    let isAuthorized = false;
+
+    if (ticket) {
+      const isTicketValid = consumeAttachmentTicket(ticket, id);
+      if (!isTicketValid) {
+        res.status(401).json({ error: "Jednorazowy bilet pobierania wygasł lub został już wykorzystany" });
+        return;
+      }
+      isAuthorized = true;
+    } else if (req.headers.authorization?.startsWith("Bearer ")) {
+      // 2. Direct API call with Bearer header
+      const token = req.headers.authorization.substring(7).trim();
+      if (token && verifyJWT(token)) {
+        isAuthorized = true;
+      }
     }
 
-    if (!token || !verifyJWT(token)) {
+    if (!isAuthorized) {
       res.status(401).json({ error: "Wymagana autoryzacja do pobrania załącznika" });
       return;
     }
 
     const fileInfo = getAttachmentFilePath(id);
     if (!fileInfo) {
-      res.status(404).json({ error: "ZałŅcznik nie został znaleziony" });
+      res.status(404).json({ error: "Załącznik nie został znaleziony" });
       return;
     }
 

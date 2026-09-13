@@ -54,8 +54,38 @@ export const AttachmentsManager: React.FC<Props> = ({
   const [zoomLevel, setZoomLevel] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // When previewing an excel file, dynamically load xlsx and parse base64 or create preview
   const [excelPreviewData, setExcelPreviewData] = useState<{ headers: string[]; rows: any[][] } | null>(null);
+  const [loadedBlobUrl, setLoadedBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!previewAttachment || previewAttachment.type === "excel" || previewAttachment.dataUrl) {
+      return;
+    }
+
+    let isCancelled = false;
+    let localUrl: string | null = null;
+
+    api.attachments
+      .fetchBlob(previewAttachment)
+      .then((blob) => {
+        if (!isCancelled) {
+          localUrl = URL.createObjectURL(blob);
+          setLoadedBlobUrl(localUrl);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not fetch attachment blob for preview:", err);
+      });
+
+    return () => {
+      isCancelled = true;
+      if (localUrl) {
+        URL.revokeObjectURL(localUrl);
+      }
+    };
+  }, [previewAttachment]);
+
+  const activePreviewUrl = previewAttachment?.dataUrl || loadedBlobUrl || previewAttachment?.url || "";
 
   useEffect(() => {
     if (previewAttachment?.type !== "excel") return;
@@ -147,17 +177,37 @@ export const AttachmentsManager: React.FC<Props> = ({
     setConfirmDeleteId(id);
   };
 
-  const handleDownload = (att: Attachment, e: React.MouseEvent) => {
+  const handleDownload = async (att: Attachment, e: React.MouseEvent) => {
     e.stopPropagation();
     if (att.url || att.dataUrl) {
-      const downloadUrl = api.attachments.getDownloadUrl(att);
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = att.name;
-      link.target = "_blank";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (att.dataUrl && !att.url) {
+        const link = document.createElement("a");
+        link.href = att.dataUrl;
+        link.download = att.name;
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
+      try {
+        const downloadUrl = await api.attachments.getDownloadUrl(att);
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = att.name;
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch {
+        const link = document.createElement("a");
+        link.href = att.dataUrl || att.url || "";
+        link.download = att.name;
+        link.target = "_blank";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     } else {
       // Demo download simulation: create a downloadable text/blob
       const sampleContent = "Plik demonstracyjny dokumentacji ASD\nNazwa: " + att.name + "\nOpis: " + (att.description || "Załącznik do kartoteki.");
@@ -452,7 +502,7 @@ export const AttachmentsManager: React.FC<Props> = ({
               {previewAttachment.type === "image" && (
                 <div className="w-full flex items-center justify-center overflow-auto p-2">
                   <img
-                    src={api.attachments.getViewUrl(previewAttachment)}
+                    src={activePreviewUrl}
                     alt={previewAttachment.name}
                     style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
                     className="max-h-[58vh] max-w-full rounded-2xl object-contain shadow-lg transition-transform duration-150 border border-slate-200 dark:border-[#383431] bg-white dark:bg-[#1E1C1A]"
@@ -465,7 +515,7 @@ export const AttachmentsManager: React.FC<Props> = ({
                 <div className="w-full h-full flex flex-col items-center">
                   {previewAttachment.url || (previewAttachment.dataUrl && previewAttachment.dataUrl.includes("application/pdf")) ? (
                     <iframe
-                      src={api.attachments.getViewUrl(previewAttachment)}
+                      src={activePreviewUrl}
                       title={previewAttachment.name}
                       className="w-full h-[60vh] rounded-2xl border border-slate-200 dark:border-[#383431] shadow-sm bg-white dark:bg-[#1E1C1A]"
                     />

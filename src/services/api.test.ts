@@ -49,4 +49,48 @@ describe("Frontend API Client & Token Management", () => {
     expect(res.user.email).toBe("admin@synapsis.org.pl");
     expect(getStoredToken()).toBe(res.token);
   });
+
+  it("api.attachments.createDownloadTicket requests ticket from backend and returns nonce", async () => {
+    setStoredToken("test-jwt-token");
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true, ticket: "mock-nonce-abc-123", downloadUrl: "/api/attachments/att-1?ticket=mock-nonce-abc-123" }),
+    });
+
+    const ticket = await api.attachments.createDownloadTicket("att-1");
+    expect(ticket).toBe("mock-nonce-abc-123");
+    expect(global.fetch).toHaveBeenCalledWith(
+      "/api/attachments/att-1/ticket",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          Authorization: "Bearer test-jwt-token",
+        }),
+      })
+    );
+  });
+
+  it("api.attachments.getDownloadUrl produces URL with single-use nonce ticket", async () => {
+    setStoredToken("test-jwt-token");
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true, ticket: "safe-nonce-xyz" }),
+    });
+
+    const mockAttachment = {
+      id: "att-42",
+      name: "dokument.pdf",
+      size: 1024,
+      type: "pdf" as const,
+      uploadedAt: "2026-09-13T20:00:00Z",
+      uploadedBy: "Admin",
+      url: "/api/attachments/att-42",
+    };
+
+    const downloadUrl = await api.attachments.getDownloadUrl(mockAttachment);
+    expect(downloadUrl).toContain("ticket=safe-nonce-xyz");
+    expect(downloadUrl).toContain("download=1");
+    expect(downloadUrl).toContain("filename=dokument.pdf");
+    expect(downloadUrl).not.toContain("test-jwt-token"); // Ensure session JWT is NEVER exposed in the URL
+  });
 });

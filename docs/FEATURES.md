@@ -63,7 +63,7 @@ Dokument zawiera techniczny i funkcjonalny opis modułów systemu **Baza Porad**
 ## 7. 📎 Magazyn załączników na dysku i wolumenie
 
 * **Optymalizacja wydajności bazy**: Pliki załączników (PDF, skany orzeczeń WZON, zdjęcia, dokumenty medyczne) nie powiększają bazy danych, lecz są zapisywane bezpośrednio na dysku w katalogu `data/uploads/attachments/` (lub ścieżce `ATTACHMENTS_DIR`).
-* **Punkty końcowe API (`/api/attachments`)**: Bezpieczny upload `multipart/form-data` do 50 MB, streaming plików, bezpośredni podgląd w przeglądarce i pobieranie z autoryzacją JWT.
+* **Punkty końcowe API (`/api/attachments`)**: Bezpieczny upload `multipart/form-data` do 50 MB, streaming plików, bezpośredni podgląd w przeglądarce i pobieranie z autoryzacją jednorazowymi biletami nonce (*Single-Use Tickets*).
 
 ---
 

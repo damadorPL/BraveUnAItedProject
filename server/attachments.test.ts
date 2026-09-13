@@ -124,13 +124,72 @@ describe("Attachment Storage & API Endpoint Test Suite", () => {
       expect((res.body && Buffer.isBuffer(res.body) ? res.body.toString("utf8") : res.text)).toBe("Fake PDF content");
     });
 
-    it("GET /api/attachments/:id allows download via ?token= query parameter", async () => {
+    it("POST /api/attachments/:id/ticket requires authentication", async () => {
+      const res = await request(app).post(`/api/attachments/${uploadedId}/ticket`);
+      expect(res.status).toBe(401);
+    });
+
+    it("POST /api/attachments/:id/ticket generates single-use download nonce ticket", async () => {
       const res = await request(app)
-        .get(`/api/attachments/${uploadedId}?token=${adminToken}`)
+        .post(`/api/attachments/${uploadedId}/ticket`)
+        .set("Authorization", `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(typeof res.body.ticket).toBe("string");
+      expect(res.body.ticket.length).toBeGreaterThan(20);
+      expect(res.body.expiresIn).toBe(60);
+      expect(res.body.downloadUrl).toContain(`ticket=${res.body.ticket}`);
+    });
+
+    it("GET /api/attachments/:id allows download via ?ticket= nonce query parameter", async () => {
+      // 1. Generate nonce ticket
+      const ticketRes = await request(app)
+        .post(`/api/attachments/${uploadedId}/ticket`)
+        .set("Authorization", `Bearer ${adminToken}`);
+      const ticket = ticketRes.body.ticket;
+
+      // 2. Download with ?ticket=
+      const res = await request(app)
+        .get(`/api/attachments/${uploadedId}?ticket=${ticket}`)
         .buffer(true);
 
       expect(res.status).toBe(200);
       expect((res.body && Buffer.isBuffer(res.body) ? res.body.toString("utf8") : res.text)).toBe("Fake PDF content");
+    });
+
+    it("GET /api/attachments/:id rejects replay attack (reusing the same nonce fails with 401)", async () => {
+      // 1. Generate nonce ticket
+      const ticketRes = await request(app)
+        .post(`/api/attachments/${uploadedId}/ticket`)
+        .set("Authorization", `Bearer ${adminToken}`);
+      const ticket = ticketRes.body.ticket;
+
+      // 2. First download succeeds
+      const firstRes = await request(app).get(`/api/attachments/${uploadedId}?ticket=${ticket}`);
+      expect(firstRes.status).toBe(200);
+
+      // 3. Second download with identical nonce must fail (single-use / replay protection)
+      const secondRes = await request(app).get(`/api/attachments/${uploadedId}?ticket=${ticket}`);
+      expect(secondRes.status).toBe(401);
+      expect(secondRes.body.error).toContain("wykorzystany");
+    });
+
+    it("GET /api/attachments/:id fails with 401 on invalid or unknown nonce", async () => {
+      const res = await request(app).get(`/api/attachments/${uploadedId}?ticket=completely-fake-nonce-12345`);
+      expect(res.status).toBe(401);
+    });
+
+    it("GET /api/attachments/:id fails when nonce was created for another attachment", async () => {
+      // 1. Generate ticket for uploadedId
+      const ticketRes = await request(app)
+        .post(`/api/attachments/${uploadedId}/ticket`)
+        .set("Authorization", `Bearer ${adminToken}`);
+      const ticket = ticketRes.body.ticket;
+
+      // 2. Attempt to use that ticket on a different file ID
+      const res = await request(app).get(`/api/attachments/different-file-id?ticket=${ticket}`);
+      expect(res.status).toBe(401);
     });
 
     it("GET /api/attachments/:id fails with 401 without token", async () => {
