@@ -99,8 +99,8 @@ authRouter.post("/reset-password", validateBody(resetPasswordSchema), async (req
       return;
     }
 
-    if (newPassword.length < 8) {
-      res.status(400).json({ error: "Hasło musi mieć co najmniej 8 znaków." });
+    if (newPassword.length < 10) {
+      res.status(400).json({ error: "Hasło musi mieć co najmniej 10 znaków." });
       return;
     }
 

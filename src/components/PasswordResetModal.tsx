@@ -5,6 +5,8 @@ import {
   generateResetCode,
   hashPassword,
   MIN_PASSWORD_LENGTH,
+  validatePasswordStrength,
+  isPasswordSecure,
 } from "../services/auth";
 import { savePasswordOverride } from "../services/storage";
 import { SpecialistAvatar } from "./SpecialistAvatar";
@@ -18,6 +20,7 @@ import {
   Eye,
   EyeOff,
   Send,
+  Check,
 } from "lucide-react";
 
 interface PasswordResetModalProps {
@@ -49,6 +52,11 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
   const recognized = useMemo(
     () => findSpecialistByEmail(specialists, email),
     [specialists, email]
+  );
+
+  const passwordStrength = useMemo(
+    () => validatePasswordStrength(newPassword, recognized?.email),
+    [newPassword, recognized?.email]
   );
 
   const resetAndClose = () => {
@@ -84,8 +92,9 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
       setError("Nieprawidłowy kod weryfikacyjny. Przepisz kod z wiadomości e-mail.");
       return;
     }
-    if (newPassword.length < MIN_PASSWORD_LENGTH) {
-      setError(`Nowe hasło musi mieć co najmniej ${MIN_PASSWORD_LENGTH} znaków.`);
+    const validation = isPasswordSecure(newPassword, recognized.email);
+    if (!validation.valid) {
+      setError(validation.message || "Hasło nie spełnia wymagań bezpieczeństwa.");
       return;
     }
     if (newPassword !== repeatPassword) {
@@ -266,6 +275,65 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+
+                {/* Password strength meter and rules checklist */}
+                {newPassword && (
+                  <div className="mt-2.5 space-y-2">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[11px] font-bold">
+                        <span className="text-slate-600">Siła hasła:</span>
+                        <span
+                          className={
+                            passwordStrength.score >= 3
+                              ? "text-emerald-700"
+                              : passwordStrength.score === 2
+                              ? "text-amber-700"
+                              : "text-rose-700"
+                          }
+                        >
+                          {passwordStrength.scoreLabel}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-1.5 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden p-0.5">
+                        {[1, 2, 3, 4].map((level) => (
+                          <div
+                            key={level}
+                            className={`h-full rounded-full transition-all duration-300 ${
+                              passwordStrength.score >= level
+                                ? passwordStrength.scoreColor
+                                : "bg-slate-200"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1 text-[11px]">
+                      <div className="font-bold text-slate-700 mb-0.5">Wymogi bezpieczeństwa:</div>
+                      {passwordStrength.rules.map((rule) => (
+                        <div
+                          key={rule.key}
+                          className={`flex items-center gap-1.5 transition-colors ${
+                            rule.passed
+                              ? "text-emerald-700 font-semibold"
+                              : "text-slate-500"
+                          }`}
+                        >
+                          <div
+                            className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 ${
+                              rule.passed
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-slate-200 text-slate-400"
+                            }`}
+                          >
+                            <Check className="w-2.5 h-2.5" />
+                          </div>
+                          <span>{rule.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>

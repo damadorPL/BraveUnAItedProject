@@ -45,11 +45,29 @@ export const loginSchema = z.object({
     .min(1, "Wprowadź hasło dostępowe."),
 });
 
+export const securePasswordSchema = z
+  .string()
+  .min(10, "Nowe hasło musi składać się z co najmniej 10 znaków.")
+  .max(128, "Hasło nie może przekraczać 128 znaków.")
+  .refine((val) => /[a-z]/.test(val), {
+    message: "Hasło musi zawierać co najmniej jedną małą literę (a-z).",
+  })
+  .refine((val) => /[A-Z]/.test(val), {
+    message: "Hasło musi zawierać co najmniej jedną wielką literę (A-Z).",
+  })
+  .refine((val) => /[0-9]/.test(val), {
+    message: "Hasło musi zawierać co najmniej jedną cyfrę (0-9).",
+  })
+  .refine((val) => /[^a-zA-Z0-9]/.test(val), {
+    message: "Hasło musi zawierać co najmniej jeden znak specjalny (np. !@#$%^&*).",
+  })
+  .refine((val) => !val.toLowerCase().includes("synapsis"), {
+    message: "Hasło nie może zawierać słowa „synapsis”.",
+  });
+
 export const resetPasswordSchema = z.object({
   email: z.email("Wprowadź poprawny adres e-mail.").trim(),
-  newPassword: z
-    .string()
-    .min(8, "Nowe hasło musi składać się z co najmniej 8 znaków."),
+  newPassword: securePasswordSchema,
   resetCode: z.string().min(1, "Kod weryfikacyjny jest wymagany."),
 });
 
@@ -124,8 +142,20 @@ export const specialistSchema = z.object({
   avatarBg: z.string().default("bg-blue-600"),
   avatarUrl: z.string().optional().nullable(),
   isAdmin: z.boolean().default(false),
-  initialPassword: z.string().optional(),
-  newPassword: z.string().optional(),
+  initialPassword: z
+    .string()
+    .optional()
+    .refine((val) => !val || securePasswordSchema.safeParse(val).success, {
+      message:
+        "Hasło początkowe musi mieć min. 10 znaków, zawierać wielką i małą literę, cyfrę, znak specjalny oraz nie zawierać słowa „synapsis”.",
+    }),
+  newPassword: z
+    .string()
+    .optional()
+    .refine((val) => !val || securePasswordSchema.safeParse(val).success, {
+      message:
+        "Nowe hasło musi mieć min. 10 znaków, zawierać wielką i małą literę, cyfrę, znak specjalny oraz nie zawierać słowa „synapsis”.",
+    }),
 });
 
 export const updateSpecialistSchema = specialistSchema.partial();

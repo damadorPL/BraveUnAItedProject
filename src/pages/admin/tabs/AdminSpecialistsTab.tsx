@@ -6,6 +6,10 @@ import { ConfirmModal } from "../../../components/ConfirmModal";
 import { api } from "../../../services/api";
 import { validateAvatarFile, processAvatarImage } from "../../../utils/fileUtils";
 import {
+  validatePasswordStrength,
+  isPasswordSecure,
+} from "../../../services/auth";
+import {
   Users,
   PlusCircle,
   Edit3,
@@ -76,6 +80,11 @@ export const AdminSpecialistsTab: React.FC = () => {
   const [avatarError, setAvatarError] = useState<string | null>(null);
   const [customPassword, setCustomPassword] = useState("");
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const passwordStrength = useMemo(
+    () => (customPassword ? validatePasswordStrength(customPassword, email) : null),
+    [customPassword, email]
+  );
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -168,6 +177,14 @@ export const AdminSpecialistsTab: React.FC = () => {
       return;
     }
 
+    if (customPassword.trim()) {
+      const pwdValidation = isPasswordSecure(customPassword.trim(), normEmail);
+      if (!pwdValidation.valid) {
+        setErrorMessage(pwdValidation.message || "Hasło nie spełnia wymagań bezpieczeństwa.");
+        return;
+      }
+    }
+
     try {
       if (editingSpec) {
         const updated: Specialist = {
@@ -258,7 +275,7 @@ export const AdminSpecialistsTab: React.FC = () => {
         try {
           const res = await api.admin.resetSpecialistPassword(spec.id);
           setResetModalSpec(spec);
-          setTempPasswordGenerated(res.temporaryPassword || "Synapsis2026!");
+          setTempPasswordGenerated(res.temporaryPassword || "Pfron2026!");
         } catch (err: any) {
           setErrorMessage(err.message || "Błąd podczas resetowania hasła");
           setTimeout(() => setErrorMessage(null), 4000);
@@ -623,6 +640,53 @@ export const AdminSpecialistsTab: React.FC = () => {
                 placeholder={editingSpec ? "Pozostaw puste, aby nie zmieniać" : "Wprowadź hasło początkowe (opcjonalnie)"}
                 className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-[#383431] bg-slate-50 dark:bg-[#141312] text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-[#FFB200]"
               />
+              {passwordStrength && (
+                <div className="mt-2 p-2.5 bg-slate-50 dark:bg-[#141312] border border-slate-200 dark:border-[#383431] rounded-xl space-y-1.5 text-[11px]">
+                  <div className="flex items-center justify-between font-bold">
+                    <span className="text-slate-600 dark:text-slate-400">Siła hasła:</span>
+                    <span
+                      className={
+                        passwordStrength.score >= 3
+                          ? "text-emerald-700 dark:text-emerald-400"
+                          : passwordStrength.score === 2
+                          ? "text-amber-700 dark:text-amber-400"
+                          : "text-rose-700 dark:text-rose-400"
+                      }
+                    >
+                      {passwordStrength.scoreLabel}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1 h-1 w-full bg-slate-200 dark:bg-[#252018] rounded-full overflow-hidden">
+                    {[1, 2, 3, 4].map((lvl) => (
+                      <div
+                        key={lvl}
+                        className={`h-full ${
+                          passwordStrength.score >= lvl
+                            ? passwordStrength.scoreColor
+                            : "bg-transparent"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <div className="space-y-0.5 pt-1">
+                    {passwordStrength.rules.map((rule) => (
+                      <div
+                        key={rule.key}
+                        className={`flex items-center gap-1.5 ${
+                          rule.passed
+                            ? "text-emerald-700 dark:text-emerald-400 font-semibold"
+                            : "text-slate-500 dark:text-slate-400"
+                        }`}
+                      >
+                        <Check
+                          className={`w-3 h-3 ${rule.passed ? "opacity-100" : "opacity-30"}`}
+                        />
+                        <span>{rule.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Avatar & Profile Photo */}

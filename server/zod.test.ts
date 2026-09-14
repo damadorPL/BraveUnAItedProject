@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   loginSchema,
+  resetPasswordSchema,
+  securePasswordSchema,
   callerSchema,
   callRecordSchema,
   specialistSchema,
@@ -80,5 +82,47 @@ describe("Zod Validation Schemas Suite", () => {
     expect(dbConfigSchema.safeParse({ engine: "sqlite" }).success).toBe(true);
     expect(dbConfigSchema.safeParse({ engine: "postgres" }).success).toBe(true);
     expect(dbConfigSchema.safeParse({ engine: "mysql" }).success).toBe(false);
+  });
+
+  it("securePasswordSchema should accept strong passwords and reject weak ones", () => {
+    expect(securePasswordSchema.safeParse("SilneHaslo123!").success).toBe(true);
+    expect(securePasswordSchema.safeParse("krotkie1!").success).toBe(false); // < 10
+    expect(securePasswordSchema.safeParse("bez_wielkiej_1!").success).toBe(false); // no uppercase
+    expect(securePasswordSchema.safeParse("BEZ_MALEJ_1!").success).toBe(false); // no lowercase
+    expect(securePasswordSchema.safeParse("BezCyfryWKodzie!").success).toBe(false); // no number
+    expect(securePasswordSchema.safeParse("BezZnakuSpecjalnego123").success).toBe(false); // no special
+    expect(securePasswordSchema.safeParse("HasloSynapsis123!").success).toBe(false); // contains synapsis
+  });
+
+  it("resetPasswordSchema should require valid email, secure password and reset code", () => {
+    const valid = resetPasswordSchema.safeParse({
+      email: "spec@synapsis.org.pl",
+      newPassword: "SilneHaslo2026!",
+      resetCode: "123456",
+    });
+    expect(valid.success).toBe(true);
+
+    const weak = resetPasswordSchema.safeParse({
+      email: "spec@synapsis.org.pl",
+      newPassword: "synapsis2026",
+      resetCode: "123456",
+    });
+    expect(weak.success).toBe(false);
+  });
+
+  it("specialistSchema should validate initialPassword if provided", () => {
+    const withValidPwd = specialistSchema.safeParse({
+      name: "mgr Jan Kowalski",
+      email: "j.kowalski@synapsis.org.pl",
+      initialPassword: "SilneHaslo2026!",
+    });
+    expect(withValidPwd.success).toBe(true);
+
+    const withWeakPwd = specialistSchema.safeParse({
+      name: "mgr Jan Kowalski",
+      email: "j.kowalski@synapsis.org.pl",
+      initialPassword: "weak",
+    });
+    expect(withWeakPwd.success).toBe(false);
   });
 });

@@ -160,7 +160,8 @@ adminRouter.post("/specialists/:id/reset-password", async (req, res) => {
     }
 
     const { newPassword } = req.body;
-    const tempPassword = newPassword || `Synapsis${Math.floor(1000 + Math.random() * 9000)}!`;
+    const tempPassword =
+      newPassword || `Pfron${Math.floor(10000 + Math.random() * 90000)}!`;
     const hash = sha256Hex(tempPassword);
 
     await adapter.setPasswordHash(id, hash);

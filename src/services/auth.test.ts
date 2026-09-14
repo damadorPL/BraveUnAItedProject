@@ -6,6 +6,8 @@ import {
   hashPassword,
   generateResetCode,
   getSpecialistInitials,
+  validatePasswordStrength,
+  isPasswordSecure,
   DEMO_PASSWORD,
 } from "./auth";
 import { Specialist } from "../types";
@@ -97,5 +99,51 @@ describe("getSpecialistInitials", () => {
     expect(getSpecialistInitials("dr Michał Adamczyk (Admin)")).toBe("MA");
     expect(getSpecialistInitials("mec. Anna Nowak")).toBe("AN");
     expect(getSpecialistInitials("mgr Joanna Mrożek")).toBe("JM");
+  });
+});
+
+describe("validatePasswordStrength & isPasswordSecure", () => {
+  it("akceptuje bezpieczne hasło spełniające wszystkie kryteria", () => {
+    const result = validatePasswordStrength("TajneHaslo2026!");
+    expect(result.isValid).toBe(true);
+    expect(result.score).toBe(4);
+    expect(result.scoreLabel).toBe("Bardzo silne");
+    expect(isPasswordSecure("TajneHaslo2026!").valid).toBe(true);
+  });
+
+  it("odrzuca hasło krótsze niż 10 znaków", () => {
+    const res = isPasswordSecure("Krot1!");
+    expect(res.valid).toBe(false);
+    expect(res.message).toContain("minimum 10 znaków");
+  });
+
+  it("odrzuca hasło bez wielkiej litery", () => {
+    const res = isPasswordSecure("malehaslo123!");
+    expect(res.valid).toBe(false);
+    expect(res.message).toContain("wielka i mała litera");
+  });
+
+  it("odrzuca hasło bez cyfry", () => {
+    const res = isPasswordSecure("HasloBezCyfr!");
+    expect(res.valid).toBe(false);
+    expect(res.message).toContain("przynajmniej jedna cyfra");
+  });
+
+  it("odrzuca hasło bez znaku specjalnego", () => {
+    const res = isPasswordSecure("HasloZCyfra123");
+    expect(res.valid).toBe(false);
+    expect(res.message).toContain("znak specjalny");
+  });
+
+  it("odrzuca hasło zawierające słowo synapsis", () => {
+    const res = isPasswordSecure("Synapsis2026!");
+    expect(res.valid).toBe(false);
+    expect(res.message).toContain("brak słowa „synapsis”");
+  });
+
+  it("odrzuca hasło zawierające login z adresu e-mail użytkownika", () => {
+    const res = isPasswordSecure("jkowalskaTajne1!", "jkowalska@synapsis.org.pl");
+    expect(res.valid).toBe(false);
+    expect(res.message).toContain("brak słowa „synapsis”");
   });
 });
