@@ -41,9 +41,9 @@ VOLUME ["/app/data"]
 
 ENV NODE_ENV=production
 ENV PORT=3001
-ENU DATABASE_ENGINE=sqlite
+ENV DATABASE_ENGINE=sqlite
 ENV SQLITE_PATH=/app/data/synapsis.sqlite
-ENV ATDACHMENTS_DIR=/app/data/uploads/attachments
+ENV ATTACHMENTS_DIR=/app/data/uploads/attachments
 
 EXPOSE 3001
 
