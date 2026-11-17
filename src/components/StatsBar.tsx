@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { GuidanceType } from "../types";
 import { buildCallersMap, filterCallRecords } from "../utils/recordFilters";
@@ -74,7 +74,7 @@ export const StatsBar: React.FC = () => {
     [records, callersMap, filterState]
   );
 
-  const quarterPresets = useMemo(() => buildQuarterPresets(new Date().getFullYear()), []);
+  const [quarterPresets] = useState(() => buildQuarterPresets(new Date().getFullYear()));
   const hasDateRange = Boolean(filterState.dateFrom || filterState.dateTo);
   const hasOtherFilters = Boolean(
     filterState.searchQuery ||
