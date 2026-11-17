@@ -137,25 +137,15 @@ export function clearSession(): void {
   }
 }
 
-// Hash overrides set via reset (specialist ID -> SHA-256 hex); absence of entry = demo password applies
+// In-memory hash overrides set via reset (specialist ID -> hash); avoids cleartext localStorage persistence
+const memoryPasswordOverrides = new Map<string, string>();
+
 export function loadPasswordOverrides(): Record<string, string> {
-  try {
-    const raw = localStorage.getItem(PASSWORDS_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch (err) {
-    console.error("Failed to load password overrides:", err);
-    return {};
-  }
+  return Object.fromEntries(memoryPasswordOverrides.entries());
 }
 
 export function savePasswordOverride(specialistId: string, passwordHash: string): void {
-  try {
-    const overrides = loadPasswordOverrides();
-    overrides[specialistId] = passwordHash;
-    localStorage.setItem(PASSWORDS_KEY, JSON.stringify(overrides));
-  } catch (err) {
-    console.error("Failed to save password override:", err);
-  }
+  memoryPasswordOverrides.set(specialistId, passwordHash);
 }
 
 export function searchCallers(query: string, callers: Caller[]): Caller[] {

@@ -6,6 +6,7 @@ import {
   requireAdmin,
   AuthenticatedRequest,
 } from "../middleware/auth.js";
+import { apiLimiter } from "../middleware/rateLimit.js";
 import { validateBody } from "../middleware/validate.js";
 import {
   specialistSchema,
@@ -14,16 +15,14 @@ import {
   dbConfigSchema,
 } from "../db/schema/zod.js";
 import { Specialist, DatabaseConfig } from "../types.js";
+import { hashPassword } from "../utils/password.js";
 
 export const adminRouter = Router();
 
-// Require both valid JWT and isAdmin === true for all admin endpoints
+// Require rate limiting, valid JWT, and isAdmin === true for all admin endpoints
+adminRouter.use(apiLimiter);
 adminRouter.use(authenticateJWT);
 adminRouter.use(requireAdmin);
-
-function sha256Hex(text: string): string {
-  return crypto.createHash("sha256").update(text).digest("hex");
-}
 
 // GET /api/admin/overview
 adminRouter.get("/overview", async (req, res) => {
@@ -75,7 +74,7 @@ adminRouter.post("/specialists", validateBody(specialistSchema), async (req: Aut
 
     // If initial password was supplied
     if (data.initialPassword) {
-      const hash = sha256Hex(data.initialPassword);
+      const hash = await hashPassword(data.initialPassword);
       await adapter.setPasswordHash(created.id, hash);
     }
 
@@ -113,7 +112,7 @@ adminRouter.put("/specialists/:id", validateBody(updateSpecialistSchema), async 
     const saved = await adapter.updateSpecialist(updatedSpec);
 
     if (req.body.newPassword) {
-      const hash = sha256Hex(req.body.newPassword);
+      const hash = await hashPassword(req.body.newPassword);
       await adapter.setPasswordHash(saved.id, hash);
     }
 
@@ -161,8 +160,8 @@ adminRouter.post("/specialists/:id/reset-password", async (req, res) => {
 
     const { newPassword } = req.body;
     const tempPassword =
-      newPassword || `Pfron${Math.floor(10000 + Math.random() * 90000)}!`;
-    const hash = sha256Hex(tempPassword);
+      newPassword || `Pfron${crypto.randomInt(10000, 100000)}!`;
+    const hash = await hashPassword(tempPassword);
 
     await adapter.setPasswordHash(id, hash);
 

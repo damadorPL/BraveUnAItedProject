@@ -22,9 +22,9 @@ export const ExportModal: React.FC = () => {
 
   const filteredRecords = filterCallRecords(records, buildCallersMap(callers), filterState);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!currentSpecialist?.isAdmin) return;
-    const exported = exportRecordsData(filteredRecords, callers, {
+    const exported = await exportRecordsData(filteredRecords, callers, {
       anonymized,
       format,
       filenamePrefix: "Baza_Porad_PFRON",

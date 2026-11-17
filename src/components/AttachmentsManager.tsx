@@ -94,33 +94,28 @@ export const AttachmentsManager: React.FC<Props> = ({
 
     async function loadExcelPreview() {
       try {
+        let input: ArrayBuffer | null = null;
         if (previewAttachment?.url) {
           const token = getStoredToken();
           const res = await fetch(previewAttachment.url, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           });
           if (res.ok) {
-            const arrayBuffer = await res.arrayBuffer();
-            const XLSX = await import("xlsx");
-            const workbook = XLSX.read(arrayBuffer, { type: "array" });
-            const sheetName = workbook.SheetNames[0];
-            const sheet = workbook.Sheets[sheetName];
-            const data: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-            if (!isCancelled && data.length > 0) {
-              setExcelPreviewData({
-                headers: data[0].map(String),
-                rows: data.slice(1, 15),
-              });
-              return;
-            }
+            input = await res.arrayBuffer();
           }
         } else if (previewAttachment?.dataUrl && previewAttachment.dataUrl.includes("base64,")) {
           const base64Data = previewAttachment.dataUrl.split("base64,")[1];
-          const XLSX = await import("xlsx");
-          const workbook = XLSX.read(base64Data, { type: "base64" });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const data: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+          const binary = atob(base64Data);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+          }
+          input = bytes.buffer;
+        }
+
+        if (input) {
+          const { readSpreadsheetRows } = await import("../utils/spreadsheetUtils");
+          const data = await readSpreadsheetRows(input, previewAttachment?.name);
           if (!isCancelled && data.length > 0) {
             setExcelPreviewData({
               headers: data[0].map(String),

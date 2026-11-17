@@ -151,7 +151,9 @@ export async function verifySpecialistPassword(
 }
 
 export function generateResetCode(): string {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  const buf = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(buf);
+  return String(100000 + (buf[0] % 900000));
 }
 
 // "dr Michał Adamczyk (Admin)" -> "MA"

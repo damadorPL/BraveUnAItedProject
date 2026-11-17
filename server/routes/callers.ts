@@ -5,13 +5,15 @@ import {
   requireAdmin,
   AuthenticatedRequest,
 } from "../middleware/auth.js";
+import { apiLimiter } from "../middleware/rateLimit.js";
 import { validateBody } from "../middleware/validate.js";
 import { callerSchema, updateCallerSchema } from "../db/schema/zod.js";
 import { Caller } from "../types.js";
 
 export const callersRouter = Router();
 
-// All callers routes require valid JWT
+// All callers routes require rate limiting and valid JWT
+callersRouter.use(apiLimiter);
 callersRouter.use(authenticateJWT);
 
 // GET /api/callers

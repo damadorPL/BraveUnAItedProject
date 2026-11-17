@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { Caller, CallRecord, Specialist, FilterState, SyncMessage, Attachment, EmailNotification, RecordEditLog } from "../types";
 import { AppContext } from "./context";
+import { randomIdSuffix } from "../utils/random";
 
 import {
   loadCallers,
@@ -577,7 +578,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const now = new Date().toISOString();
       const newCaller: Caller = {
         ...data,
-        id: "caller-" + Date.now() + "-" + Math.random().toString(36).substring(2, 6),
+        id: "caller-" + Date.now() + "-" + randomIdSuffix(4),
         createdAt: now,
         updatedAt: now,
       };
@@ -605,7 +606,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const now = new Date().toISOString();
       const newRec: CallRecord = {
         ...data,
-        id: "rec-" + Date.now() + "-" + Math.random().toString(36).substring(2, 6),
+        id: "rec-" + Date.now() + "-" + randomIdSuffix(4),
         createdAt: now,
       };
 

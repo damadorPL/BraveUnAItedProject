@@ -9,6 +9,17 @@ interface SpecialistAvatarProps {
   className: string;
 }
 
+function sanitizeAvatarUrl(url?: string): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith("/") && !trimmed.startsWith("//")) return trimmed;
+  if (/^data:image\/(png|jpeg|jpg|gif|webp);base64,[a-zA-Z0-9+/=]+$/i.test(trimmed)) {
+    return trimmed;
+  }
+  return null;
+}
+
 // Specialist avatar: profile photo (avatarUrl), or fallback initials
 // on colored avatarBg background. Rendered as <span>/<img> since it may be
 // nested inside <button>, where <div> would be invalid HTML.
@@ -19,16 +30,17 @@ export const SpecialistAvatar: React.FC<SpecialistAvatarProps> = ({
   className,
 }) => {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
-  const hasError = Boolean(avatarUrl && failedUrl === avatarUrl);
+  const safeAvatarUrl = sanitizeAvatarUrl(avatarUrl);
+  const hasError = Boolean(safeAvatarUrl && failedUrl === safeAvatarUrl);
 
-  if (avatarUrl && !hasError) {
+  if (safeAvatarUrl && !hasError) {
     return (
       <img
-        key={avatarUrl}
-        src={avatarUrl}
+        key={safeAvatarUrl}
+        src={safeAvatarUrl}
         alt=""
         aria-hidden="true"
-        onError={() => setFailedUrl(avatarUrl)}
+        onError={() => setFailedUrl(safeAvatarUrl)}
         className={`object-cover ${className}`}
       />
     );

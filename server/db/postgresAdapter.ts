@@ -11,6 +11,24 @@ import {
 import { DatabaseAdapter, CallerQueryOptions, RecordQueryOptions } from "./adapter.js";
 import { INITIAL_SPECIALISTS } from "../../src/data/sampleData.js";
 
+function maskConnectionString(connStr: string): string {
+  try {
+    const parsed = new URL(connStr);
+    if (parsed.username || parsed.password) {
+      if (parsed.username) parsed.username = "***";
+      if (parsed.password) parsed.password = "***";
+      return parsed.toString();
+    }
+    return connStr;
+  } catch {
+    const schemeIdx = connStr.indexOf("://");
+    if (schemeIdx === -1) return connStr;
+    const atIdx = connStr.indexOf("@", schemeIdx + 3);
+    if (atIdx === -1) return connStr;
+    return `${connStr.slice(0, schemeIdx + 3)}***:***@${connStr.slice(atIdx + 1)}`;
+  }
+}
+
 export class PostgresAdapter implements DatabaseAdapter {
   readonly engine = "postgres" as const;
   private pool: Pool | null = null;
@@ -164,7 +182,7 @@ export class PostgresAdapter implements DatabaseAdapter {
       totalPendingReferrals: pendingRes.rows[0]?.count || 0,
       databaseEngine: "postgres",
       databaseStatus: "connected",
-      databaseLocation: this.connectionString.replace(/:\/\/[^@]+@/, "://***:***@"),
+      databaseLocation: maskConnectionString(this.connectionString),
       recentAuditLogs: recentLogs,
     };
   }

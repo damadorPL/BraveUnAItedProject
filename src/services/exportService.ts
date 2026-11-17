@@ -1,4 +1,3 @@
-import * as XLSX from "xlsx";
 import { Caller, CallRecord } from "../types";
 import { buildCallersMap } from "../utils/recordFilters";
 import { computeReportStats } from "../utils/reportStats";
@@ -202,7 +201,7 @@ export function buildSummarySheetData(
 }
 
 // Column widths calculated from longest value (with max cap to avoid infinite stretch).
-function columnWidthsFromMatrix(matrix: SummaryCell[][]): { wch: number }[] {
+function columnWidthsFromMatrix(matrix: SummaryCell[][]): { width: number }[] {
   const widths: number[] = [];
   matrix.forEach((row) => {
     row.forEach((cell, index) => {
@@ -210,7 +209,7 @@ function columnWidthsFromMatrix(matrix: SummaryCell[][]): { wch: number }[] {
       widths[index] = Math.max(widths[index] || 0, length);
     });
   });
-  return widths.map((w) => ({ wch: Math.min(Math.max(w + 2, 10), 60) }));
+  return widths.map((w) => ({ width: Math.min(Math.max(w + 2, 10), 60) }));
 }
 
 // CSV for Polish Excel: ";" delimiter, UTF-8 BOM, CRLF, quoted fields.
@@ -236,11 +235,11 @@ export function buildCsvContent(rows: ExportRow[]): string {
   return "\uFEFF" + csvRows.join("\r\n");
 }
 
-export function exportRecordsData(
+export async function exportRecordsData(
   records: CallRecord[],
   callers: Caller[],
   options: ExportOptions = {}
-): boolean {
+): Promise<boolean> {
   const {
     anonymized = false,
     format = "csv",
@@ -265,17 +264,21 @@ export function exportRecordsData(
       ...exportData.map((row) => headers.map((header) => row[header])),
     ];
 
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    ws["!cols"] = columnWidthsFromMatrix(dataMatrix);
-
     const summaryData = buildSummarySheetData(records, callers, { anonymized, period });
-    const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
-    summaryWs["!cols"] = columnWidthsFromMatrix(summaryData);
+    const { default: writeXlsxFile } = await import("write-excel-file/browser");
 
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Historia Porad");
-    XLSX.utils.book_append_sheet(wb, summaryWs, "Podsumowanie");
-    XLSX.writeFile(wb, filename + ".xlsx");
+    await writeXlsxFile([
+      {
+        sheet: "Historia Porad",
+        data: dataMatrix,
+        columns: columnWidthsFromMatrix(dataMatrix),
+      },
+      {
+        sheet: "Podsumowanie",
+        data: summaryData,
+        columns: columnWidthsFromMatrix(summaryData),
+      },
+    ]).toFile(filename + ".xlsx");
     return true;
   }
 

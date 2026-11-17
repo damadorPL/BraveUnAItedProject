@@ -1,4 +1,5 @@
-import * as XLSX from "xlsx";
+import { readSpreadsheetRows } from "../utils/spreadsheetUtils";
+import { randomIdSuffix } from "../utils/random";
 import {
   Caller,
   CallRecord,
@@ -105,7 +106,7 @@ export interface ImportResolutions {
 // Template download
 // ---------------------------------------------------------------------------
 
-export function downloadExcelTemplate(): void {
+export async function downloadExcelTemplate(): Promise<void> {
   const headers = [
     "Kiedy udzielono porady",
     "Imię",
@@ -178,29 +179,29 @@ export function downloadExcelTemplate(): void {
     ],
   ];
 
-  const ws = XLSX.utils.aoa_to_sheet([headers, ...sampleRows]);
-
-  ws["!cols"] = [
-    { wch: 22 },
-    { wch: 16 },
-    { wch: 18 },
-    { wch: 18 },
-    { wch: 24 },
-    { wch: 16 },
-    { wch: 18 },
-    { wch: 28 },
-    { wch: 38 },
-    { wch: 45 },
-    { wch: 22 },
-    { wch: 26 },
-    { wch: 35 },
-    { wch: 30 },
-    { wch: 16 },
+  const { default: writeXlsxFile } = await import("write-excel-file/browser");
+  const columns = [
+    { width: 22 },
+    { width: 16 },
+    { width: 18 },
+    { width: 18 },
+    { width: 24 },
+    { width: 16 },
+    { width: 18 },
+    { width: 28 },
+    { width: 38 },
+    { width: 45 },
+    { width: 22 },
+    { width: 26 },
+    { width: 35 },
+    { width: 30 },
+    { width: 16 },
   ];
 
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Historia Porad");
-  XLSX.writeFile(wb, "Wzorzec_Bazy_Historii_Porad_PFRON.xlsx");
+  await writeXlsxFile([headers, ...sampleRows], {
+    sheet: "Historia Porad",
+    columns,
+  }).toFile("Wzorzec_Bazy_Historii_Porad_PFRON.xlsx");
 }
 
 // ---------------------------------------------------------------------------
@@ -312,7 +313,7 @@ const ALL_GUIDANCE_AREAS: string[] = Array.from(
 // ---------------------------------------------------------------------------
 
 function makeId(prefix: string): string {
-  return prefix + "-" + Date.now() + "-" + Math.random().toString(36).substring(2, 8);
+  return prefix + "-" + Date.now() + "-" + randomIdSuffix(6);
 }
 
 export async function parseExcelFile(
@@ -322,18 +323,17 @@ export async function parseExcelFile(
   if (file.size > MAX_FILE_SIZE_BYTES) {
     throw new Error("Plik jest za duży (limit 10 MB). Podziel dane na mniejsze pliki.");
   }
-  if (!/\.(xlsx|xls|csv)$/i.test(file.name)) {
-    throw new Error("Nieobsługiwany format pliku. Wybierz plik .xlsx, .xls lub .csv.");
+  if (!/\.(xlsx|csv)$/i.test(file.name)) {
+    if (/\.xls$/i.test(file.name)) {
+      throw new Error("Starszy format .xls nie jest obsługiwany. Zapisz plik jako .xlsx lub .csv.");
+    }
+    throw new Error("Nieobsługiwany format pliku. Wybierz plik .xlsx lub .csv.");
   }
 
-  const data = await file.arrayBuffer();
-  const workbook = XLSX.read(data, { type: "array", cellDates: true });
-  const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-  if (!worksheet) {
+  const rows = await readSpreadsheetRows(file, file.name);
+  if (rows.length === 0) {
     throw new Error("Plik nie zawiera żadnego arkusza z danymi.");
   }
-
-  const rows: unknown[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
 
   if (rows.length < 2) {
     throw new Error("Plik Excel jest pusty lub nie zawiera wierszy z danymi.");

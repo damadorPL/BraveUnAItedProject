@@ -5,6 +5,7 @@ import {
   verifyJWT,
   AuthenticatedRequest,
 } from "../middleware/auth.js";
+import { apiLimiter } from "../middleware/rateLimit.js";
 import {
   saveAttachmentFile,
   getAttachmentFilePath,
@@ -16,6 +17,7 @@ import {
 } from "../storage/attachmentTicketStore.js";
 
 export const attachmentsRouter = Router();
+attachmentsRouter.use(apiLimiter);
 
 // Configure multer (memory storage with 50MB limit)
 const upload = multer({

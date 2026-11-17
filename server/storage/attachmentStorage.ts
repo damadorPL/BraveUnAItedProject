@@ -122,7 +122,7 @@ export async function deleteAttachmentFile(id: string): Promise<boolean> {
     await fs.promises.unlink(info.filePath);
     return true;
   } catch (err) {
-    console.error(`Failed to delete attachment ${id}:`, err);
+    console.error("Failed to delete attachment:", id, err);
     return false;
   }
 }

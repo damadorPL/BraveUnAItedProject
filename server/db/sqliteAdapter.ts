@@ -20,7 +20,16 @@ export class SQLiteAdapter implements DatabaseAdapter {
   private dbPath: string;
 
   constructor(customPath?: string) {
-    this.dbPath = customPath || process.env.SQLITE_PATH || path.resolve(process.cwd(), "data", "synapsis.sqlite");
+    const baseDir = path.resolve(process.cwd(), "data");
+    const rawPath =
+      customPath ||
+      process.env.SQLITE_PATH ||
+      path.resolve(baseDir, "synapsis.sqlite");
+    const resolvedPath = path.resolve(baseDir, rawPath);
+    if (resolvedPath !== baseDir && !resolvedPath.startsWith(baseDir + path.sep)) {
+      throw new Error("Invalid SQLite database path: must be within the data directory");
+    }
+    this.dbPath = resolvedPath;
   }
 
   getDbPath(): string {
@@ -28,12 +37,22 @@ export class SQLiteAdapter implements DatabaseAdapter {
   }
 
   async init(): Promise<void> {
-    const dir = path.dirname(this.dbPath);
+    const baseDir = path.resolve(process.cwd(), "data");
+    const resolvedPath = path.resolve(baseDir, this.dbPath);
+    if (!resolvedPath.startsWith(baseDir + path.sep)) {
+      throw new Error("Invalid SQLite database path: must be within the data directory");
+    }
+
+    const dir = path.dirname(resolvedPath);
+    if (dir !== baseDir && !dir.startsWith(baseDir + path.sep)) {
+      throw new Error("Invalid SQLite database directory");
+    }
+
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
 
-    this.db = new Database(this.dbPath);
+    this.db = new Database(resolvedPath);
     this.db.pragma("journal_mode = WAL");
     this.db.pragma("foreign_keys = ON");
     this.drizzle = drizzle(this.db, { schema: sqliteSchema });

@@ -1,4 +1,5 @@
 import { CallRecord, RecordEditLog, RecordFieldChange, Specialist } from "../types";
+import { randomIdSuffix } from "./random";
 
 /**
  * Compares previous and updated record entries, detecting changed fields
@@ -184,7 +185,7 @@ export function computeRecordChanges(
   const moreCount = changes.length > 3 ? ` (+${changes.length - 3} inne)` : "";
 
   return {
-    id: "log-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
+    id: "log-" + Date.now() + "-" + randomIdSuffix(5),
     recordId: next.id,
     editedAt: now,
     editorId: editor?.id || "unknown",

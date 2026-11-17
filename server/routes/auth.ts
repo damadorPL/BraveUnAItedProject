@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { Router } from "express";
 import { dbManager } from "../db/index.js";
 import {
@@ -6,15 +5,15 @@ import {
   AuthenticatedRequest,
   generateJWT,
 } from "../middleware/auth.js";
+import { authLimiter } from "../middleware/rateLimit.js";
 import { validateBody } from "../middleware/validate.js";
 import { loginSchema, resetPasswordSchema } from "../db/schema/zod.js";
+import { hashPassword, verifyPassword } from "../utils/password.js";
 
 export const authRouter = Router();
 export const DEMO_PASSWORD = "synapsis2026";
 
-function sha256Hex(text: string): string {
-  return crypto.createHash("sha256").update(text).digest("hex");
-}
+authRouter.use(authLimiter);
 
 authRouter.post("/login", validateBody(loginSchema), async (req, res) => {
   try {
@@ -36,9 +35,7 @@ authRouter.post("/login", validateBody(loginSchema), async (req, res) => {
     let isPasswordValid = false;
 
     if (passwordHash) {
-      // Check against stored sha256 hash
-      const incomingHash = sha256Hex(password);
-      isPasswordValid = incomingHash === passwordHash;
+      isPasswordValid = await verifyPassword(password, passwordHash);
     } else {
       // Check against demo password
       isPasswordValid = password === DEMO_PASSWORD;
@@ -111,7 +108,7 @@ authRouter.post("/reset-password", validateBody(resetPasswordSchema), async (req
       return;
     }
 
-    const hash = sha256Hex(newPassword);
+    const hash = await hashPassword(newPassword);
     await adapter.setPasswordHash(specialist.id, hash);
 
     res.json({ success: true, message: "Hasło zostało pomyślnie zmienione." });

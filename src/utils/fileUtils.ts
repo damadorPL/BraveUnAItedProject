@@ -1,4 +1,5 @@
 import { Attachment, AttachmentType } from "../types/index";
+import { randomIdSuffix } from "./random";
 
 export function detectAttachmentType(fileName: string, mimeType?: string): AttachmentType {
   const ext = fileName.split(".").pop()?.toLowerCase() || "";
@@ -115,7 +116,7 @@ export async function createAttachmentFromFile(
   const type = detectAttachmentType(file.name, file.type);
 
   return {
-    id: "att-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
+    id: "att-" + Date.now() + "-" + randomIdSuffix(5),
     name: file.name,
     size: file.size,
     type,

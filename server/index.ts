@@ -14,6 +14,7 @@ import { attachmentsRouter } from "./routes/attachments.js";
 import {
   initAttachmentStorage,
 } from "./storage/attachmentStorage.js";
+import { staticLimiter } from "./middleware/rateLimit.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -49,6 +50,7 @@ app.use("/api/attachments", attachmentsRouter);
 // Serve frontend static build in production
 const distPath = path.resolve(process.cwd(), "dist");
 if (fs.existsSync(distPath)) {
+  app.use(staticLimiter);
   app.use(express.static(distPath));
   app.use((req, res, next) => {
     if (req.method === "GET" && !req.path.startsWith("/api/")) {
